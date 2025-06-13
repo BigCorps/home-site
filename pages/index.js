@@ -2,11 +2,11 @@ import { useEffect } from 'react'
 
 export default function Home() {
   // O link para onde será redirecionado
-  const redirectUrl = "https://O_SEU_LINK_AQUI.com.br"; // Troque pelo link desejado!
+  const redirectUrl = "https://8tihnvjgf4rc1q5pbcup.share.dreamflow.app/"; // Troque pelo link desejado!
 
   useEffect(() => {
     // Mensagem antes de redirecionar
-    alert("Bem-vindo ao BigCorps App! Você será redirecionado.");
+    alert("Bem-vindo ao App DashBoard BigCorps! Você será redirecionado.");
     // Redireciona após 2 segundos
     setTimeout(() => {
       window.location.href = redirectUrl;
