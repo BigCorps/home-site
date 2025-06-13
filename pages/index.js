@@ -5,7 +5,7 @@ export default function Home() {
   const redirectUrl = "https://o5nqnoxu1j8i3ftnptko.share.dreamflow.app"; // Troque pelo link desejado!
 
   useEffect(() => {
-    alert("Bem-vindo ao BigCorps App! Você será redirecionado.");
+    alert("Clique nos 3 pontinhos do seu navegador e instale o app.");
     setTimeout(() => {
       window.location.href = redirectUrl;
     }, 2000);
@@ -13,7 +13,8 @@ export default function Home() {
 
   return (
     <main style={{textAlign: 'center', marginTop: '40vh'}}>
-      <h1>BigCorps App</h1>
+      <h1>BigCorps Dashboard App</h1>
+      <p>Caso tenha esquecido a senha, solicite ao suporte.</p>
       <p>Você será redirecionado em instantes...</p>
     </main>
   )
