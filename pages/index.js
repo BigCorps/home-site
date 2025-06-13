@@ -12,11 +12,9 @@ export default function Home() {
   }, []);
 
   return (
-    <>
-      <main style={{textAlign: 'center', marginTop: '40vh'}}>
-        <h1>BigCorps App</h1>
-        <p>Você será redirecionado em instantes...</p>
-      </main>
-    </>
+    <main style={{textAlign: 'center', marginTop: '40vh'}}>
+      <h1>BigCorps App</h1>
+      <p>Você será redirecionado em instantes...</p>
+    </main>
   )
 }
