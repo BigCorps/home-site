@@ -173,6 +173,7 @@
 
     <button onclick="login()">Entrar</button>
     <div class="footer">Acesso seguro e criptografado</div>
+    <button id="instalarApp" style="display:none;margin-top:12px;">📲 Instalar app</button>
   </div>
 
   <script>
@@ -274,5 +275,19 @@
     `;
     document.body.append(typebotInitScript);
   </script>
+  <script>
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    const installBtn = document.getElementById("instalarApp");
+    if (installBtn) {
+      installBtn.style.display = 'block';
+      installBtn.addEventListener('click', () => {
+        deferredPrompt.prompt();
+      });
+    }
+  });
+</script>
 </body>
 </html>
