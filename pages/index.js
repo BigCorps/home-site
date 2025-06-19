@@ -159,5 +159,17 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
+  <script>
+const typebotInitScript = document.createElement("script");
+typebotInitScript.type = "module";
+typebotInitScript.innerHTML = `
+  import Typebot from 'https://cdn.jsdelivr.net/npm/@typebot.io/js@0/dist/web.js'
+  Typebot.initBubble({
+    typebot: "login-iapos-qbsjuic",
+    theme: { button: { backgroundColor: "#1D1D1D" } },
+  });
+`;
+document.body.append(typebotInitScript);
+</script>
   </body>
   </html>
