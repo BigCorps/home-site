@@ -10,6 +10,9 @@
   <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
   <link rel="shortcut icon" href="/favicon.ico">
   <style>
+    html, body {
+      height: 100%;
+    }
     body {
       font-family: 'Arial', sans-serif;
       background: #fff;
@@ -19,40 +22,42 @@
       justify-content: center;
       align-items: center;
     }
+
     .card {
       background: #fff;
-      padding: 2.5rem 2rem;
-      border-radius: 32px;
+      padding: 2rem 1.2rem;
+      border-radius: 22px;
       box-shadow: 0 6px 25px rgba(0,0,0,0.09);
-      width: 98vw;
-      max-width: 500px;
+      width: 92vw;
+      max-width: 340px;
       box-sizing: border-box;
     }
     .title {
       text-align: center;
-      margin-bottom: 1.8rem;
+      margin-bottom: 1.2rem;
     }
-    .title h1 {
-      margin: 0;
-      color: #ff5c2a;
-      font-size: 2.4rem;
-      line-height: 1.1;
+    .title img {
+      max-width: 170px;
+      width: 90%;
+      height: auto;
+      display: block;
+      margin: 0 auto 0.3rem auto;
     }
     .title p {
       color: #555;
       margin: 0;
-      font-size: 1.2rem;
+      font-size: 1.05rem;
     }
     .input-group {
-      margin-bottom: 1.1rem;
+      margin-bottom: 1rem;
       position: relative;
     }
     .input-group input {
       width: 100%;
-      padding: 0.82rem 2.8rem 0.82rem 0.9rem;
+      padding: 0.7rem 2.4rem 0.7rem 0.8rem;
       border: 1px solid #ccc;
-      border-radius: 12px;
-      font-size: 1.1rem;
+      border-radius: 10px;
+      font-size: 1rem;
       transition: border 0.2s;
       box-sizing: border-box;
     }
@@ -63,13 +68,13 @@
     .input-group .toggle-password {
       position: absolute;
       top: 50%;
-      right: 0.9rem;
+      right: 0.7rem;
       transform: translateY(-50%);
       cursor: pointer;
       color: #999;
       background: none;
       border: none;
-      font-size: 1.25rem;
+      font-size: 1.05rem;
       padding: 0;
       display: flex;
       align-items: center;
@@ -83,23 +88,23 @@
     .error {
       color: red;
       background: #ffe5e5;
-      padding: 0.5rem;
-      border-radius: 10px;
+      padding: 0.45rem;
+      border-radius: 8px;
       margin-bottom: 1rem;
       display: none;
-      font-size: 0.9rem;
+      font-size: 0.91rem;
     }
     button {
       width: 100%;
       background: #ff5c2a;
       color: white;
       border: none;
-      padding: 0.82rem;
-      font-size: 1.15rem;
-      border-radius: 12px;
+      padding: 0.7rem 0;
+      font-size: 1rem;
+      border-radius: 10px;
       cursor: pointer;
-      margin-top: 0.2rem;
-      margin-bottom: 0.2rem;
+      margin-top: 0.12rem;
+      margin-bottom: 0.12rem;
       transition: background 0.2s;
     }
     button:hover {
@@ -107,26 +112,37 @@
     }
     .footer {
       text-align: center;
-      margin-top: 1rem;
+      margin-top: 0.8rem;
       color: #aaa;
-      font-size: 0.95rem;
+      font-size: 0.92rem;
     }
-    @media (max-width: 600px) {
+    @media (max-width: 400px) {
       .card {
-        padding: 1rem 0.5rem;
-        border-radius: 18px;
-        max-width: 98vw;
+        padding: 0.8rem 0.3rem;
+        border-radius: 14px;
+        max-width: 97vw;
       }
-      .title h1 {
-        font-size: 2rem;
+      .title img {
+        max-width: 110px;
       }
+    }
+    /* Remove olho nativo do Chrome/Edge */
+    input[type="password"]::-webkit-credentials-auto-fill-button {
+      display: none !important;
+      visibility: hidden !important;
+    }
+    input[type="password"]::-webkit-input-decoration {
+      display: none !important;
+    }
+    input[type="password"]::-ms-reveal {
+      display: none;
     }
   </style>
 </head>
 <body>
   <div class="card">
     <div class="title">
-      <h1>BigCorps</h1>
+      <img src="/icons/logo.png" alt="BigCorps Logo">
       <p>Dashboard Corporativo</p>
     </div>
 
@@ -138,10 +154,10 @@
 
     <div class="input-group">
       <input type="password" id="password" placeholder="Senha" autocomplete="current-password">
-      <button class="toggle-password" id="togglePasswordBtn" type="button" tabindex="-1" aria-label="Mostrar ou ocultar senha">
+      <button class="toggle-password" id="togglePasswordBtn" type="button" aria-label="Mostrar ou ocultar senha">
         <span id="eyeIcon">
-          <!-- Olho fechado SVG padrão-->
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 18" fill="none">
+          <!-- SVG Olho fechado padrão -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="16" viewBox="0 0 24 18" fill="none">
             <path d="M1 9C1 9 5 3 12 3C19 3 23 9 23 9C23 9 19 15 12 15C5 15 1 9 1 9Z" stroke="#999" stroke-width="2"/>
             <path d="M8 9C8 10.6569 9.34315 12 11 12C12.6569 12 14 10.6569 14 9C14 7.34315 12.6569 6 11 6C9.34315 6 8 7.34315 8 9Z" stroke="#999" stroke-width="2"/>
             <line x1="2" y1="16" x2="22" y2="2" stroke="#999" stroke-width="2"/>
@@ -186,16 +202,16 @@
       }
     }
 
-    // SVGs do olho
+    // SVGs do olho aberto/fechado
     const closedEyeSVG = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 18" fill="none">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="16" viewBox="0 0 24 18" fill="none">
         <path d="M1 9C1 9 5 3 12 3C19 3 23 9 23 9C23 9 19 15 12 15C5 15 1 9 1 9Z" stroke="#999" stroke-width="2"/>
         <path d="M8 9C8 10.6569 9.34315 12 11 12C12.6569 12 14 10.6569 14 9C14 7.34315 12.6569 6 11 6C9.34315 6 8 7.34315 8 9Z" stroke="#999" stroke-width="2"/>
         <line x1="2" y1="16" x2="22" y2="2" stroke="#999" stroke-width="2"/>
       </svg>
     `;
     const openEyeSVG = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 18" fill="none">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="16" viewBox="0 0 24 18" fill="none">
         <path d="M1 9C1 9 5 3 12 3C19 3 23 9 23 9C23 9 19 15 12 15C5 15 1 9 1 9Z" stroke="#999" stroke-width="2"/>
         <ellipse cx="12" cy="9" rx="3" ry="3" stroke="#999" stroke-width="2" fill="none"/>
       </svg>
