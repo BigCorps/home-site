@@ -2,7 +2,10 @@ const CACHE_NAME = 'bigcorps-v1';
 const urlsToCache = [
   '/',
   '/index.html',
-  '/manifest.json'
+  '/manifest.json',
+  '/icons/icon-192x192.png',
+  '/icons/icon-512x512.png',
+  '/favicon.ico'
 ];
 
 self.addEventListener('install', event => {
