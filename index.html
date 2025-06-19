@@ -20,44 +20,63 @@
     }
     .card {
       background: #fff;
-      padding: 2rem;
-      border-radius: 25px;
-      box-shadow: 0 6px 25px rgba(0,0,0,0.1);
-      width: 90vw;
-      max-width: 380px;
+      padding: 2.5rem 2rem;
+      border-radius: 32px;
+      box-shadow: 0 6px 25px rgba(0,0,0,0.09);
+      width: 98vw;
+      max-width: 500px;
       box-sizing: border-box;
     }
     .title {
       text-align: center;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.8rem;
     }
     .title h1 {
       margin: 0;
       color: #ff5c2a;
-      font-size: 1.8rem;
+      font-size: 2.4rem;
+      line-height: 1.1;
     }
     .title p {
       color: #555;
       margin: 0;
+      font-size: 1.2rem;
     }
     .input-group {
-      margin-bottom: 1rem;
+      margin-bottom: 1.1rem;
       position: relative;
     }
     .input-group input {
       width: 100%;
-      padding: 0.75rem 2.5rem 0.75rem 0.75rem;
+      padding: 0.82rem 2.8rem 0.82rem 0.9rem;
       border: 1px solid #ccc;
-      border-radius: 10px;
-      font-size: 1rem;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      transition: border 0.2s;
+    }
+    .input-group input:focus {
+      border-color: #ff5c2a;
+      outline: none;
     }
     .input-group .toggle-password {
       position: absolute;
       top: 50%;
-      right: 0.75rem;
+      right: 0.9rem;
       transform: translateY(-50%);
       cursor: pointer;
       color: #999;
+      background: none;
+      border: none;
+      font-size: 1.25rem;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      height: 100%;
+      transition: color 0.2s;
+    }
+    .input-group .toggle-password:active,
+    .input-group .toggle-password:focus {
+      color: #ff5c2a;
     }
     .error {
       color: red;
@@ -73,22 +92,31 @@
       background: #ff5c2a;
       color: white;
       border: none;
-      padding: 0.75rem;
-      font-size: 1rem;
-      border-radius: 10px;
+      padding: 0.82rem;
+      font-size: 1.15rem;
+      border-radius: 12px;
       cursor: pointer;
+      margin-top: 0.2rem;
+      margin-bottom: 0.2rem;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #ff784f;
     }
     .footer {
       text-align: center;
       margin-top: 1rem;
       color: #aaa;
-      font-size: 0.85rem;
+      font-size: 0.95rem;
     }
-    @media (max-width: 500px) {
+    @media (max-width: 600px) {
       .card {
-        padding: 1rem;
-        border-radius: 15px;
+        padding: 1rem 0.5rem;
+        border-radius: 18px;
         max-width: 98vw;
+      }
+      .title h1 {
+        font-size: 2rem;
       }
     }
   </style>
@@ -103,12 +131,20 @@
     <div class="error" id="errorMsg">Usuário ou senha incorretos</div>
 
     <div class="input-group">
-      <input type="text" id="username" placeholder="Usuário">
+      <input type="text" id="username" placeholder="Usuário" autocomplete="username">
     </div>
 
     <div class="input-group">
-      <input type="password" id="password" placeholder="Senha">
-      <span class="toggle-password" onclick="togglePassword()">👁️</span>
+      <input type="password" id="password" placeholder="Senha" autocomplete="current-password">
+      <button class="toggle-password" id="togglePasswordBtn" type="button" tabindex="-1" aria-label="Mostrar ou ocultar senha">
+        <!-- SVG Olho fechado inicialmente -->
+        <span id="eyeIcon">
+          <svg id="closedEye" xmlns="http://www.w3.org/2000/svg" width="25" height="22" fill="none" viewBox="0 0 25 22">
+            <path d="M2 2l21 18m-21 0L23 2" stroke="#999" stroke-width="2" stroke-linecap="round"/>
+            <ellipse cx="12.5" cy="11" rx="8.5" ry="6" stroke="#999" stroke-width="2"/>
+          </svg>
+        </span>
+      </button>
     </div>
 
     <button onclick="login()">Entrar</button>
@@ -149,10 +185,33 @@
       }
     }
 
+    // Olho aberto/fechado SVGs
+    const openEyeSVG = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="25" height="22" fill="none" viewBox="0 0 25 22">
+        <ellipse cx="12.5" cy="11" rx="8.5" ry="6" stroke="#999" stroke-width="2"/>
+        <circle cx="12.5" cy="11" r="2.5" fill="#999"/>
+      </svg>
+    `;
+    const closedEyeSVG = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="25" height="22" fill="none" viewBox="0 0 25 22">
+        <path d="M2 2l21 18m-21 0L23 2" stroke="#999" stroke-width="2" stroke-linecap="round"/>
+        <ellipse cx="12.5" cy="11" rx="8.5" ry="6" stroke="#999" stroke-width="2"/>
+      </svg>
+    `;
+
     function togglePassword() {
       const pass = document.getElementById('password');
-      pass.type = pass.type === 'password' ? 'text' : 'password';
+      const eyeIcon = document.getElementById('eyeIcon');
+      if (pass.type === 'password') {
+        pass.type = 'text';
+        eyeIcon.innerHTML = openEyeSVG;
+      } else {
+        pass.type = 'password';
+        eyeIcon.innerHTML = closedEyeSVG;
+      }
     }
+
+    document.getElementById('togglePasswordBtn').addEventListener('click', togglePassword);
 
     document.addEventListener("keydown", function(e) {
       if (e.key === "Enter") {
