@@ -1,7 +1,12 @@
 <!DOCTYPE html>
   <html lang="pt-br">
   <head>
-    <meta charset="UTF-8">
+    <link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#ff5c2a">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png">
+<link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+<meta charset="UTF-8">
     <title>Login BigCorps</title>
   <style>
       body {
