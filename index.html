@@ -22,7 +22,6 @@
       justify-content: center;
       align-items: center;
     }
-
     .card {
       background: #fff;
       padding: 2rem 1.2rem;
@@ -54,12 +53,14 @@
     }
     .input-group input {
       width: 100%;
-      padding: 0.7rem 2.4rem 0.7rem 0.8rem;
+      padding: 0.7rem 2.2rem 0.7rem 0.8rem; /* padding-right maior */
       border: 1px solid #ccc;
       border-radius: 10px;
       font-size: 1rem;
       transition: border 0.2s;
       box-sizing: border-box;
+      background: #fff;
+      outline: none;
     }
     .input-group input:focus {
       border-color: #ff5c2a;
@@ -68,7 +69,7 @@
     .input-group .toggle-password {
       position: absolute;
       top: 50%;
-      right: 0.7rem;
+      right: 0.6rem;
       transform: translateY(-50%);
       cursor: pointer;
       color: #999;
@@ -78,8 +79,10 @@
       padding: 0;
       display: flex;
       align-items: center;
-      height: 100%;
+      height: 1.4rem;
+      width: 1.9rem;
       transition: color 0.2s;
+      z-index: 2;
     }
     .input-group .toggle-password:active,
     .input-group .toggle-password:focus {
@@ -154,7 +157,7 @@
 
     <div class="input-group">
       <input type="password" id="password" placeholder="Senha" autocomplete="current-password">
-      <button class="toggle-password" id="togglePasswordBtn" type="button" aria-label="Mostrar ou ocultar senha">
+      <button class="toggle-password" id="togglePasswordBtn" type="button" aria-label="Mostrar ou ocultar senha" tabindex="-1">
         <span id="eyeIcon">
           <!-- SVG Olho fechado padrão -->
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="16" viewBox="0 0 24 18" fill="none">
