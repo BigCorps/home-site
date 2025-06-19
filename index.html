@@ -53,7 +53,7 @@
     }
     .input-group input {
       width: 100%;
-      padding: 0.7rem 2.2rem 0.7rem 0.8rem; /* padding-right maior */
+      padding: 0.7rem 2.2rem 0.7rem 0.8rem;
       border: 1px solid #ccc;
       border-radius: 10px;
       font-size: 1rem;
@@ -113,6 +113,32 @@
     button:hover {
       background: #ff784f;
     }
+    .center-btn {
+      display: flex;
+      justify-content: center;
+      margin-top: 16px;
+      margin-bottom: 0;
+    }
+    .baixar-app-btn {
+      display: inline-block;
+      background: #ff5c2a;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      padding: 7px 18px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      margin: 0 auto;
+      text-decoration: none;
+      vertical-align: middle;
+      transition: background 0.2s;
+      box-shadow: 0 1px 6px rgba(255,92,42,0.07);
+    }
+    .baixar-app-btn:hover {
+      background: #ff784f;
+      color: #fff;
+      text-decoration: none;
+    }
     .footer {
       text-align: center;
       margin-top: 0.8rem;
@@ -129,7 +155,6 @@
         max-width: 110px;
       }
     }
-    /* Remove olho nativo do Chrome/Edge */
     input[type="password"]::-webkit-credentials-auto-fill-button {
       display: none !important;
       visibility: hidden !important;
@@ -171,25 +196,10 @@
 
     <button onclick="login()">Entrar</button>
 
-  </button>
-  <a href="IApos.apk" download style="
-    display: inline-block;
-    background: #ff5c2a;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    padding: 7px 18px;
-    font-size: 0.95rem;
-    font-weight: 500;
-    margin-top: 12px;
-    margin-left: 8px;
-    text-decoration: none;
-    vertical-align: center;
-    transition: background 0.2s;
-  ">
-    Baixe o App
-  </a>
-</form>
+    <div class="center-btn">
+      <a href="IApos.apk" download class="baixar-app-btn">Baixe o App</a>
+    </div>
+
     <div class="footer">Acesso criptografado de 2 fatores</div>
   </div>
 
