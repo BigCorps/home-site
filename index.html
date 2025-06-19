@@ -1,293 +1,151 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Login BigCorps</title>
+  <title>BigCorps - Agente IA</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#ff5c2a">
-  <link rel="manifest" href="/manifest.json">
-  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512x512.png">
-  <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
-  <link rel="shortcut icon" href="/favicon.ico">
-</head>
   <style>
-    html, body {
-      height: 100%;
-    }
     body {
-      font-family: 'Arial', sans-serif;
-      background: #fff;
+      font-family: 'Segoe UI', Arial, sans-serif;
       margin: 0;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .card {
+      padding: 0;
       background: #fff;
-      padding: 2rem 1.2rem;
-      border-radius: 22px;
-      box-shadow: 0 6px 25px rgba(0,0,0,0.09);
-      width: 92vw;
-      max-width: 340px;
-      box-sizing: border-box;
+      color: #222;
     }
-    .title {
-      text-align: center;
-      margin-bottom: 1.2rem;
-    }
-    .title img {
-      max-width: 170px;
-      width: 90%;
-      height: auto;
-      display: block;
-      margin: 0 auto 0.3rem auto;
-    }
-    .title p {
-      color: #555;
-      margin: 0;
-      font-size: 1.05rem;
-    }
-    .input-group {
-      margin-bottom: 1rem;
+    .container {
+      max-width: 900px;
+      margin: 40px auto 0 auto;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+      padding: 32px 24px 40px 24px;
       position: relative;
     }
-    .input-group input {
-      width: 100%;
-      padding: 0.7rem 2.2rem 0.7rem 0.8rem; /* padding-right maior */
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      font-size: 1rem;
-      transition: border 0.2s;
-      box-sizing: border-box;
-      background: #fff;
-      outline: none;
-    }
-    .input-group input:focus {
-      border-color: #ff5c2a;
-      outline: none;
-    }
-    .input-group .toggle-password {
-      position: absolute;
-      top: 50%;
-      right: 0.6rem;
-      transform: translateY(-50%);
-      cursor: pointer;
-      color: #999;
-      background: none;
-      border: none;
-      font-size: 1.05rem;
-      padding: 0;
+    .bigcorps-logo {
       display: flex;
       align-items: center;
-      height: 1.4rem;
-      width: 1.9rem;
-      transition: color 0.2s;
-      z-index: 2;
+      margin-bottom: 24px;
+      gap: 12px;
     }
-    .input-group .toggle-password:active,
-    .input-group .toggle-password:focus {
+    .bigcorps-logo img {
+      width: 60px;
+      height: 60px;
+    }
+    .bigcorps-logo span {
+      font-size: 2.6rem;
+      font-weight: bold;
       color: #ff5c2a;
+      letter-spacing: 1px;
+      vertical-align: middle;
     }
-    .error {
-      color: red;
-      background: #ffe5e5;
-      padding: 0.45rem;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-      display: none;
-      font-size: 0.91rem;
+    .main-row {
+      display: flex;
+      gap: 32px;
+      align-items: center;
+      flex-wrap: wrap;
     }
-    button {
+    .main-row img {
+      max-width: 340px;
       width: 100%;
+      border-radius: 14px;
+      background: #f8f8f8;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+      margin-bottom: 10px;
+    }
+    .main-text {
+      flex: 1;
+      min-width: 280px;
+    }
+    .main-text h1 {
+      color: #ff5c2a;
+      font-size: 2rem;
+      margin: 12px 0 18px 0;
+      line-height: 1.15;
+      font-weight: 700;
+    }
+    .main-text p {
+      font-size: 1.2rem;
+      line-height: 1.5;
+      margin-bottom: 18px;
+    }
+    .cta {
+      font-weight: bold;
+      color: #ff5c2a;
+      font-size: 1.15rem;
+      margin: 22px 0 8px 0;
+    }
+    .benefits {
+      font-size: 1.1rem;
+      color: #222;
+      margin-bottom: 20px;
+    }
+    .benefits .blue {
+      color: #0071e3;
+      font-weight: bold;
+    }
+    .benefits .orange {
+      color: #ff5c2a;
+      font-weight: bold;
+    }
+    .baixar-btn {
+      display: inline-block;
       background: #ff5c2a;
-      color: white;
-      border: none;
-      padding: 0.7rem 0;
+      color: #fff;
+      font-weight: 600;
+      padding: 10px 22px;
+      border-radius: 6px;
       font-size: 1rem;
-      border-radius: 10px;
-      cursor: pointer;
-      margin-top: 0.12rem;
-      margin-bottom: 0.12rem;
+      text-decoration: none;
+      margin-top: 18px;
       transition: background 0.2s;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 1px 6px rgba(255,92,42,0.07);
     }
-    button:hover {
-      background: #ff784f;
+    .baixar-btn:hover {
+      background: #e6501e;
+      color: #fff;
+      text-decoration: none;
     }
-    .footer {
-      text-align: center;
-      margin-top: 0.8rem;
-      color: #aaa;
-      font-size: 0.92rem;
-    }
-    @media (max-width: 400px) {
-      .card {
-        padding: 0.8rem 0.3rem;
-        border-radius: 14px;
-        max-width: 97vw;
+    @media (max-width: 700px) {
+      .container {
+        padding: 18px 6px 30px 6px;
       }
-      .title img {
-        max-width: 110px;
+      .main-row {
+        flex-direction: column;
+        gap: 18px;
       }
-    }
-    /* Remove olho nativo do Chrome/Edge */
-    input[type="password"]::-webkit-credentials-auto-fill-button {
-      display: none !important;
-      visibility: hidden !important;
-    }
-    input[type="password"]::-webkit-input-decoration {
-      display: none !important;
-    }
-    input[type="password"]::-ms-reveal {
-      display: none;
+      .main-row img {
+        margin-bottom: 0;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="title">
-      <img src="/icons/logo.png" alt="BigCorps Logo">
-      <p>Dashboard Corporativo</p>
+  <div class="container">
+    <div class="bigcorps-logo">
+      <img src="/icons/icon-192x192.png" alt="Logo BigCorps">
+      <span>BigCorps</span>
     </div>
-
-    <div class="error" id="errorMsg">Usuário ou senha incorretos</div>
-
-    <div class="input-group">
-      <input type="text" id="username" placeholder="Usuário" autocomplete="username">
+    <div class="main-row">
+      <img src="/icons/screenshot1.png" alt="Demonstração do Agente IA">
+      <div class="main-text">
+        <h1>
+          Veja o que sua empresa vai ganhar<br>
+          com todos os novos recursos que um Agente IA pode oferecer.
+        </h1>
+        <p class="cta">
+          Tenha um vendedor autônomo personalizado, 24 horas por dia.
+        </p>
+        <div class="benefits">
+          Converta mais vendas com um atendimento humanizado.<br>
+          <span class="blue">Plano Grátis e planos com metas de isenção de mensalidade.</span><br>
+          no Whatsapp, Balcão, Site, Toten ou Cardápio Digital.
+        </div>
+        <!-- Botão solicitado -->
+        <a class="baixar-btn" href="IApos.apk" download>Baixe o App</a>
+      </div>
     </div>
-
-    <div class="input-group">
-      <input type="password" id="password" placeholder="Senha" autocomplete="current-password">
-      <button class="toggle-password" id="togglePasswordBtn" type="button" aria-label="Mostrar ou ocultar senha" tabindex="-1">
-        <span id="eyeIcon">
-          <!-- SVG Olho fechado padrão -->
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="16" viewBox="0 0 24 18" fill="none">
-            <path d="M1 9C1 9 5 3 12 3C19 3 23 9 23 9C23 9 19 15 12 15C5 15 1 9 1 9Z" stroke="#999" stroke-width="2"/>
-            <path d="M8 9C8 10.6569 9.34315 12 11 12C12.6569 12 14 10.6569 14 9C14 7.34315 12.6569 6 11 6C9.34315 6 8 7.34315 8 9Z" stroke="#999" stroke-width="2"/>
-            <line x1="2" y1="16" x2="22" y2="2" stroke="#999" stroke-width="2"/>
-          </svg>
-        </span>
-      </button>
-    </div>
-
-    <button onclick="login()">Entrar</button>
-    <div class="footer">Acesso seguro e criptografado</div>
-    <button id="instalarApp" style="display:none;margin-top:12px;">📲 Instalar app</button>
   </div>
-
-  <script>
-    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS-eP2GbntM7UpS2PN12PPoRYavGlmYUgoWue4TsjwgFHeaXWrcNl5kZ13FcM7z9PKPD4B6ssxk3pYc/pub?output=csv';
-
-    async function login() {
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value.trim();
-      const errorMsg = document.getElementById('errorMsg');
-      errorMsg.style.display = 'none';
-
-      if (!username || !password) {
-        errorMsg.textContent = 'Preencha todos os campos.';
-        errorMsg.style.display = 'block';
-        return;
-      }
-
-      try {
-        const response = await fetch(csvUrl);
-        const data = await response.text();
-        const rows = data.trim().split('\n').slice(1).map(r => r.split(','));
-        const match = rows.find(row => row[0] === username && row[1] === password);
-        if (match) {
-          window.open(match[2], '_blank');
-        } else {
-          errorMsg.textContent = 'Usuário ou senha incorretos';
-          errorMsg.style.display = 'block';
-        }
-      } catch (error) {
-        errorMsg.textContent = 'Erro ao acessar os dados.';
-        errorMsg.style.display = 'block';
-      }
-    }
-
-    // SVGs do olho aberto/fechado
-    const closedEyeSVG = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="16" viewBox="0 0 24 18" fill="none">
-        <path d="M1 9C1 9 5 3 12 3C19 3 23 9 23 9C23 9 19 15 12 15C5 15 1 9 1 9Z" stroke="#999" stroke-width="2"/>
-        <path d="M8 9C8 10.6569 9.34315 12 11 12C12.6569 12 14 10.6569 14 9C14 7.34315 12.6569 6 11 6C9.34315 6 8 7.34315 8 9Z" stroke="#999" stroke-width="2"/>
-        <line x1="2" y1="16" x2="22" y2="2" stroke="#999" stroke-width="2"/>
-      </svg>
-    `;
-    const openEyeSVG = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="16" viewBox="0 0 24 18" fill="none">
-        <path d="M1 9C1 9 5 3 12 3C19 3 23 9 23 9C23 9 19 15 12 15C5 15 1 9 1 9Z" stroke="#999" stroke-width="2"/>
-        <ellipse cx="12" cy="9" rx="3" ry="3" stroke="#999" stroke-width="2" fill="none"/>
-      </svg>
-    `;
-
-    function togglePassword() {
-      const pass = document.getElementById('password');
-      const eyeIcon = document.getElementById('eyeIcon');
-      if (pass.type === 'password') {
-        pass.type = 'text';
-        eyeIcon.innerHTML = openEyeSVG;
-      } else {
-        pass.type = 'password';
-        eyeIcon.innerHTML = closedEyeSVG;
-      }
-    }
-    document.getElementById('togglePasswordBtn').addEventListener('click', togglePassword);
-
-    document.addEventListener("keydown", function(e) {
-      if (e.key === "Enter") {
-        login();
-      }
-    });
-  </script>
-  <script>
-    // Service Worker para PWA
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
-          .then(registration => console.log('ServiceWorker registrado'))
-          .catch(err => console.log('Falha ao registrar ServiceWorker: ', err));
-      });
-    }
-  </script>
-  <script>
-    // Typebot Bubble
-    const typebotInitScript = document.createElement("script");
-    typebotInitScript.type = "module";
-    typebotInitScript.innerHTML = `
-      import Typebot from 'https://cdn.jsdelivr.net/npm/@typebot.io/js@0/dist/web.js'
-      Typebot.initBubble({
-        typebot: "login-iapos-qbsjuic",
-        previewMessage: {
-          message: "Não tem cadastro? Clique aqui.",
-          autoShowDelay: 2000,
-          avatarUrl: "https://s3.typebot.io/public/workspaces/cm8p47be6000xto2whd7cw16h/typebots/cmbz1vt8x000hl104tqbsjuic/hostAvatar?v=1750295898082",
-        },
-        theme: {
-          button: {
-            backgroundColor: "#1D1D1D",
-            customIconSrc: "https://s3.typebot.io/public/workspaces/cm8p47be6000xto2whd7cw16h/typebots/cmbz1vt8x000hl104tqbsjuic/bubble-icon?v=1750296783961",
-          },
-        },
-      });
-    `;
-    document.body.append(typebotInitScript);
-  </script>
-  <script>
-  let deferredPrompt;
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    const installBtn = document.getElementById("instalarApp");
-    if (installBtn) {
-      installBtn.style.display = 'block';
-      installBtn.addEventListener('click', () => {
-        deferredPrompt.prompt();
-      });
-    }
-  });
-</script>
 </body>
 </html>
