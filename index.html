@@ -1,307 +1,248 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Login BigCorps</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#ff5c2a">
-  <link rel="manifest" href="/manifest.json">
-  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png">
-  <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
-  <link rel="shortcut icon" href="/favicon.ico">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>BigCorps - IA para sua empresa</title>
+  <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700&display=swap" rel="stylesheet">
+  <link rel="icon" href="https://lh3.googleusercontent.com/MreLrj_lTZZCQsz3X7QxUarrhfRkbhYN4qkR4R98j-UY2C2myTmJG9Ynp3zg9SQRmL2sWbPjnphXeDqOleJqSwOoop5IqvTVQP_IYwKrKkwiSbfJOswmxEx27T7GWHx-vhCNQLlnCUe0mgpDINWOjKa8-NK-D-csj0fW">
   <style>
-    html, body {
-      height: 100%;
-    }
     body {
-      font-family: 'Arial', sans-serif;
-      background: #fff;
+      font-family: 'Lato', Arial, sans-serif;
       margin: 0;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .card {
       background: #fff;
-      padding: 2rem 1.2rem;
-      border-radius: 22px;
-      box-shadow: 0 6px 25px rgba(0,0,0,0.09);
-      width: 92vw;
-      max-width: 340px;
-      box-sizing: border-box;
+      color: #222;
     }
-    .title {
+    header {
+      background: #ff7800 url('https://ssl.gstatic.com/atari/images/simple-header-blended-small.png') repeat-x top;
+      color: #fff;
+      padding: 40px 0 10px 0;
       text-align: center;
-      margin-bottom: 1.2rem;
     }
-    .title img {
-      max-width: 170px;
-      width: 90%;
+    header img {
+      max-width: 150px;
+      margin-bottom: 10px;
+    }
+    nav {
+      background: #222;
+      color: #fff;
+      padding: 10px 0;
+      text-align: center;
+    }
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+      margin: 0 15px;
+      transition: color 0.2s;
+    }
+    nav a:hover {
+      color: #ff7800;
+    }
+    section {
+      padding: 40px 16px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    h1, h2, h3 {
+      font-family: 'Lato', Arial, sans-serif;
+      color: #f36e21;
+      font-weight: 700;
+      margin-top: 0;
+    }
+    h1 {
+      font-size: 2.2em;
+    }
+    .subtitle {
+      color: #0080ff;
+      font-weight: 700;
+      font-size: 1.7em;
+    }
+    .center {
+      text-align: center;
+    }
+    .img-responsive {
+      max-width: 100%;
       height: auto;
       display: block;
-      margin: 0 auto 0.3rem auto;
+      margin: 24px auto;
+      border-radius: 12px;
     }
-    .title p {
-      color: #555;
-      margin: 0;
-      font-size: 1.05rem;
+    ul {
+      margin-left: 28px;
     }
-    .input-group {
-      margin-bottom: 1rem;
-      position: relative;
+    li {
+      margin-bottom: 10px;
+      font-size: 1.1em;
     }
-    .input-group input {
-      width: 100%;
-      padding: 0.7rem 2.2rem 0.7rem 0.8rem;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      font-size: 1rem;
-      transition: border 0.2s;
-      box-sizing: border-box;
-      background: #fff;
-      outline: none;
+    .whatsapp {
+      display:inline-block;
+      background: #25d366;
+      color: #fff;
+      font-weight:bold;
+      padding: 12px 24px;
+      border-radius: 24px;
+      text-decoration:none;
+      margin: 24px auto 0 auto;
+      font-size: 1.1em;
+      box-shadow: 2px 2px 8px #0002;
     }
-    .input-group input:focus {
-      border-color: #ff5c2a;
-      outline: none;
-    }
-    .input-group .toggle-password {
-      position: absolute;
-      top: 50%;
-      right: 0.6rem;
-      transform: translateY(-50%);
-      cursor: pointer;
-      color: #999;
-      background: none;
-      border: none;
-      font-size: 1.05rem;
-      padding: 0;
-      display: flex;
-      align-items: center;
-      height: 1.4rem;
-      width: 1.9rem;
-      transition: color 0.2s;
-      z-index: 2;
-    }
-    .input-group .toggle-password:active,
-    .input-group .toggle-password:focus {
-      color: #ff5c2a;
-    }
-    .error {
-      color: red;
-      background: #ffe5e5;
-      padding: 0.45rem;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-      display: none;
-      font-size: 0.91rem;
-    }
-    button {
-      width: 100%;
-      background: #ff5c2a;
-      color: white;
-      border: none;
-      padding: 0.7rem 0;
-      font-size: 1rem;
-      border-radius: 10px;
-      cursor: pointer;
-      margin-top: 0.12rem;
-      margin-bottom: 0.12rem;
-      transition: background 0.2s;
-    }
-    button:hover {
-      background: #ff784f;
-    }
+    .whatsapp:hover { background:#1ebe57; }
     .footer {
       text-align: center;
-      margin-top: 0.8rem;
-      color: #aaa;
-      font-size: 0.92rem;
-    }
-    /* Botão fixo no canto inferior esquerdo */
-    .baixar-app-link {
-      position: fixed;
-      left: 18px;
-      bottom: 18px;
-      z-index: 20;
       color: #888;
-      font-size: 0.97rem;
-      background: none;
-      border: none;
-      border-radius: 0;
-      padding: 0;
-      margin: 0;
-      text-decoration: underline;
-      box-shadow: none;
-      cursor: pointer;
-      font-family: inherit;
-      transition: color 0.2s;
+      font-size: 1em;
+      padding: 24px 0 12px 0;
+      background: #f8f8f8;
+      margin-top: 48px;
     }
-    .baixar-app-link:hover {
-      color: #222;
-      text-decoration: underline;
-    }
-    @media (max-width: 400px) {
-      .card {
-        padding: 0.8rem 0.3rem;
-        border-radius: 14px;
-        max-width: 97vw;
+    @media (max-width: 600px) {
+      header {
+        padding: 20px 0 5px 0;
       }
-      .title img {
-        max-width: 110px;
+      section {
+        padding: 16px 4px;
       }
-      .baixar-app-link {
-        left: 10px;
-        bottom: 10px;
-        font-size: 0.92rem;
-      }
-    }
-    input[type="password"]::-webkit-credentials-auto-fill-button {
-      display: none !important;
-      visibility: hidden !important;
-    }
-    input[type="password"]::-webkit-input-decoration {
-      display: none !important;
-    }
-    input[type="password"]::-ms-reveal {
-      display: none;
+      h1 { font-size: 1.3em; }
+      .subtitle { font-size: 1.1em; }
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="title">
-      <img src="/icons/logo.png" alt="BigCorps Logo">
-      <p>Dashboard Corporativo</p>
+  <header>
+    <img src="https://lh5.googleusercontent.com/Ayr7FLOnzC6ZxTcEolU1tu15IAELnjDj3FSF3rlrIX1XmluIlod8AwjPYmuAwRg7-LaycC5q8jnZDj8rxJ-tkZNVArJHjuhePmUdkk5CNMzuuc9qxQYzFTiKM_fkTICgSC4gvu1tQ0s=w16383" alt="Logo Bigcorps">
+    <h1>Veja o que sua empresa vai ganhar com todos<br>os novos recursos que <span style="color:#0080ff">um Agente IA</span> pode oferecer.</h1>
+  </header>
+  <nav>
+    <a href="#">Home</a>
+    <a href="#">Leads</a>
+    <a href="#">Soluções</a>
+    <a href="#">Totens</a>
+    <a href="#">IA</a>
+    <a href="#">ChatGPT</a>
+    <a href="#">Sobre</a>
+    <a href="#">Login</a>
+  </nav>
+
+  <section>
+    <div class="center subtitle">Tenha um vendedor autônomo personalizado, 24 horas por dia.</div>
+    <div class="center" style="color:#f36e21; font-weight:700; font-size:1.3em;">
+      Converta mais vendas com um atendimento humanizado<br>
+      <span style="color:#f36e21">no Whatsapp, Balcão, Site, Toten ou Cardápio Digital</span>
     </div>
+    <img src="https://lh4.googleusercontent.com/ILnqeZtZf6fHbqj3BuhgVALHqCBjoa0cA1LMOpi7qMSAZOmb_gXWg3UE2ajVtBpY1mVcCxKPIGY11FuWsl1d9luRfYQ8M0ALDBIoCOg7Eh3cgm0Lg9V118D4Dh-CE3GzCXZRS75C7RZTK84ejWAm-R1l7OXRSu7G0VDB_tBDeXCJQI2ZDRTY0A=w1280" class="img-responsive" alt="">
+    <img src="https://lh3.googleusercontent.com/DUKXMDb-NVwKpMMLFyz33QafKhDQiJLMMiVakLT3muIOoFPgaluyfldnBF_wTznZAg8F7qWHa5P8f9Y8dozr_vc_apPkflBJ8WBLclM54-2xF2L99oaT7NX8FUduenmyzjGKvXQctoRUamI9AVWZyCVFo3m4UO-3LsLW-l3882fDa41iiavooQ=w1280" class="img-responsive" alt="">
+  </section>
 
-    <div class="error" id="errorMsg">Usuário ou senha incorretos</div>
+  <section class="center">
+    <h2>CONHEÇA NOSSO DISPLAY <span style="color:#0080ff;">IApos</span> COM <span style="color:#0080ff;">NFC</span> E QRCODE</h2>
+    <p style="color:#f36e21; font-weight:700;">
+      AO APROXIMAR O CELULAR OU BIPAR O QRCODE, SEU CLIENTE É DIRECIONADO PARA SUA PAGINA PERSONALIZADA, AGILIZANDO SEU ATENDIMENTO E SUAS VENDAS.
+    </p>
+    <img src="https://lh4.googleusercontent.com/mr8iQksCvKD42LDo3S9UhOWdEmar8S_7tNADNeNvV5YacfuS8RCTWpu4UG18Re8U3SPUaoQeNXGRlXjlbHFrWFevMmw_u_iHz9bHUyF72faAoGMlaRVyP4IEhbsjj9PmkuZAZh5ggpGHCjUs-ko6HbHXj_Lz0J7Ii7_6TNqrPyM1mf6dMhS2jQ=w1280" class="img-responsive" alt="">
+    <p class="center" style="color:#f36e21; font-weight:700;">[SUA EMPRESA]</p>
+    <img src="https://lh3.googleusercontent.com/iSRZ0z29Io8krNiFOTVHigDPhDbHhxx-1BchpUujIDF4McqiRYZ59UzA7z9yc1egfGnkMTG046NCZDyEGOxLjKCeKmEpypMQO7GoFEoiaUso-U3QJBMEykY4dUQZYblTeSUZXJ7RviVWp6w4o9zj4WpHpNresyvYwf-UKSDuNt8pdu9yU_F3lw=w1280" class="img-responsive" alt="">
+    <p class="center" style="color:#f36e21; font-weight:700;">iapos.com.br/leonato</p>
+    <a href="/totens"><img src="https://lh3.googleusercontent.com/7DbIvw24g9aerIQka9ilVFoRCDB7QWZSdocSQeR2eN5bBG23HDxvobW1lsofl1VVnv0xFwBs9qxLAq5gOCCSHXdK7IjQBTlTq0trEK0Xs7OJb8dXnpWG0ntqPr1QVobaJcLwqRXCj8gSePUlCP6Tsyb4MC50s8xwmreTrf_PIMsisQniFos=w1280" class="img-responsive" alt="Totem"></a>
+  </section>
 
-    <div class="input-group">
-      <input type="text" id="username" placeholder="Usuário" autocomplete="username">
+  <section>
+    <h2 class="center" style="color:#0080ff;">Automatização de pagamentos em lista</h2>
+    <div class="center" style="color:#f36e21;">não perca mais tempo fazendo pagamentos individuais.</div>
+    <img src="https://lh4.googleusercontent.com/W2oO4aMPmoMaUaUOCqvZAKD-atfjAU_iQc8jBQcQ7qDPa_VBmH7kItsgLzrex1hu7hlkS6wuvrS3csoCew20TCR0v-nFU8KLR7JMTa3vPl9XLmxUz5Zy4VJLhH3SSFRf6K1q7gCt-33Zh2tvlivDBLFWhvk_QXfJfWXbr7RNsMMrtmV8lJffkQ=w1280" class="img-responsive" alt="">
+    <div class="center" style="color:#f36e21;margin-top:24px;">
+      Crie sua lista de boletos e Pix e faça os pagamentos de acordo com sua necessidade. Autorização de 2 fatores e com comprovante individual. Todos os pagamentos com sua autorização e de forma unificada e automatizada.
     </div>
+    <img src="https://lh5.googleusercontent.com/BINvAL9oo_Ps9zQtHBhdTgOr5caOVjD-1sD-sUVrCQCPditNWR0r0TwymwcGZcpbRaZ8KEvGxT4o9bqdA-9vkseyP96BiIG5AeUmm-f_1gbxyagCURE_iIAwECkaCuJ8jfm4nV_9zZF67r2z4qqsW6BA1Wioog1wFHW2GIkFOfxQyDMK0UmdyA=w1280" class="img-responsive" alt="">
+  </section>
 
-    <div class="input-group">
-      <input type="password" id="password" placeholder="Senha" autocomplete="current-password">
-      <button class="toggle-password" id="togglePasswordBtn" type="button" aria-label="Mostrar ou ocultar senha" tabindex="-1">
-        <span id="eyeIcon">
-          <!-- SVG Olho fechado padrão -->
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="16" viewBox="0 0 24 18" fill="none">
-            <path d="M1 9C1 9 5 3 12 3C19 3 23 9 23 9C23 9 19 15 12 15C5 15 1 9 1 9Z" stroke="#999" stroke-width="2"/>
-            <path d="M8 9C8 10.6569 9.34315 12 11 12C12.6569 12 14 10.6569 14 9C14 7.34315 12.6569 6 11 6C9.34315 6 8 7.34315 8 9Z" stroke="#999" stroke-width="2"/>
-            <line x1="2" y1="16" x2="22" y2="2" stroke="#999" stroke-width="2"/>
-          </svg>
-        </span>
-      </button>
+  <section>
+    <h2 class="center" style="color:#0080ff;">Emissão de Notas Fiscais automatica com IA</h2>
+    <div class="center" style="color:#f36e21;">
+      Não perca mais tempo emitindo notas com vários cálculos e informações.<br>
+      Treinamos a IA com sua tabela de preços e taxas correspondentes e já calcula de acordo com os Impostos, CFOPs, IOFs de acordo com cada estado.<br>
+      Só precisa informar o CNPJ do comprador, Descrição ou Código do produto, E-mail e Meio de Pagamento.<br>
+      Já envia o PIX ou Gera o boleto automaticamente para pagamento imediato ou com prazo.
     </div>
+    <img src="https://lh3.googleusercontent.com/nPaK9jUkxBwyjOzCfbjtR1m5XpHms0b8vcp23N_GINhcXHmiJQ3OFZDwvp8PxjDX6T9F5w5etpl7RlqHqARrA4EF4jEMrsfxwgBJGmRLBS12hXkGOO0Q5J7MO0tQjxTUCD7nMF35YLnRDj9_osn6gqxu9IXOiZcqlH78B3eWbOLBwUHVcWHWHg=w1280" class="img-responsive" alt="">
+  </section>
 
-    <button onclick="login()">Entrar</button>
+  <section>
+    <h2 class="center" style="color:#0080ff;">IA treinada de acordo com as necessidades da sua empresa</h2>
+    <p>Ela pode responder de uma forma mais séria, mais descontraída, direta ou detalhada. Faz o cálculo total do pedido, e já fornece os detalhes para a conclusão e entrega.</p>
+    <img src="https://lh6.googleusercontent.com/VMmLaY60KmqUNIkwdqwwd6FbY4D4n0XMiZGtLoGs6MlTzYc_QXj1QCC14pZnZKGFyMjyT_wpERpvGT5sIH6-fKly7t8MpS4XWWBNkP3tet5621F8Gztj9TjbtM4jAp3fbNEWWdz2j3O0_VDXzkPEDfZiBKi15qPCjVlr5f4NiwbPSv8tn7ZG6w=w1280" class="img-responsive" alt="">
+  </section>
 
-    <div class="footer">Acesso criptografado de 2 fatores</div>
-  </div>
+  <section>
+    <h2 class="center" style="color:#0080ff;">Possibilidade de cadastro e consulta de agendamentos</h2>
+    <p style="text-align:right;">
+      Caso sua empresa precise realizar cadastros, agendamentos, emissão de nota, entre outros. Nosso sistema já consegue fazer isso automáticamente e você recebe diretamente no Google Sheets e no Dashboard de vendas.
+    </p>
+    <img src="https://lh6.googleusercontent.com/qVYD9uRCC6hW14HR3FWTNLPLrMdht0BSmNZgTVuQnTJCW1Cd_2Fg00lAZoeDdhhUCujTkSuM2PzOIEO33dPdKS2d1OYwPwerorkog72TWGYg-srU6Fzfbc7welp2zqn-GgQvb-1RBgv9t5ZPl-siq-q5PZ-8Y8yqSXrc8y60JJWhbdY85gImtQ=w1280" class="img-responsive" alt="">
+  </section>
 
-  <!-- Link fixo no canto inferior esquerdo -->
-  <a href="IApos.apk" download class="baixar-app-link">Baixe o App</a>
+  <section>
+    <h2 class="center" style="color:#0080ff;">Recebimento de pagamentos via Pix (com ou sem Nota Fiscal)</h2>
+    <p>
+      Seu cliente já tem o pedido gerado com o valor final e faz a confirmação do pagamento. Você recebe o pix na hora, ambos recebem a confirmação no whatsapp e email, na hora e seu único trabalho é preparar o pedido e entrega.
+    </p>
+    <img src="https://lh3.googleusercontent.com/dmx683jniPMlPP9V5cDlS1_luoPnI7n2QYycSnth6FQcLL35KG__b15OIpdVnVYtUN3syAlFJiFHdLiHyzQ9FIkNaD67w66FjzJ36xscdhyFZr37FJx1Zm3BeaeMgCkS5DW-evZUZmKq6NMXVeq_BsppKkBeFRSZLzYsIu1SwV1eFewWHEKSXw=w1280" class="img-responsive" alt="">
+  </section>
 
-  <script>
-    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS-eP2GbntM7UpS2PN12PPoRYavGlmYUgoWue4TsjwgFHeaXWrcNl5kZ13FcM7z9PKPD4B6ssxk3pYc/pub?output=csv';
+  <section>
+    <h2 class="center" style="color:#f36e21;">VANTAGENS PARA SUA EMPRESA:</h2>
+    <ul>
+      <li>Receba a cada transação</li>
+      <li>Melhore a experiência de compra</li>
+      <li>Venda mais</li>
+      <li>Aprimore o fluxo de caixa</li>
+      <li>Integre facilmente</li>
+      <li>Ofereça segurança reforçada</li>
+      <li>Integre a outras APIs</li>
+      <li>Recebe na hora via PIX</li>
+      <li>Disponível para vendas no cartão e boleto</li>
+    </ul>
+    <h2 class="center" style="color:#0080ff;">VANTAGENS PARA OS CLIENTES:</h2>
+    <ul>
+      <li>Agilidade na experiência</li>
+      <li>Aumento da taxa de fidelização de clientes.</li>
+      <li>Praticidade, Segurança e Versatilidade</li>
+      <li>Dispensa o uso de qualquer tipo de cartão</li>
+      <li>Não é preciso informar dados bancários.</li>
+      <li>O Pix é cada vez mais e mais utilizado</li>
+      <li>Menos taxas e com menos custos</li>
+      <li>Tanto para compras presenciais ou virtuais</li>
+      <li>Pagamento por aproximação via NFC</li>
+    </ul>
+  </section>
 
-    async function login() {
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value.trim();
-      const errorMsg = document.getElementById('errorMsg');
-      errorMsg.style.display = 'none';
+  <section class="center">
+    <h2 style="color:#0080ff;">Entre em contato pelo Whatsapp<br>ou tire suas dúvidas diretamente abaixo.</h2>
+    <div style="color:#0080ff;">Se quiser testar nosso sistema, solicite o acesso por 3 dias.</div>
+    <a href="https://wa.me/message/A7OKUTVFXSAAI1" target="_blank" class="whatsapp">WHATSAPP</a>
+    <br><br>
+    <!-- Bubble do Typebot -->
+    <div id="typebot-bubble"></div>
+  </section>
 
-      if (!username || !password) {
-        errorMsg.textContent = 'Preencha todos os campos.';
-        errorMsg.style.display = 'block';
-        return;
-      }
+  <footer class="footer">
+    BigCorps Tecnologia | CNPJ: 14.282.244/0001-19
+  </footer>
 
-      try {
-        const response = await fetch(csvUrl);
-        const data = await response.text();
-        const rows = data.trim().split('\n').slice(1).map(r => r.split(','));
-        const match = rows.find(row => row[0] === username && row[1] === password);
-        if (match) {
-          window.open(match[2], '_blank');
-        } else {
-          errorMsg.textContent = 'Usuário ou senha incorretos';
-          errorMsg.style.display = 'block';
-        }
-      } catch (error) {
-        errorMsg.textContent = 'Erro ao acessar os dados.';
-        errorMsg.style.display = 'block';
-      }
-    }
-
-    // SVGs do olho aberto/fechado
-    const closedEyeSVG = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="16" viewBox="0 0 24 18" fill="none">
-        <path d="M1 9C1 9 5 3 12 3C19 3 23 9 23 9C23 9 19 15 12 15C5 15 1 9 1 9Z" stroke="#999" stroke-width="2"/>
-        <path d="M8 9C8 10.6569 9.34315 12 11 12C12.6569 12 14 10.6569 14 9C14 7.34315 12.6569 6 11 6C9.34315 6 8 7.34315 8 9Z" stroke="#999" stroke-width="2"/>
-        <line x1="2" y1="16" x2="22" y2="2" stroke="#999" stroke-width="2"/>
-      </svg>
-    `;
-    const openEyeSVG = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="16" viewBox="0 0 24 18" fill="none">
-        <path d="M1 9C1 9 5 3 12 3C19 3 23 9 23 9C23 9 19 15 12 15C5 15 1 9 1 9Z" stroke="#999" stroke-width="2"/>
-        <ellipse cx="12" cy="9" rx="3" ry="3" stroke="#999" stroke-width="2" fill="none"/>
-      </svg>
-    `;
-
-    function togglePassword() {
-      const pass = document.getElementById('password');
-      const eyeIcon = document.getElementById('eyeIcon');
-      if (pass.type === 'password') {
-        pass.type = 'text';
-        eyeIcon.innerHTML = openEyeSVG;
-      } else {
-        pass.type = 'password';
-        eyeIcon.innerHTML = closedEyeSVG;
-      }
-    }
-    document.getElementById('togglePasswordBtn').addEventListener('click', togglePassword);
-
-    document.addEventListener("keydown", function(e) {
-      if (e.key === "Enter") {
-        login();
+  <!-- TYPEBOT BUBBLE -->
+  <script type="module">
+    import Typebot from 'https://cdn.jsdelivr.net/npm/@typebot.io/js@0/dist/web.js';
+    Typebot.initBubble({
+      typebot: "cadastro-plano-100-2kwkg4x",
+      previewMessage: {
+        message: "Tire suas dúvidas comigo!",
+        autoShowDelay: 3000,
+        avatarUrl: "https://s3.typebot.io/public/workspaces/cm8p47be6000xto2whd7cw16h/typebots/cmabj3uwt000d12i0a2kwkg4x/hostAvatar?v=1749222207866"
+      },
+      theme: {
+        button: { backgroundColor: "#DE8031" }
       }
     });
-  </script>
-  <script>
-    // Service Worker para PWA
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
-          .then(registration => console.log('ServiceWorker registrado'))
-          .catch(err => console.log('Falha ao registrar ServiceWorker: ', err));
-      });
-    }
-  </script>
-  <script>
-    // Typebot Bubble
-    const typebotInitScript = document.createElement("script");
-    typebotInitScript.type = "module";
-    typebotInitScript.innerHTML = `
-      import Typebot from 'https://cdn.jsdelivr.net/npm/@typebot.io/js@0/dist/web.js'
-      Typebot.initBubble({
-        typebot: "login-iapos-qbsjuic",
-        previewMessage: {
-          message: "Faça seu cadastro ou altere sua senha aqui.",
-          autoShowDelay: 2000,
-          avatarUrl: "https://s3.typebot.io/public/workspaces/cm8p47be6000xto2whd7cw16h/typebots/cmbz1vt8x000hl104tqbsjuic/hostAvatar?v=1750295898082",
-        },
-        theme: {
-          button: {
-            backgroundColor: "#1D1D1D",
-            customIconSrc: "https://s3.typebot.io/public/workspaces/cm8p47be6000xto2whd7cw16h/typebots/cmbz1vt8x000hl104tqbsjuic/bubble-icon?v=1750296783961",
-          },
-        },
-      });
-    `;
-    document.body.append(typebotInitScript);
   </script>
 </body>
 </html>
