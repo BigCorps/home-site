@@ -35,7 +35,7 @@
     </div>
 
     <!-- Typebot Integration -->
-  const typebotInitScript = document.createElement("script");
+const typebotInitScript = document.createElement("script");
 typebotInitScript.type = "module";
 typebotInitScript.innerHTML = `import Typebot from 'https://cdn.jsdelivr.net/npm/@typebot.io/js@0/dist/web.js'
 
@@ -53,6 +53,7 @@ Typebot.initBubble({
       customIconSrc:
         "https://s3.typebot.io/public/workspaces/cm8p47be6000xto2whd7cw16h/typebots/cmabj3uwt000d12i0a2kwkg4x/bubble-icon?v=1750700587304",
     },
+    previewMessage: { textColor: "#666460" },
   },
 });
 `;
