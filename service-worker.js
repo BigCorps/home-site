@@ -1,11 +1,11 @@
 const CACHE_NAME = 'bigcorps-v2';
 const urlsToCache = [
-  '/',
   '/index.html',
   '/manifest.json',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png',
   '/favicon.ico'
+  // Adicione outros arquivos que quer garantir offline aqui
 ];
 
 // Instalação: cache inicial
@@ -30,16 +30,38 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch: cache first, network fallback
+// Fetch: cache first, network fallback, fallback para offline (se quiser)
 self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return; // Não cacheie POST etc
+
   event.respondWith(
     caches.match(event.request)
-      .then(cached => cached || fetch(event.request))
+      .then(cachedResponse => {
+        if (cachedResponse) return cachedResponse;
+        return fetch(event.request)
+          .then(networkResponse => {
+            // Opcional: salva no cache para futuros acessos
+            // Só faz cache se for um request bem-sucedido (status 200)
+            if (
+              networkResponse &&
+              networkResponse.status === 200 &&
+              networkResponse.type === 'basic'
+            ) {
+              const responseClone = networkResponse.clone();
+              caches.open(CACHE_NAME)
+                .then(cache => cache.put(event.request, responseClone));
+            }
+            return networkResponse;
+          })
+          .catch(() => {
+            // Se quiser, devolve uma página offline customizada
+            // return caches.match('/offline.html');
+          });
+      })
   );
 });
 
-// Offline fallback simples (opcional, pode criar um offline.html)
-// Background Sync - envia ações pendentes quando online
+// Background Sync - envia ações pendentes quando voltar online
 self.addEventListener('sync', event => {
   if (event.tag === 'sync-actions') {
     event.waitUntil(syncActions());
@@ -47,14 +69,13 @@ self.addEventListener('sync', event => {
 });
 
 async function syncActions() {
-  // Exemplo: reenviar ações guardadas no IndexedDB/localStorage
-  // Aqui você implementa sua lógica de sincronização offline
-  // Exemplo ilustrativo:
+  // Sua lógica aqui para reenviar ações guardadas offline
+  // Exemplo:
   // const actions = await getPendingActions();
   // for (const action of actions) { await fetch(...); }
 }
 
-// Periodic Sync - atualizar dados em background
+// Periodic Sync - atualizar dados em background (cheque suporte!)
 self.addEventListener('periodicsync', event => {
   if (event.tag === 'update-data') {
     event.waitUntil(updateData());
