@@ -1,248 +1,475 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>BigCorps - IA para sua empresa</title>
-  <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700&display=swap" rel="stylesheet">
-  <link rel="icon" href="https://lh3.googleusercontent.com/MreLrj_lTZZCQsz3X7QxUarrhfRkbhYN4qkR4R98j-UY2C2myTmJG9Ynp3zg9SQRmL2sWbPjnphXeDqOleJqSwOoop5IqvTVQP_IYwKrKkwiSbfJOswmxEx27T7GWHx-vhCNQLlnCUe0mgpDINWOjKa8-NK-D-csj0fW">
-  <style>
-    body {
-      font-family: 'Lato', Arial, sans-serif;
-      margin: 0;
-      background: #fff;
-      color: #222;
-    }
-    header {
-      background: #ff7800 url('https://ssl.gstatic.com/atari/images/simple-header-blended-small.png') repeat-x top;
-      color: #fff;
-      padding: 40px 0 10px 0;
-      text-align: center;
-    }
-    header img {
-      max-width: 150px;
-      margin-bottom: 10px;
-    }
-    nav {
-      background: #222;
-      color: #fff;
-      padding: 10px 0;
-      text-align: center;
-    }
-    nav a {
-      color: #fff;
-      text-decoration: none;
-      font-weight: bold;
-      margin: 0 15px;
-      transition: color 0.2s;
-    }
-    nav a:hover {
-      color: #ff7800;
-    }
-    section {
-      padding: 40px 16px;
-      max-width: 1000px;
-      margin: 0 auto;
-    }
-    h1, h2, h3 {
-      font-family: 'Lato', Arial, sans-serif;
-      color: #f36e21;
-      font-weight: 700;
-      margin-top: 0;
-    }
-    h1 {
-      font-size: 2.2em;
-    }
-    .subtitle {
-      color: #0080ff;
-      font-weight: 700;
-      font-size: 1.7em;
-    }
-    .center {
-      text-align: center;
-    }
-    .img-responsive {
-      max-width: 100%;
-      height: auto;
-      display: block;
-      margin: 24px auto;
-      border-radius: 12px;
-    }
-    ul {
-      margin-left: 28px;
-    }
-    li {
-      margin-bottom: 10px;
-      font-size: 1.1em;
-    }
-    .whatsapp {
-      display:inline-block;
-      background: #25d366;
-      color: #fff;
-      font-weight:bold;
-      padding: 12px 24px;
-      border-radius: 24px;
-      text-decoration:none;
-      margin: 24px auto 0 auto;
-      font-size: 1.1em;
-      box-shadow: 2px 2px 8px #0002;
-    }
-    .whatsapp:hover { background:#1ebe57; }
-    .footer {
-      text-align: center;
-      color: #888;
-      font-size: 1em;
-      padding: 24px 0 12px 0;
-      background: #f8f8f8;
-      margin-top: 48px;
-    }
-    @media (max-width: 600px) {
-      header {
-        padding: 20px 0 5px 0;
-      }
-      section {
-        padding: 16px 4px;
-      }
-      h1 { font-size: 1.3em; }
-      .subtitle { font-size: 1.1em; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BigCorps - Agente IA para sua empresa</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #fff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        .header {
+            background: #fff;
+            padding: 15px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            height: 40px;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background: #f0f0f0;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            color: white;
+            padding: 80px 0;
+            text-align: center;
+        }
+
+        .hero-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .hero-text h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .hero-text p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .hero-image {
+            text-align: center;
+        }
+
+        .hero-image img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 20px;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 60px 0;
+        }
+
+        .section {
+            margin-bottom: 60px;
+        }
+
+        .section h2 {
+            font-size: 2.5rem;
+            color: #2c5aa0;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .section h3 {
+            font-size: 1.8rem;
+            color: #ff6b35;
+            margin-bottom: 20px;
+        }
+
+        .section p {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .highlight-box h3 {
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .feature-card {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-card h4 {
+            color: #2c5aa0;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .advantages {
+            background: #f8f9fa;
+            padding: 50px 0;
+            margin: 60px 0;
+        }
+
+        .advantages-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+        }
+
+        .advantage-list {
+            list-style: none;
+        }
+
+        .advantage-list li {
+            background: white;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+            padding-left: 50px;
+        }
+
+        .advantage-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 15px;
+            color: #28a745;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .cta-section {
+            background: linear-gradient(135deg, #2c5aa0, #1e3a8a);
+            color: white;
+            padding: 60px 0;
+            text-align: center;
+            margin: 60px 0;
+        }
+
+        .cta-section h2 {
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .cta-section p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+
+        .footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 30px 0;
+        }
+
+        .partners {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .partners h3 {
+            color: #2c5aa0;
+            margin-bottom: 30px;
+        }
+
+        .partners-logos {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            opacity: 0.7;
+        }
+
+        .partners-logos img {
+            height: 40px;
+            filter: grayscale(100%);
+            transition: filter 0.3s ease;
+        }
+
+        .partners-logos img:hover {
+            filter: grayscale(0%);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .hero-text h1 {
+                font-size: 2rem;
+            }
+
+            .nav-links {
+                gap: 15px;
+            }
+
+            .advantages-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section h2 {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-text h1 {
+                font-size: 1.5rem;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .container {
+                padding: 0 15px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <img src="https://lh5.googleusercontent.com/Ayr7FLOnzC6ZxTcEolU1tu15IAELnjDj3FSF3rlrIX1XmluIlod8AwjPYmuAwRg7-LaycC5q8jnZDj8rxJ-tkZNVArJHjuhePmUdkk5CNMzuuc9qxQYzFTiKM_fkTICgSC4gvu1tQ0s=w16383" alt="Logo Bigcorps">
-    <h1>Veja o que sua empresa vai ganhar com todos<br>os novos recursos que <span style="color:#0080ff">um Agente IA</span> pode oferecer.</h1>
-  </header>
-  <nav>
-    <a href="#">Home</a>
-    <a href="#">Leads</a>
-    <a href="#">Soluções</a>
-    <a href="#">Totens</a>
-    <a href="#">IA</a>
-    <a href="#">ChatGPT</a>
-    <a href="#">Sobre</a>
-    <a href="#">Login</a>
-  </nav>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav container">
+            <img src="https://lh6.googleusercontent.com/4CR5W_hpfS6SdnH-D4FB4u3CqZ6jRiL0HelOwhjOaKgQEm1TbWi3kayAPE1oI1wATV_PQxuS1MFihpQgdr_pEOrLcL1t0aNryExjZ9VTKpatLfuCUvMcAHTIkRWQ5XFzOcpBRQoX43E=w16383" alt="BigCorps Logo" class="logo">
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#leads">Leads</a></li>
+                <li><a href="#solucoes">Soluções</a></li>
+                <li><a href="#totens">Totens</a></li>
+                <li><a href="#ia">IA</a></li>
+                <li><a href="#chatgpt">ChatGPT</a></li>
+                <li><a href="#sobre">Sobre</a></li>
+                <li><a href="#login">Login</a></li>
+            </ul>
+        </nav>
+    </header>
 
-  <section>
-    <div class="center subtitle">Tenha um vendedor autônomo personalizado, 24 horas por dia.</div>
-    <div class="center" style="color:#f36e21; font-weight:700; font-size:1.3em;">
-      Converta mais vendas com um atendimento humanizado<br>
-      <span style="color:#f36e21">no Whatsapp, Balcão, Site, Toten ou Cardápio Digital</span>
-    </div>
-    <img src="https://lh4.googleusercontent.com/ILnqeZtZf6fHbqj3BuhgVALHqCBjoa0cA1LMOpi7qMSAZOmb_gXWg3UE2ajVtBpY1mVcCxKPIGY11FuWsl1d9luRfYQ8M0ALDBIoCOg7Eh3cgm0Lg9V118D4Dh-CE3GzCXZRS75C7RZTK84ejWAm-R1l7OXRSu7G0VDB_tBDeXCJQI2ZDRTY0A=w1280" class="img-responsive" alt="">
-    <img src="https://lh3.googleusercontent.com/DUKXMDb-NVwKpMMLFyz33QafKhDQiJLMMiVakLT3muIOoFPgaluyfldnBF_wTznZAg8F7qWHa5P8f9Y8dozr_vc_apPkflBJ8WBLclM54-2xF2L99oaT7NX8FUduenmyzjGKvXQctoRUamI9AVWZyCVFo3m4UO-3LsLW-l3882fDa41iiavooQ=w1280" class="img-responsive" alt="">
-  </section>
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1>Veja o que sua empresa vai ganhar com todos os novos recursos que um Agente IA pode oferecer.</h1>
+                </div>
+                <div class="hero-image">
+                    <img src="https://lh4.googleusercontent.com/kKmso7SMIc25iFYGLIpDT1tW0Q3F5Ny7ZNPbeLEA0Y06pitlllNGjXtKe4oCdsfpfzx-oziHLFBkBYu8e0YaL1k5C5pU7v-woFI--APPBtTDNsjelEjEQv6MleZQRAYSHDePFOuT2SEJ2Ci6tuqcWlSmRLSfHP4287A02JRwQ2JuMk2JXFazpg=w1280" alt="Agente IA BigCorps">
+                </div>
+            </div>
+        </div>
+    </section>
 
-  <section class="center">
-    <h2>CONHEÇA NOSSO DISPLAY <span style="color:#0080ff;">IApos</span> COM <span style="color:#0080ff;">NFC</span> E QRCODE</h2>
-    <p style="color:#f36e21; font-weight:700;">
-      AO APROXIMAR O CELULAR OU BIPAR O QRCODE, SEU CLIENTE É DIRECIONADO PARA SUA PAGINA PERSONALIZADA, AGILIZANDO SEU ATENDIMENTO E SUAS VENDAS.
-    </p>
-    <img src="https://lh4.googleusercontent.com/mr8iQksCvKD42LDo3S9UhOWdEmar8S_7tNADNeNvV5YacfuS8RCTWpu4UG18Re8U3SPUaoQeNXGRlXjlbHFrWFevMmw_u_iHz9bHUyF72faAoGMlaRVyP4IEhbsjj9PmkuZAZh5ggpGHCjUs-ko6HbHXj_Lz0J7Ii7_6TNqrPyM1mf6dMhS2jQ=w1280" class="img-responsive" alt="">
-    <p class="center" style="color:#f36e21; font-weight:700;">[SUA EMPRESA]</p>
-    <img src="https://lh3.googleusercontent.com/iSRZ0z29Io8krNiFOTVHigDPhDbHhxx-1BchpUujIDF4McqiRYZ59UzA7z9yc1egfGnkMTG046NCZDyEGOxLjKCeKmEpypMQO7GoFEoiaUso-U3QJBMEykY4dUQZYblTeSUZXJ7RviVWp6w4o9zj4WpHpNresyvYwf-UKSDuNt8pdu9yU_F3lw=w1280" class="img-responsive" alt="">
-    <p class="center" style="color:#f36e21; font-weight:700;">iapos.com.br/leonato</p>
-    <a href="/totens"><img src="https://lh3.googleusercontent.com/7DbIvw24g9aerIQka9ilVFoRCDB7QWZSdocSQeR2eN5bBG23HDxvobW1lsofl1VVnv0xFwBs9qxLAq5gOCCSHXdK7IjQBTlTq0trEK0Xs7OJb8dXnpWG0ntqPr1QVobaJcLwqRXCj8gSePUlCP6Tsyb4MC50s8xwmreTrf_PIMsisQniFos=w1280" class="img-responsive" alt="Totem"></a>
-  </section>
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Vendedor Autônomo -->
+            <section class="section">
+                <h2>Tenha um vendedor autônomo personalizado, 24 horas por dia.</h2>
+                <p>Converta mais vendas com um atendimento humanizado no Whatsapp, Balcão, Site, Toten ou Cardápio Digital</p>
+                
+                <div class="highlight-box">
+                    <h3>CONHEÇA NOSSO DISPLAY IApos COM NFC E QRCODE</h3>
+                    <p>AO APROXIMAR O CELULAR OU BIPAR O QRCODE, SEU CLIENTE É DIRECIONADO PARA SUA PÁGINA PERSONALIZADA, AGILIZANDO SEU ATENDIMENTO E SUAS VENDAS.</p>
+                    <p><strong>[SUA EMPRESA]</strong></p>
+                    <p>iapos.com.br/leonato</p>
+                </div>
+            </section>
 
-  <section>
-    <h2 class="center" style="color:#0080ff;">Automatização de pagamentos em lista</h2>
-    <div class="center" style="color:#f36e21;">não perca mais tempo fazendo pagamentos individuais.</div>
-    <img src="https://lh4.googleusercontent.com/W2oO4aMPmoMaUaUOCqvZAKD-atfjAU_iQc8jBQcQ7qDPa_VBmH7kItsgLzrex1hu7hlkS6wuvrS3csoCew20TCR0v-nFU8KLR7JMTa3vPl9XLmxUz5Zy4VJLhH3SSFRf6K1q7gCt-33Zh2tvlivDBLFWhvk_QXfJfWXbr7RNsMMrtmV8lJffkQ=w1280" class="img-responsive" alt="">
-    <div class="center" style="color:#f36e21;margin-top:24px;">
-      Crie sua lista de boletos e Pix e faça os pagamentos de acordo com sua necessidade. Autorização de 2 fatores e com comprovante individual. Todos os pagamentos com sua autorização e de forma unificada e automatizada.
-    </div>
-    <img src="https://lh5.googleusercontent.com/BINvAL9oo_Ps9zQtHBhdTgOr5caOVjD-1sD-sUVrCQCPditNWR0r0TwymwcGZcpbRaZ8KEvGxT4o9bqdA-9vkseyP96BiIG5AeUmm-f_1gbxyagCURE_iIAwECkaCuJ8jfm4nV_9zZF67r2z4qqsW6BA1Wioog1wFHW2GIkFOfxQyDMK0UmdyA=w1280" class="img-responsive" alt="">
-  </section>
+            <!-- Features Grid -->
+            <section class="section">
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <h4>Automatização de pagamentos em lista</h4>
+                        <p>Não perca mais tempo fazendo pagamentos individuais. Crie sua lista de boletos e Pix e faça os pagamentos de acordo com sua necessidade. Autorização de 2 fatores e com comprovante individual. Todos os pagamentos com sua autorização e de forma unificada e automatizada.</p>
+                    </div>
 
-  <section>
-    <h2 class="center" style="color:#0080ff;">Emissão de Notas Fiscais automatica com IA</h2>
-    <div class="center" style="color:#f36e21;">
-      Não perca mais tempo emitindo notas com vários cálculos e informações.<br>
-      Treinamos a IA com sua tabela de preços e taxas correspondentes e já calcula de acordo com os Impostos, CFOPs, IOFs de acordo com cada estado.<br>
-      Só precisa informar o CNPJ do comprador, Descrição ou Código do produto, E-mail e Meio de Pagamento.<br>
-      Já envia o PIX ou Gera o boleto automaticamente para pagamento imediato ou com prazo.
-    </div>
-    <img src="https://lh3.googleusercontent.com/nPaK9jUkxBwyjOzCfbjtR1m5XpHms0b8vcp23N_GINhcXHmiJQ3OFZDwvp8PxjDX6T9F5w5etpl7RlqHqARrA4EF4jEMrsfxwgBJGmRLBS12hXkGOO0Q5J7MO0tQjxTUCD7nMF35YLnRDj9_osn6gqxu9IXOiZcqlH78B3eWbOLBwUHVcWHWHg=w1280" class="img-responsive" alt="">
-  </section>
+                    <div class="feature-card">
+                        <h4>Emissão de Notas Fiscais automática com IA</h4>
+                        <p>Não perca mais tempo emitindo notas com vários cálculos e informações. Treinamos a IA com sua tabela de preços e taxas correspondentes e já calcula de acordo com os Impostos, CFOPs, IOFs de acordo com cada estado do emissor e do comprador. Só precisa informar o CNPJ do comprador, Descrição ou Código do produto, E-mail e Meio de Pagamento. Já envia o PIX ou Gera o boleto automaticamente para pagamento imediato ou com prazo.</p>
+                    </div>
 
-  <section>
-    <h2 class="center" style="color:#0080ff;">IA treinada de acordo com as necessidades da sua empresa</h2>
-    <p>Ela pode responder de uma forma mais séria, mais descontraída, direta ou detalhada. Faz o cálculo total do pedido, e já fornece os detalhes para a conclusão e entrega.</p>
-    <img src="https://lh6.googleusercontent.com/VMmLaY60KmqUNIkwdqwwd6FbY4D4n0XMiZGtLoGs6MlTzYc_QXj1QCC14pZnZKGFyMjyT_wpERpvGT5sIH6-fKly7t8MpS4XWWBNkP3tet5621F8Gztj9TjbtM4jAp3fbNEWWdz2j3O0_VDXzkPEDfZiBKi15qPCjVlr5f4NiwbPSv8tn7ZG6w=w1280" class="img-responsive" alt="">
-  </section>
+                    <div class="feature-card">
+                        <h4>IA treinada de acordo com as necessidades da sua empresa</h4>
+                        <p>Ela pode responder de uma forma mais séria, mais descontraída, direta ou detalhada. Faz o cálculo total do pedido, e já fornece os detalhes para a conclusão e entrega.</p>
+                    </div>
 
-  <section>
-    <h2 class="center" style="color:#0080ff;">Possibilidade de cadastro e consulta de agendamentos</h2>
-    <p style="text-align:right;">
-      Caso sua empresa precise realizar cadastros, agendamentos, emissão de nota, entre outros. Nosso sistema já consegue fazer isso automáticamente e você recebe diretamente no Google Sheets e no Dashboard de vendas.
-    </p>
-    <img src="https://lh6.googleusercontent.com/qVYD9uRCC6hW14HR3FWTNLPLrMdht0BSmNZgTVuQnTJCW1Cd_2Fg00lAZoeDdhhUCujTkSuM2PzOIEO33dPdKS2d1OYwPwerorkog72TWGYg-srU6Fzfbc7welp2zqn-GgQvb-1RBgv9t5ZPl-siq-q5PZ-8Y8yqSXrc8y60JJWhbdY85gImtQ=w1280" class="img-responsive" alt="">
-  </section>
+                    <div class="feature-card">
+                        <h4>Possibilidade de cadastro e consulta de agendamentos</h4>
+                        <p>Caso sua empresa precise realizar cadastros, agendamentos, emissão de nota, entre outros. Nosso sistema já consegue fazer isso automaticamente e você recebe diretamente no Google Sheets e no Dashboard de vendas.</p>
+                    </div>
 
-  <section>
-    <h2 class="center" style="color:#0080ff;">Recebimento de pagamentos via Pix (com ou sem Nota Fiscal)</h2>
-    <p>
-      Seu cliente já tem o pedido gerado com o valor final e faz a confirmação do pagamento. Você recebe o pix na hora, ambos recebem a confirmação no whatsapp e email, na hora e seu único trabalho é preparar o pedido e entrega.
-    </p>
-    <img src="https://lh3.googleusercontent.com/dmx683jniPMlPP9V5cDlS1_luoPnI7n2QYycSnth6FQcLL35KG__b15OIpdVnVYtUN3syAlFJiFHdLiHyzQ9FIkNaD67w66FjzJ36xscdhyFZr37FJx1Zm3BeaeMgCkS5DW-evZUZmKq6NMXVeq_BsppKkBeFRSZLzYsIu1SwV1eFewWHEKSXw=w1280" class="img-responsive" alt="">
-  </section>
+                    <div class="feature-card">
+                        <h4>Recebimento de pagamentos via Pix (com ou sem Nota Fiscal)</h4>
+                        <p>Seu cliente já tem o pedido gerado com o valor final e faz a confirmação do pagamento. Você recebe o pix na hora, ambos recebem a confirmação no whatsapp e email, na hora e seu único trabalho é preparar o pedido e entrega.</p>
+                    </div>
 
-  <section>
-    <h2 class="center" style="color:#f36e21;">VANTAGENS PARA SUA EMPRESA:</h2>
-    <ul>
-      <li>Receba a cada transação</li>
-      <li>Melhore a experiência de compra</li>
-      <li>Venda mais</li>
-      <li>Aprimore o fluxo de caixa</li>
-      <li>Integre facilmente</li>
-      <li>Ofereça segurança reforçada</li>
-      <li>Integre a outras APIs</li>
-      <li>Recebe na hora via PIX</li>
-      <li>Disponível para vendas no cartão e boleto</li>
-    </ul>
-    <h2 class="center" style="color:#0080ff;">VANTAGENS PARA OS CLIENTES:</h2>
-    <ul>
-      <li>Agilidade na experiência</li>
-      <li>Aumento da taxa de fidelização de clientes.</li>
-      <li>Praticidade, Segurança e Versatilidade</li>
-      <li>Dispensa o uso de qualquer tipo de cartão</li>
-      <li>Não é preciso informar dados bancários.</li>
-      <li>O Pix é cada vez mais e mais utilizado</li>
-      <li>Menos taxas e com menos custos</li>
-      <li>Tanto para compras presenciais ou virtuais</li>
-      <li>Pagamento por aproximação via NFC</li>
-    </ul>
-  </section>
+                    <div class="feature-card">
+                        <h4>Atendimento por digitação ou reconhecimento automático de áudio</h4>
+                        <p>O cliente pode consultar a tabela de preços ou cardápio e pedir diretamente digitando, ou por áudio, que o ChatGPT reconhece e já gera o pedido, de acordo com os detalhes que o cliente precisa. Tudo em tempo real, automatizado e com respostas naturais.</p>
+                    </div>
 
-  <section class="center">
-    <h2 style="color:#0080ff;">Entre em contato pelo Whatsapp<br>ou tire suas dúvidas diretamente abaixo.</h2>
-    <div style="color:#0080ff;">Se quiser testar nosso sistema, solicite o acesso por 3 dias.</div>
-    <a href="https://wa.me/message/A7OKUTVFXSAAI1" target="_blank" class="whatsapp">WHATSAPP</a>
-    <br><br>
-    <!-- Bubble do Typebot -->
-    <div id="typebot-bubble"></div>
-  </section>
+                    <div class="feature-card">
+                        <h4>Atendimento direto no Whatsapp, QRcodes, Sites, Totens ou Cardápios Digitais</h4>
+                        <p>Integramos todos os atendimentos de forma unificada via Whatsapp, QRcodes ou Site, além da nossa exclusividade: Um Toten ou Cardápio com atendimento por voz, atendimento por ChatGPT e pagamento NFC com cartão, direto no dispositivo.</p>
+                    </div>
+                </div>
+            </section>
 
-  <footer class="footer">
-    BigCorps Tecnologia | CNPJ: 14.282.244/0001-19
-  </footer>
+            <!-- Advantages Section -->
+            <section class="advantages">
+                <div class="container">
+                    <div class="advantages-grid">
+                        <div>
+                            <h3>VANTAGENS PARA SUA EMPRESA:</h3>
+                            <ul class="advantage-list">
+                                <li>Receba a cada transação</li>
+                                <li>Melhore a experiência de compra</li>
+                                <li>Venda mais</li>
+                                <li>Aprimore o fluxo de caixa</li>
+                                <li>Integre facilmente</li>
+                                <li>Ofereça segurança reforçada</li>
+                                <li>Integre a outras APIs</li>
+                                <li>Recebe na hora via PIX</li>
+                                <li>Disponível para Vendas no cartão e Boleto</li>
+                            </ul>
+                        </div>
 
-  <!-- TYPEBOT BUBBLE -->
-  <script type="module">
-    import Typebot from 'https://cdn.jsdelivr.net/npm/@typebot.io/js@0/dist/web.js';
-    Typebot.initBubble({
-      typebot: "cadastro-plano-100-2kwkg4x",
-      previewMessage: {
-        message: "Tire suas dúvidas comigo!",
-        autoShowDelay: 3000,
-        avatarUrl: "https://s3.typebot.io/public/workspaces/cm8p47be6000xto2whd7cw16h/typebots/cmabj3uwt000d12i0a2kwkg4x/hostAvatar?v=1749222207866"
-      },
-      theme: {
-        button: { backgroundColor: "#DE8031" }
-      }
-    });
-  </script>
+                        <div>
+                            <h3>VANTAGENS PARA OS CLIENTES:</h3>
+                            <ul class="advantage-list">
+                                <li>Agilidade na experiência</li>
+                                <li>Aumento da taxa de fidelização de clientes</li>
+                                <li>Praticidade, Segurança e Versatilidade</li>
+                                <li>Dispensa o uso de qualquer tipo de cartão</li>
+                                <li>Não é preciso informar dados bancários</li>
+                                <li>O Pix é cada vez mais utilizado</li>
+                                <li>Menos taxas e com menos custos</li>
+                                <li>Tanto para compras presenciais ou virtuais</li>
+                                <li>Pagamento por aproximação via NFC</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Partners Section -->
+            <section class="partners">
+                <h3>2.000+ Sites aumentaram seus resultados</h3>
+                <div class="partners-logos">
+                    <img src="https://lh3.googleusercontent.com/b_ysr1-ejSEMpMR7-7rQ29wdq2rpgvuj5bIjfWDK2S_OCMyjSPDKaJToBmVzz89ZKCgrQjBSI-bY9LRU_EhZLQrDerQF-9HNTCT9-RNn9rU173JkHu2DdLZGpOfo-Gfs0q5VJm3DiUCfT5-AGbnjI5BbP0vy-Vvwsqs6RsdG8wcqbllOfKLJ2g=w1280" alt="iFood">
+                    <img src="https://lh6.googleusercontent.com/2ewo2oct_UrSNmtmfAv53CJMGzDuPwPjVQjYKiuLYuHZwEPMFENJEFMWtXDz3LM6izXkb7sICImYesr69t-pRnrhS8oA7hX7PJPoNpOJbcRhrjxH5gxZ5w4xDCjY9WLez03r73YEoQI1JNZR8qStQrFwh1B8TTe7dR4vRLtMOByShWKA9-WXCg=w1280" alt="Isaac">
+                    <img src="https://lh6.googleusercontent.com/8p0c3QSSlM6wuuDQYzElvw9Yinr9meaTKMlDaral6_1AnJqct2bJpZYyvrIWi2dSWsT1goCXkVmBUEE62DWMOy_CKx_x8dCvS1yQ84n_L2oyGRZLdmB-hnLdUGUvAFefcMIvLNXpty9x4vPxk6eEu2bx4q6w4Cfq8wtXVcAacNE3OdJlTrqc_w=w1280" alt="Toro">
+                    <img src="https://lh3.googleusercontent.com/QAT-tQd_csFrQRXrKNqpuBOflTdYEKhaPqZfZ4WCEQUwJOxiimV4FMUS66Iz5YLryZvg3toCHDlTuNJ9hUqMGZO3YkIvi1kszKj_qQmDRz6hkGAc8s4VgdLsTGfsnhc8Uxz6ueHcBG2-lX8vRf7mj7dDMJyjrnvQdmeJk92LHsZIN-cGcqI=w1280" alt="Engie">
+                    <img src="https://lh4.googleusercontent.com/j9HZGbn1H8PvhuMM6KSRSI4pbxGyRuS_Nqmm6ovkSyCm3DhXoCZ0V7h3aQSqFN9N1hI0bnxorVA0o1J6CTWGiJEhiHq2zpaP9nS3vCu_RZ1Dl8shyvC9btOUHnUUqMIpSGM_S_TMbqe_YDCpEigURUfF6HeYWvbZAKi_8tl-tWKlVO_Fu6wdIA=w1280" alt="Neil Patel">
+                    <img src="https://lh3.googleusercontent.com/aPkPTUY8TquxNbT3vV4BipYZgSPrTo2-JRi7mapbqfSATR6x_enITbQVcIbppBwpoSvsBAWtGSci3StWEtzogA0FOE67pi_1TRqr8bM8tWXRR-xXCocluGjHZl2iTB10wsqKbeUlN-lzsvGsxEZXuKy8V0cB0sqQkic8rfW5_soLPRUz8vke1Q=w1280" alt="Feedz">
+                </div>
+            </section>
+
+            <!-- CTA Section -->
+            <section class="cta-section">
+                <div class="container">
+                    <h2>Entre em contato pelo Whatsapp ou tire suas dúvidas diretamente abaixo.</h2>
+                    <p>Se quiser testar nosso sistema, solicite o acesso por 3 dias.</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>BigCorps Tecnologia | CNPJ: 14.282.244/0001-19</p>
+        </div>
+    </footer>
+
+    <!-- Typebot Integration -->
+    <script type="module">
+        import Typebot from 'https://cdn.jsdelivr.net/npm/@typebot.io/js@0/dist/web.js'
+        
+        Typebot.initBubble({
+            typebot: "cadastro-plano-100-2kwkg4x",
+            previewMessage: {
+                message: "Tire suas dúvidas comigo!",
+                autoShowDelay: 3000,
+                avatarUrl: "https://s3.typebot.io/public/workspaces/cm8p47be6000xto2whd7cw16h/typebots/cmabj3uwt000d12i0a2kwkg4x/hostAvatar?v=1749222207866",
+            },
+            theme: {
+                button: { backgroundColor: "#DE8031" }
+            },
+        });
+    </script>
 </body>
 </html>
