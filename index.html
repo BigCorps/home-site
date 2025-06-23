@@ -3,29 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BigCorps - Agente IA</title>
+    <title>BigCorps</title>
     <style>
-        body {
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            height: 100%;
+            overflow: hidden; /* Remove barras de rolagem */
+        }
+        
+        body {
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh; /* Garante que o corpo ocupe a altura total da viewport */
             background-color: #ffffff;
+            font-family: Arial, sans-serif;
         }
+        
         .gif-container {
-            width: 100%;
-            max-width: 1200px; /* Define uma largura máxima para o GIF */
-            padding: 20px;
-            box-sizing: border-box;
-            text-align: center;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
         }
+        
         .gif-container img {
-            width: 100%;
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
             height: auto;
-            display: block; /* Remove espaço extra abaixo da imagem */
-            margin: 0 auto; /* Centraliza a imagem */
+            object-fit: contain; /* Mantém proporção da imagem */
+            display: block;
+        }
+        
+        /* Responsividade para telas menores */
+        @media (max-width: 768px) {
+            .gif-container {
+                padding: 5px;
+            }
         }
     </style>
 </head>
@@ -34,30 +55,26 @@
         <img src="ezgif-54ef371429795f.gif" alt="Agente IA BigCorps">
     </div>
 
-    <!-- Typebot Integration -->
-const typebotInitScript = document.createElement("script");
-typebotInitScript.type = "module";
-typebotInitScript.innerHTML = `import Typebot from 'https://cdn.jsdelivr.net/npm/@typebot.io/js@0/dist/web.js'
-
-Typebot.initBubble({
-  typebot: "cadastro-plano-100-2kwkg4x",
-  previewMessage: {
-    message: "Tire suas dúvidas aqui comigo!",
-    autoShowDelay: 1000,
-    avatarUrl:
-      "https://s3.typebot.io/public/workspaces/cm8p47be6000xto2whd7cw16h/typebots/cmabj3uwt000d12i0a2kwkg4x/hostAvatar?v=1749222207866",
-  },
-  theme: {
-    button: {
-      backgroundColor: "#1D1D1D",
-      customIconSrc:
-        "https://s3.typebot.io/public/workspaces/cm8p47be6000xto2whd7cw16h/typebots/cmabj3uwt000d12i0a2kwkg4x/bubble-icon?v=1750700587304",
-    },
-    previewMessage: { textColor: "#666460" },
-  },
-});
-`;
-document.body.append(typebotInitScript);
+    <script type="module">
+        import Typebot from 'https://cdn.jsdelivr.net/npm/@typebot.io/js@0/dist/web.js';
+        
+        Typebot.initBubble({
+            typebot: "cadastro-plano-100-2kwkg4x",
+            previewMessage: {
+                message: "Tire suas dúvidas aqui comigo!",
+                autoShowDelay: 1000,
+                avatarUrl: "https://s3.typebot.io/public/workspaces/cm8p47be6000xto2whd7cw16h/typebots/cmabj3uwt000d12i0a2kwkg4x/hostAvatar?v=1749222207866",
+            },
+            theme: {
+                button: {
+                    backgroundColor: "#1D1D1D",
+                    customIconSrc: "https://s3.typebot.io/public/workspaces/cm8p47be6000xto2whd7cw16h/typebots/cmabj3uwt000d12i0a2kwkg4x/bubble-icon?v=1750700587304",
+                },
+                previewMessage: { 
+                    textColor: "#666460" 
+                },
+            },
+        });
     </script>
 </body>
 </html>
