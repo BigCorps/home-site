@@ -288,7 +288,7 @@
         
         return {
           prices: prices,
-          products: filteredProducts, // Agora inclui todos os produtos filtrados
+          products: filteredProducts,
           hasStructuredData: prices.length > 0 || filteredProducts.length > 0
         };
       }
@@ -357,7 +357,7 @@ Você é um assistente IA especializado que representa uma empresa ${businessTyp
         }
         
         if (structuredData.products.length > 0) {
-          promptBase += `**Principais itens/produtos:**\n`;
+          promptBase += `Com base nas informações fornecidas, você tem acesso aos seguintes dados de produtos/itens:\n\n`;
           structuredData.products.forEach((product, index) => {
             promptBase += `${index + 1}. ${product}\n`;
           });
@@ -367,7 +367,7 @@ Você é um assistente IA especializado que representa uma empresa ${businessTyp
         if (structuredData.prices.length > 0) {
           promptBase += `**Informações de preços identificadas:**\n`;
           const uniquePrices = [...new Set(structuredData.prices)];
-          uniquePrices.forEach((price, index) => {
+          uniquePrices.forEach((price) => {
             promptBase += `• ${price}\n`;
           });
           promptBase += `\n`;
