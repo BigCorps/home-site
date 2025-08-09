@@ -146,7 +146,6 @@
               }
               fileText = text;
               fileProcessed = true;
-              console.log("PDF processado:", text.substring(0, 200));
             } catch (err) {
               console.error("Erro ao processar PDF:", err);
               alert("Erro ao processar o PDF. Tente novamente.");
@@ -162,7 +161,6 @@
         reader.onload = function (e) {
           fileText = e.target.result;
           fileProcessed = true;
-          console.log("Arquivo texto processado:", fileText.substring(0, 200));
         };
         reader.readAsText(file);
       } else if (file.type.startsWith("image/")) {
@@ -216,7 +214,7 @@
         });
       }
 
-      // Simula uma requisição à API
+      // Simula uma requisição à API (em um projeto real, isso seria substituído por uma chamada à API)
       setTimeout(() => {
         generateResponse(userInput);
       }, 2000);
@@ -254,10 +252,10 @@
       
       // Função para processar CSV de cardápio
       function processMenuCSV(csvContent) {
-        if (!csvContent) return { menuItems: {}, prices: [], hasStructuredData: false };
+        if (!csvContent) return null;
         
         const lines = csvContent.split('\n').filter(line => line.trim());
-        if (lines.length <= 1) return { menuItems: {}, prices: [], hasStructuredData: false };
+        if (lines.length <= 1) return null;
         
         const menuItems = {};
         const prices = new Set();
@@ -291,7 +289,7 @@
               
               // Evita duplicatas
               const exists = menuItems[categoria].some(item => 
-                item && item.name && item.name.toLowerCase() === itemName.toLowerCase()
+                item.name.toLowerCase() === itemName.toLowerCase()
               );
               
               if (!exists && itemName.length > 3) {
@@ -314,11 +312,11 @@
       
       // Função para extrair informações gerais
       function extractGeneralData(content) {
-        if (!content) return { prices: [], products: [], hasStructuredData: false };
+        if (!content) return null;
         
         const pricePatterns = [
           /R\$\s*\d+[,.]?\d*/g,
-          /\d+[,.]?\d*\s*reais?/gi
+          /\d+[,.]?\d*\s*reais?/g
         ];
         
         let prices = [];
@@ -328,32 +326,9 @@
         });
         
         const lines = content.split('\n').filter(line => line.trim());
-        const products = lines.filter(line => {
-          const cleanLine = line.trim();
-          return cleanLine.length > 5 && 
-                 !cleanLine.match(/^\d+$/) && // Remove linhas que são só números
-                 (cleanLine.includes('R$') || 
-                  cleanLine.match(/\w+.*\d+/) || // Linha com texto e números
-                  cleanLine.length > 20); // Linhas descritivas
-        });
-        
-        // Extrai produtos/itens sem preço também
-        const menuItems = lines.filter(line => {
-          const cleanLine = line.trim();
-          return cleanLine.length > 8 && 
-                 cleanLine.length < 100 &&
-                 !cleanLine.match(/^[\d\s,.-]+$/) && // Remove linhas só com números/símbolos
-                 !cleanLine.toLowerCase().includes('página') &&
-                 !cleanLine.toLowerCase().includes('total') &&
-                 cleanLine.split(' ').length > 1; // Deve ter pelo menos 2 palavras
-        });
-        
-        return {
-          prices: [...new Set(prices)], // Remove duplicatas
-          products: [...new Set([...products, ...menuItems])].slice(0, 20),
-          hasStructuredData: prices.length > 0 || products.length > 0 || menuItems.length > 0
-        };
-      }
+        const products = lines.filter(line => 
+          line.length > 10 && 
+          (line.includes('R
       
       const businessType = detectBusinessType(userInput || "", fileText || "");
       
@@ -366,8 +341,6 @@
       } else {
         structuredData = extractGeneralData(fileText);
       }
-      
-      console.log("Dados estruturados encontrados:", structuredData);
       
       // Monta o prompt inteligente baseado no tipo de negócio
       let promptBase = `# PROMPT PARA AGENTE IA - ASSISTENTE ESPECIALIZADO
@@ -426,11 +399,11 @@ Você é um assistente IA especializado que representa uma empresa ${businessTyp
         } else if (businessType === 'loja') {
           promptBase += `### CATÁLOGO DE PRODUTOS\n`;
         } else {
-          promptBase += `### INFORMAÇÕES DA EMPRESA\n`;
+          promptBase += `### SERVIÇOS OFERECIDOS\n`;
         }
         
         // Se for CSV de menu, organiza por categorias
-        if (isCSV && structuredData.menuItems && Object.keys(structuredData.menuItems).length > 0) {
+        if (isCSV && structuredData.menuItems) {
           Object.keys(structuredData.menuItems).forEach(categoria => {
             if (categoria && categoria !== 'undefined' && categoria !== '') {
               promptBase += `\n**${categoria.toUpperCase()}:**\n`;
@@ -454,12 +427,12 @@ Você é um assistente IA especializado que representa uma empresa ${businessTyp
           
         } else {
           // Processamento padrão para outros tipos de arquivo
-          promptBase += `Com base no arquivo fornecido:\n\n`;
+          promptBase += `Com base nas informações fornecidas:\n\n`;
           
           if (structuredData.products && structuredData.products.length > 0) {
-            promptBase += `**Principais itens/informações extraídas:**\n`;
+            promptBase += `**Principais itens:**\n`;
             structuredData.products.forEach((product, index) => {
-              promptBase += `${index + 1}. ${product.replace(/"/g, '').trim()}\n`;
+              promptBase += `${index + 1}. ${product}\n`;
             });
             promptBase += `\n`;
           }
@@ -467,7 +440,7 @@ Você é um assistente IA especializado que representa uma empresa ${businessTyp
           if (structuredData.prices && structuredData.prices.length > 0) {
             promptBase += `**Preços identificados:**\n`;
             const uniquePrices = [...new Set(structuredData.prices)];
-            uniquePrices.slice(0, 10).forEach(price => {
+            uniquePrices.slice(0, 8).forEach(price => {
               promptBase += `• ${price}\n`;
             });
             promptBase += `\n`;
@@ -475,13 +448,6 @@ Você é um assistente IA especializado que representa uma empresa ${businessTyp
         }
         
         promptBase += `*Importante: Use estas informações como base para atendimento. Sempre confirme disponibilidade e preços atuais quando necessário.*\n\n`;
-      } else if (fileText && fileText.length > 20) {
-        // Mesmo sem dados estruturados, inclui o conteúdo do arquivo
-        promptBase += `## INFORMAÇÕES DO ARQUIVO FORNECIDO\n`;
-        const sampleText = fileText.substring(0, 800).replace(/\s+/g, ' ').trim();
-        promptBase += `Com base no arquivo enviado, você tem acesso às seguintes informações:\n\n`;
-        promptBase += `"${sampleText}${fileText.length > 800 ? '...' : '"}"\n\n`;
-        promptBase += `*Use estas informações para personalizar o atendimento conforme o contexto do arquivo.*\n\n`;
       }
 
       // Orientações de atendimento
@@ -538,6 +504,148 @@ Você é um assistente IA especializado que representa uma empresa ${businessTyp
 
 ---
 *Prompt desenvolvido pela BigCorps para otimização de atendimento empresarial via IA.*`;
+
+      // Exibe o prompt completo
+      responseText.value = promptBase;
+      responseBox.style.display = "block";
+      document.getElementById("statusMessage").style.display = "none";
+    }
+  </script>
+</body>
+</html>) || line.match(/\d+[,.]?\d*/))
+        );
+        
+        return {
+          prices: prices,
+          products: products.slice(0, 15),
+          hasStructuredData: prices.length > 0 || products.length > 0
+        };
+      }
+      
+      const businessType = detectBusinessType(userInput || "", fileText || "");
+      const structuredData = extractStructuredData(fileText);
+      
+      // Monta o prompt inteligente baseado no tipo de negócio
+      let promptBase = `# PROMPT PARA AGENTE IA - ASSISTENTE ESPECIALIZADO
+
+## CONTEXTO DA EMPRESA
+Você é um assistente IA especializado que representa uma empresa ${businessType === 'restaurante' ? 'do setor alimentício' : businessType === 'loja' ? 'de varejo/comércio' : 'de serviços'}. `;
+
+      if (userInput) {
+        promptBase += `A empresa possui o seguinte site/contato: ${userInput}. `;
+      }
+
+      promptBase += `Seu objetivo é ajudar clientes de forma profissional, prestativa e eficiente.
+
+## INSTRUÇÕES GERAIS
+1. Sempre seja cordial, profissional e use linguagem adequada ao contexto brasileiro
+2. Responda de forma clara e objetiva
+3. Quando não souber uma informação específica, seja honesto e ofereça alternativas
+4. Mantenha o foco no atendimento ao cliente e vendas (quando apropriado)
+5. Use emojis de forma moderada para tornar a conversa mais amigável
+
+`;
+
+      // Seção específica baseada no tipo de negócio
+      if (businessType === 'restaurante') {
+        promptBase += `## INFORMAÇÕES ESPECÍFICAS - RESTAURANTE/ALIMENTAÇÃO
+- Você atende clientes interessados em cardápio, preços, delivery, reservas
+- Sempre destaque opções populares e promoções quando relevante
+- Seja prestativo com informações sobre ingredientes e restrições alimentares
+- Promova experiências positivas e fidelização
+
+`;
+      } else if (businessType === 'loja') {
+        promptBase += `## INFORMAÇÕES ESPECÍFICAS - VAREJO/COMÉRCIO
+- Você auxilia clientes com produtos, preços, disponibilidade e compras
+- Destaque benefícios dos produtos e diferenciais da empresa
+- Seja proativo em sugerir produtos complementares
+- Facilite o processo de compra e esclareça dúvidas
+
+`;
+      } else {
+        promptBase += `## INFORMAÇÕES ESPECÍFICAS - SERVIÇOS
+- Você orienta clientes sobre serviços oferecidos, agendamentos e processos
+- Seja claro sobre procedimentos, prazos e custos
+- Destaque a qualidade e confiabilidade dos serviços
+- Facilite o agendamento e contato
+
+`;
+      }
+
+      // Adiciona dados estruturados se existirem
+      if (structuredData && structuredData.hasStructuredData) {
+        promptBase += `## BASE DE CONHECIMENTO DA EMPRESA\n`;
+        
+        if (businessType === 'restaurante') {
+          promptBase += `### CARDÁPIO E PRODUTOS\n`;
+        } else if (businessType === 'loja') {
+          promptBase += `### CATÁLOGO DE PRODUTOS\n`;
+        } else {
+          promptBase += `### SERVIÇOS OFERECIDOS\n`;
+        }
+        
+        promptBase += `Com base nas informações fornecidas, você tem acesso aos seguintes dados:\n\n`;
+        
+        if (structuredData.products.length > 0) {
+          promptBase += `**Principais itens/produtos:**\n`;
+          structuredData.products.slice(0, 10).forEach((product, index) => {
+            promptBase += `${index + 1}. ${product}\n`;
+          });
+          promptBase += `\n`;
+        }
+        
+        if (structuredData.prices.length > 0) {
+          promptBase += `**Informações de preços identificadas:**\n`;
+          const uniquePrices = [...new Set(structuredData.prices)];
+          uniquePrices.slice(0, 5).forEach((price, index) => {
+            promptBase += `• ${price}\n`;
+          });
+          promptBase += `\n`;
+        }
+        
+        promptBase += `*Nota: Use estas informações como base, mas sempre confirme dados específicos quando necessário.*\n\n`;
+      }
+
+      // Orientações de atendimento
+      promptBase += `## FLUXO DE ATENDIMENTO SUGERIDO
+1. **Cumprimente** o cliente de forma calorosa
+2. **Identifique** a necessidade ou interesse do cliente
+3. **Apresente** informações relevantes de forma clara
+4. **Ofereça** opções adicionais quando apropriado
+5. **Facilite** o próximo passo (compra, agendamento, contato)
+6. **Finalize** com cordialidade e disponibilidade para ajudar
+
+## EXEMPLOS DE RESPOSTAS
+`;
+
+      if (businessType === 'restaurante') {
+        promptBase += `**Para pedidos de cardápio:**
+"Olá! 😊 Ficaria feliz em ajudar com nosso cardápio! Temos várias opções deliciosas. Você tem alguma preferência específica ou gostaria de conhecer nossos pratos mais populares?"
+
+**Para delivery:**
+"Sim, trabalhamos com delivery! 🛵 Para pedidos, você pode [informar processo]. Nosso tempo médio de entrega é de X minutos. Posso ajudar com algum pedido específico?"`;
+      } else if (businessType === 'loja') {
+        promptBase += `**Para consultas de produtos:**
+"Olá! 😊 Temos esse produto disponível sim! Ele custa R$ X e possui [características]. Gostaria de saber mais detalhes ou tem interesse em outros produtos similares?"
+
+**Para disponibilidade:**
+"Vou verificar a disponibilidade para você! 📦 Geralmente mantemos bom estoque, mas posso confirmar e garantir a reserva. Tem preferência por alguma especificação?"`;
+      }
+
+      promptBase += `
+
+## DIRETRIZES IMPORTANTES
+- ✅ Sempre mantenha tom profissional mas amigável
+- ✅ Seja proativo em oferecer ajuda adicional
+- ✅ Use as informações da base de conhecimento quando relevante
+- ✅ Encaminhe para contato humano quando necessário
+- ❌ Não invente informações que não possui
+- ❌ Não prometa o que não pode cumprir
+- ❌ Não seja invasivo ou insistente demais
+
+---
+*Este prompt foi gerado automaticamente pela BigCorps para otimizar o atendimento da sua empresa.*`;
 
       // Exibe o prompt completo
       responseText.value = promptBase;
