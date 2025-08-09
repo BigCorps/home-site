@@ -1,308 +1,312 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <title>Prompt Inteligente - InterPag BigCorps ChatGPT</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    body {
-      background-color: #ffffff;
-      font-family: 'Inter', sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      max-width: 800px;
-      margin: 60px auto;
-      background: white;
-      border-radius: 16px;
-      padding: 30px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.05);
-    }
-    .header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    .header img {
-      height: 30px;
-    }
-    h2 {
-      font-size: 24px;
-      color: #333;
-      margin: 0;
-    }
-    input[type="file"], input[type="text"] {
-      width: 100%;
-      padding: 12px;
-      margin: 15px 0;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      box-sizing: border-box;
-    }
-    button {
-      padding: 12px 20px;
-      background-color: #f36e21;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      margin-top: 10px;
-      transition: background-color 0.2s;
-    }
-    button:hover {
-      background-color: #d65d1a;
-    }
-    .chat-response {
-      background: #f9f9f9;
-      padding: 16px;
-      border-radius: 10px;
-      margin-top: 20px;
-      position: relative;
-    }
-    .copy-btn {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: #f36e21;
-      color: white;
-      border: none;
-      padding: 5px 10px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    .footer {
-      margin-top: 30px;
-      font-size: 14px;
-      color: #666;
-      text-align: center;
-    }
-    .footer img {
-      height: 20px;
-      vertical-align: middle;
-      margin: 0 4px;
-    }
-    #loadingSpinner {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 3px solid rgba(243,110,33,0.3);
-      border-radius: 50%;
-      border-top-color: #f36e21;
-      animation: spin 1s ease-in-out infinite;
-      margin-right: 10px;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-  </style>
+  <meta charset="UTF-8">
+  <title>Prompt Inteligente - InterPag BigCorps ChatGPT</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background-color: #ffffff;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 800px;
+      margin: 60px auto;
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .header img {
+      height: 30px;
+    }
+    h2 {
+      font-size: 24px;
+      color: #333;
+      margin: 0;
+    }
+    input[type="file"], input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      margin: 15px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 12px 20px;
+      background-color: #f36e21;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-top: 10px;
+      transition: background-color 0.2s;
+    }
+    button:hover {
+      background-color: #d65d1a;
+    }
+    .chat-response {
+      background: #f9f9f9;
+      padding: 16px;
+      border-radius: 10px;
+      margin-top: 20px;
+      position: relative;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #f36e21;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .footer {
+      margin-top: 30px;
+      font-size: 14px;
+      color: #666;
+      text-align: center;
+    }
+    .footer img {
+      height: 20px;
+      vertical-align: middle;
+      margin: 0 4px;
+    }
+    #loadingSpinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(243,110,33,0.3);
+      border-radius: 50%;
+      border-top-color: #f36e21;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 10px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg" alt="ChatGPT">
-      <h2>Criador de Prompt Automático</h2>
-    </div>
-    <p><strong>Arquivos aceitos:</strong> PDF, TXT, JPG, PNG e CSV</p>
-    <input type="file" id="fileInput" accept=".pdf,.txt,.csv,image/jpeg,image/png" />
-    <input type="text" id="userInput" placeholder="Insira seu site (ex: https://www.bigcorps.com.br/contato)" />
-    <button onclick="sendMessage()">Enviar</button>
-    <p id="statusMessage" style="display:none;"><span id="loadingSpinner"></span> Gerando resposta, por favor aguarde...</p>
-    <div id="response" class="chat-response" style="display:none;">
-      <button class="copy-btn" onclick="copyResponse()">Copiar</button>
-      <textarea id="responseText" style="width:100%; height:400px; border:none; background:transparent; resize:vertical;"></textarea>
-    </div>
-    <div class="footer">
-      Clique no botão Copiar e cole no Prompt do seu Agente.
-      Desenvolvido por <strong>BigCorps</strong> com ChatGPT <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg" alt="ChatGPT">.
-    </div>
-  </div>
+  <div class="container">
+    <div class="header">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg" alt="ChatGPT">
+      <h2>Criador de Prompt Automático</h2>
+    </div>
+    <p><strong>Arquivos aceitos:</strong> PDF, TXT, JPG, PNG e CSV</p>
+    <input type="file" id="fileInput" accept=".pdf,.txt,.csv,image/jpeg,image/png" />
+    <input type="text" id="userInput" placeholder="Insira seu site (ex: https://www.bigcorps.com.br/contato)" />
+    <button onclick="sendMessage()">Enviar</button>
+    <p id="statusMessage" style="display:none;"><span id="loadingSpinner"></span> Gerando resposta, por favor aguarde...</p>
+    <div id="response" class="chat-response" style="display:none;">
+      <button class="copy-btn" onclick="copyResponse()">Copiar</button>
+      <textarea id="responseText" style="width:100%; height:400px; border:none; background:transparent; resize:vertical;"></textarea>
+    </div>
+    <div class="footer">
+      Clique no botão Copiar e cole no Prompt do seu Agente.
+      Desenvolvido por <strong>BigCorps</strong> com ChatGPT <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg" alt="ChatGPT">.
+    </div>
+  </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
-  <script>
-    // Configure PDF.js worker
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
-    
-    let fileText = "";
-    let fileProcessed = false;
-    
-    async function handleFile(file) {
-      fileProcessed = false;
-      if (file.type === "application/pdf") {
-        try {
-          const reader = new FileReader();
-          reader.onload = async function () {
-            try {
-              const typedarray = new Uint8Array(this.result);
-              const pdf = await pdfjsLib.getDocument({data: typedarray}).promise;
-              let text = "";
-              for (let i = 1; i <= pdf.numPages; i++) {
-                const page = await pdf.getPage(i);
-                const content = await page.getTextContent();
-                text += content.items.map(item => item.str).join(" ") + "\n";
-              }
-              fileText = text;
-              fileProcessed = true;
-            } catch (err) {
-              console.error("Erro ao processar PDF:", err);
-              alert("Erro ao processar o PDF. Tente novamente.");
-            }
-          };
-          reader.readAsArrayBuffer(file);
-        } catch (err) {
-          console.error("Erro ao ler arquivo:", err);
-          alert("Erro ao ler o arquivo. Tente novamente.");
-        }
-      } else if (file.type.startsWith("text/") || file.name.endsWith(".csv")) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          fileText = e.target.result;
-          fileProcessed = true;
-        };
-        reader.readAsText(file);
-      } else if (file.type.startsWith("image/")) {
-        fileText = "O usuário enviou uma imagem que pode conter uma tabela ou cardápio.";
-        fileProcessed = true;
-      } else {
-        alert("Tipo de arquivo não suportado.");
-      }
-    }
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+  <script>
+    // Configure PDF.js worker
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
+    
+    let fileText = "";
+    let fileProcessed = false;
+    
+    async function handleFile(file) {
+      fileProcessed = false;
+      if (file.type === "application/pdf") {
+        try {
+          const reader = new FileReader();
+          reader.onload = async function () {
+            try {
+              const typedarray = new Uint8Array(this.result);
+              const pdf = await pdfjsLib.getDocument({data: typedarray}).promise;
+              let text = "";
+              for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const content = await page.getTextContent();
+                text += content.items.map(item => item.str).join(" ") + "\n";
+              }
+              fileText = text;
+              fileProcessed = true;
+            } catch (err) {
+              console.error("Erro ao processar PDF:", err);
+              alert("Erro ao processar o PDF. Tente novamente.");
+            }
+          };
+          reader.readAsArrayBuffer(file);
+        } catch (err) {
+          console.error("Erro ao ler arquivo:", err);
+          alert("Erro ao ler o arquivo. Tente novamente.");
+        }
+      } else if (file.type.startsWith("text/") || file.name.endsWith(".csv")) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          fileText = e.target.result;
+          fileProcessed = true;
+        };
+        reader.readAsText(file);
+      } else if (file.type.startsWith("image/")) {
+        fileText = "O usuário enviou uma imagem que pode conter uma tabela ou cardápio.";
+        fileProcessed = true;
+      } else {
+        alert("Tipo de arquivo não suportado.");
+      }
+    }
 
-    document.getElementById("fileInput").addEventListener("change", function () {
-      const file = this.files[0];
-      if (file) {
-        handleFile(file);
-      }
-    });
+    document.getElementById("fileInput").addEventListener("change", function () {
+      const file = this.files[0];
+      if (file) {
+        handleFile(file);
+      }
+    });
 
-    function copyResponse() {
-      const textarea = document.getElementById("responseText");
-      textarea.select();
-      textarea.setSelectionRange(0, 99999);
-      document.execCommand("copy");
-      const btn = document.querySelector(".copy-btn");
-      btn.textContent = "Copiado!";
-      setTimeout(() => {
-        btn.textContent = "Copiar";
-      }, 2000);
-    }
+    function copyResponse() {
+      const textarea = document.getElementById("responseText");
+      textarea.select();
+      textarea.setSelectionRange(0, 99999);
+      document.execCommand("copy");
+      const btn = document.querySelector(".copy-btn");
+      btn.textContent = "Copiado!";
+      setTimeout(() => {
+        btn.textContent = "Copiar";
+      }, 2000);
+    }
 
-    async function sendMessage() {
-      const userInput = document.getElementById("userInput").value.trim();
-      const fileInput = document.getElementById("fileInput");
-      
-      // Verificar se pelo menos um dos campos está preenchido
-      if (!userInput && !fileInput.files[0]) {
-        alert("Por favor, insira uma URL ou anexe um arquivo.");
-        return;
-      }
-      
-      document.getElementById("statusMessage").style.display = "block";
-      
-      // Se houver um arquivo, espere até que seja processado
-      if (fileInput.files[0] && !fileProcessed) {
-        await new Promise(resolve => {
-          const checkProcessing = setInterval(() => {
-            if (fileProcessed) {
-              clearInterval(checkProcessing);
-              resolve();
-            }
-          }, 300);
-        });
-      }
+    async function sendMessage() {
+      const userInput = document.getElementById("userInput").value.trim();
+      const fileInput = document.getElementById("fileInput");
+      
+      // Verificar se pelo menos um dos campos está preenchido
+      if (!userInput && !fileInput.files[0]) {
+        alert("Por favor, insira uma URL ou anexe um arquivo.");
+        return;
+      }
+      
+      document.getElementById("statusMessage").style.display = "block";
+      
+      // Se houver um arquivo, espere até que seja processado
+      if (fileInput.files[0] && !fileProcessed) {
+        await new Promise(resolve => {
+          const checkProcessing = setInterval(() => {
+            if (fileProcessed) {
+              clearInterval(checkProcessing);
+              resolve();
+            }
+          }, 300);
+        });
+      }
 
-      // Simula uma requisição à API (em um projeto real, isso seria substituído por uma chamada à API)
-      setTimeout(() => {
-        generateResponse(userInput);
-      }, 2000);
-    }
+      // Simula uma requisição à API (em um projeto real, isso seria substituído por uma chamada à API)
+      setTimeout(() => {
+        generateResponse(userInput);
+      }, 2000);
+    }
 
-    function generateResponse(userInput) {
-      const responseBox = document.getElementById("response");
-      const responseText = document.getElementById("responseText");
-      
-      // Função para detectar tipo de negócio
-      function detectBusinessType(siteUrl, fileContent) {
-        const content = (siteUrl + " " + fileContent).toLowerCase();
-        
-        if (content.includes("restaurante") || content.includes("lanchonete") || 
-            content.includes("pizzaria") || content.includes("hamburger") ||
-            content.includes("comida") || content.includes("cardápio") ||
-            content.includes("prato") || content.includes("bebida") ||
-            content.includes("delivery") || content.includes("ifood")) {
-          return "restaurante";
-        }
-        
-        if (content.includes("loja") || content.includes("produto") ||
-            content.includes("venda") || content.includes("compra") ||
-            content.includes("estoque") || content.includes("catálogo")) {
-          return "loja";
-        }
-        
-        if (content.includes("serviço") || content.includes("consultoria") ||
-            content.includes("atendimento") || content.includes("agendamento")) {
-          return "serviços";
-        }
-        
-        return "geral";
-      }
-      
-      // Função para extrair informações estruturadas
-      function extractStructuredData(content) {
-        if (!content) return null;
-        
-        // Padrões para identificar preços
-        const pricePatterns = [
-          /R\$\s*(\d+[,.]?\d*)/g,
-          /(\d+[,.]?\d*)\s*reais?/g,
-          /preço[:\s]*R?\$?\s*(\d+[,.]?\d*)/gi
-        ];
-        
-        let prices = [];
-        pricePatterns.forEach(pattern => {
-          const matches = content.match(pattern);
-          if (matches) prices = prices.concat(matches);
-        });
-        
-        // Identifica produtos/itens
-        const lines = content.split('\n').filter(line => line.trim());
-        const products = [];
-        
-        lines.forEach(line => {
-          const trimmedLine = line.trim();
-          if (trimmedLine && (
-            trimmedLine.match(/\d+[,.]?\d*/) || // contém números
-            trimmedLine.includes('R$') ||
-            trimmedLine.length > 10 // linha substancial
-          )) {
-            products.push(trimmedLine);
-          }
-        });
-        
-        return {
-          prices: prices,
-          products: products.slice(0, 20), // limita a 20 produtos
-          hasStructuredData: prices.length > 0 || products.length > 0
-        };
-      }
-      
-      const businessType = detectBusinessType(userInput || "", fileText || "");
-      const structuredData = extractStructuredData(fileText);
-      
-      // Monta o prompt inteligente baseado no tipo de negócio
-      let promptBase = `# PROMPT PARA AGENTE IA - ASSISTENTE ESPECIALIZADO
+    function generateResponse(userInput) {
+      const responseBox = document.getElementById("response");
+      const responseText = document.getElementById("responseText");
+      
+      // Função para detectar tipo de negócio
+      function detectBusinessType(siteUrl, fileContent) {
+        const content = (siteUrl + " " + fileContent).toLowerCase();
+        
+        if (content.includes("restaurante") || content.includes("lanchonete") || 
+            content.includes("pizzaria") || content.includes("hamburger") ||
+            content.includes("comida") || content.includes("cardápio") ||
+            content.includes("prato") || content.includes("bebida") ||
+            content.includes("delivery") || content.includes("ifood")) {
+          return "restaurante";
+        }
+        
+        if (content.includes("loja") || content.includes("produto") ||
+            content.includes("venda") || content.includes("compra") ||
+            content.includes("estoque") || content.includes("catálogo")) {
+          return "loja";
+        }
+        
+        if (content.includes("serviço") || content.includes("consultoria") ||
+            content.includes("atendimento") || content.includes("agendamento")) {
+          return "serviços";
+        }
+        
+        return "geral";
+      }
+      
+      // Função para extrair informações estruturadas
+      function extractStructuredData(content) {
+        if (!content) return null;
+        
+        // Padrões para identificar preços
+        const pricePatterns = [
+          /R\$\s*(\d+[,.]?\d*)/g,
+          /(\d+[,.]?\d*)\s*reais?/g,
+          /preço[:\s]*R?\$?\s*(\d+[,.]?\d*)/gi
+        ];
+        
+        let prices = [];
+        pricePatterns.forEach(pattern => {
+          const matches = content.match(pattern);
+          if (matches) prices = prices.concat(matches);
+        });
+        
+        // Identifica produtos/itens
+        const lines = content.split('\n').filter(line => line.trim());
+        const products = [];
+        
+        lines.forEach(line => {
+          const trimmedLine = line.trim();
+          if (trimmedLine && (
+            trimmedLine.match(/\d+[,.]?\d*/) || // contém números
+            trimmedLine.includes('R$') ||
+            trimmedLine.length > 10 // linha substancial
+          )) {
+            products.push(trimmedLine);
+          }
+        });
+        
+        // Remove duplicatas e itens com valor zerado
+        const uniqueProducts = [...new Set(products)];
+        const filteredProducts = uniqueProducts.filter(product => !product.includes('R$ 0') && !product.includes('R$ 0,00'));
+        
+        return {
+          prices: prices,
+          products: filteredProducts, // Agora inclui todos os produtos filtrados
+          hasStructuredData: prices.length > 0 || filteredProducts.length > 0
+        };
+      }
+      
+      const businessType = detectBusinessType(userInput || "", fileText || "");
+      const structuredData = extractStructuredData(fileText);
+      
+      // Monta o prompt inteligente baseado no tipo de negócio
+      let promptBase = `# PROMPT PARA AGENTE IA - ASSISTENTE ESPECIALIZADO
 
 ## CONTEXTO DA EMPRESA
 Você é um assistente IA especializado que representa uma empresa ${businessType === 'restaurante' ? 'do setor alimentício' : businessType === 'loja' ? 'de varejo/comércio' : 'de serviços'}. `;
 
-      if (userInput) {
-        promptBase += `A empresa possui o seguinte site/contato: ${userInput}. `;
-      }
+      if (userInput) {
+        promptBase += `A empresa possui o seguinte site/contato: ${userInput}. `;
+      }
 
-      promptBase += `Seu objetivo é ajudar clientes de forma profissional, prestativa e eficiente.
+      promptBase += `Seu objetivo é ajudar clientes de forma profissional, prestativa e eficiente.
 
 ## INSTRUÇÕES GERAIS
 1. Sempre seja cordial, profissional e use linguagem adequada ao contexto brasileiro
@@ -313,69 +317,67 @@ Você é um assistente IA especializado que representa uma empresa ${businessTyp
 
 `;
 
-      // Seção específica baseada no tipo de negócio
-      if (businessType === 'restaurante') {
-        promptBase += `## INFORMAÇÕES ESPECÍFICAS - RESTAURANTE/ALIMENTAÇÃO
+      // Seção específica baseada no tipo de negócio
+      if (businessType === 'restaurante') {
+        promptBase += `## INFORMAÇÕES ESPECÍFICAS - RESTAURANTE/ALIMENTAÇÃO
 - Você atende clientes interessados em cardápio, preços, delivery, reservas
 - Sempre destaque opções populares e promoções quando relevante
 - Seja prestativo com informações sobre ingredientes e restrições alimentares
 - Promova experiências positivas e fidelização
 
 `;
-      } else if (businessType === 'loja') {
-        promptBase += `## INFORMAÇÕES ESPECÍFICAS - VAREJO/COMÉRCIO
+      } else if (businessType === 'loja') {
+        promptBase += `## INFORMAÇÕES ESPECÍFICAS - VAREJO/COMÉRCIO
 - Você auxilia clientes com produtos, preços, disponibilidade e compras
 - Destaque benefícios dos produtos e diferenciais da empresa
 - Seja proativo em sugerir produtos complementares
 - Facilite o processo de compra e esclareça dúvidas
 
 `;
-      } else {
-        promptBase += `## INFORMAÇÕES ESPECÍFICAS - SERVIÇOS
+      } else {
+        promptBase += `## INFORMAÇÕES ESPECÍFICAS - SERVIÇOS
 - Você orienta clientes sobre serviços oferecidos, agendamentos e processos
 - Seja claro sobre procedimentos, prazos e custos
 - Destaque a qualidade e confiabilidade dos serviços
 - Facilite o agendamento e contato
 
 `;
-      }
+      }
 
-      // Adiciona dados estruturados se existirem
-      if (structuredData && structuredData.hasStructuredData) {
-        promptBase += `## BASE DE CONHECIMENTO DA EMPRESA\n`;
-        
-        if (businessType === 'restaurante') {
-          promptBase += `### CARDÁPIO E PRODUTOS\n`;
-        } else if (businessType === 'loja') {
-          promptBase += `### CATÁLOGO DE PRODUTOS\n`;
-        } else {
-          promptBase += `### SERVIÇOS OFERECIDOS\n`;
-        }
-        
-        promptBase += `Com base nas informações fornecidas, você tem acesso aos seguintes dados:\n\n`;
-        
-        if (structuredData.products.length > 0) {
-          promptBase += `**Principais itens/produtos:**\n`;
-          structuredData.products.slice(0, 10).forEach((product, index) => {
-            promptBase += `${index + 1}. ${product}\n`;
-          });
-          promptBase += `\n`;
-        }
-        
-        if (structuredData.prices.length > 0) {
-          promptBase += `**Informações de preços identificadas:**\n`;
-          const uniquePrices = [...new Set(structuredData.prices)];
-          uniquePrices.slice(0, 5).forEach((price, index) => {
-            promptBase += `• ${price}\n`;
-          });
-          promptBase += `\n`;
-        }
-        
-        promptBase += `*Nota: Use estas informações como base, mas sempre confirme dados específicos quando necessário.*\n\n`;
-      }
+      // Adiciona dados estruturados se existirem
+      if (structuredData && structuredData.hasStructuredData) {
+        promptBase += `## BASE DE CONHECIMENTO DA EMPRESA\n`;
+        
+        if (businessType === 'restaurante') {
+          promptBase += `### CARDÁPIO E PRODUTOS\n`;
+        } else if (businessType === 'loja') {
+          promptBase += `### CATÁLOGO DE PRODUTOS\n`;
+        } else {
+          promptBase += `### SERVIÇOS OFERECIDOS\n`;
+        }
+        
+        if (structuredData.products.length > 0) {
+          promptBase += `**Principais itens/produtos:**\n`;
+          structuredData.products.forEach((product, index) => {
+            promptBase += `${index + 1}. ${product}\n`;
+          });
+          promptBase += `\n`;
+        }
+        
+        if (structuredData.prices.length > 0) {
+          promptBase += `**Informações de preços identificadas:**\n`;
+          const uniquePrices = [...new Set(structuredData.prices)];
+          uniquePrices.forEach((price, index) => {
+            promptBase += `• ${price}\n`;
+          });
+          promptBase += `\n`;
+        }
+        
+        promptBase += `*Nota: Use estas informações como base, mas sempre confirme dados específicos quando necessário.*\n\n`;
+      }
 
-      // Orientações de atendimento
-      promptBase += `## FLUXO DE ATENDIMENTO SUGERIDO
+      // Orientações de atendimento
+      promptBase += `## FLUXO DE ATENDIMENTO SUGERIDO
 1. **Cumprimente** o cliente de forma calorosa
 2. **Identifique** a necessidade ou interesse do cliente
 3. **Apresente** informações relevantes de forma clara
@@ -386,21 +388,21 @@ Você é um assistente IA especializado que representa uma empresa ${businessTyp
 ## EXEMPLOS DE RESPOSTAS
 `;
 
-      if (businessType === 'restaurante') {
-        promptBase += `**Para pedidos de cardápio:**
+      if (businessType === 'restaurante') {
+        promptBase += `**Para pedidos de cardápio:**
 "Olá! 😊 Ficaria feliz em ajudar com nosso cardápio! Temos várias opções deliciosas. Você tem alguma preferência específica ou gostaria de conhecer nossos pratos mais populares?"
 
 **Para delivery:**
 "Sim, trabalhamos com delivery! 🛵 Para pedidos, você pode [informar processo]. Nosso tempo médio de entrega é de X minutos. Posso ajudar com algum pedido específico?"`;
-      } else if (businessType === 'loja') {
-        promptBase += `**Para consultas de produtos:**
+      } else if (businessType === 'loja') {
+        promptBase += `**Para consultas de produtos:**
 "Olá! 😊 Temos esse produto disponível sim! Ele custa R$ X e possui [características]. Gostaria de saber mais detalhes ou tem interesse em outros produtos similares?"
 
 **Para disponibilidade:**
 "Vou verificar a disponibilidade para você! 📦 Geralmente mantemos bom estoque, mas posso confirmar e garantir a reserva. Tem preferência por alguma especificação?"`;
-      }
+      }
 
-      promptBase += `
+      promptBase += `
 
 ## DIRETRIZES IMPORTANTES
 - ✅ Sempre mantenha tom profissional mas amigável
@@ -414,11 +416,11 @@ Você é um assistente IA especializado que representa uma empresa ${businessTyp
 ---
 *Este prompt foi gerado automaticamente pela BigCorps para otimizar o atendimento da sua empresa.*`;
 
-      // Exibe o prompt completo
-      responseText.value = promptBase;
-      responseBox.style.display = "block";
-      document.getElementById("statusMessage").style.display = "none";
-    }
-  </script>
+      // Exibe o prompt completo
+      responseText.value = promptBase;
+      responseBox.style.display = "block";
+      document.getElementById("statusMessage").style.display = "none";
+    }
+  </script>
 </body>
 </html>
