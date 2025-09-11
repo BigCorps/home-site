@@ -234,10 +234,19 @@
 </head>
 <body>
     <div class="container">
-        <h1>🎨 Removedor de Fundo <span class="title-accent">IA</span></h1>
+        <h1>Removedor de Fundo <span class="title-accent">IA</span></h1>
         
         <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-            <div class="upload-icon">📸</div>
+            <div class="upload-icon">
+                <svg width="80" height="60" viewBox="0 0 80 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="8" y="15" width="64" height="40" rx="3" stroke="#ff8c00" stroke-width="2" fill="none"/>
+                    <rect x="12" y="19" width="56" height="32" rx="2" fill="#fff4e6"/>
+                    <path d="M15 45 L25 35 L35 40 L50 28 L65 38 L65 47 L15 47 Z" fill="#ff8c00" opacity="0.3"/>
+                    <rect x="16" y="8" width="48" height="12" rx="2" fill="#ffd699"/>
+                    <rect x="18" y="10" width="44" height="8" rx="1" fill="#ff8c00"/>
+                    <rect x="20" y="12" width="16" height="4" rx="1" fill="#fff"/>
+                </svg>
+            </div>
             <div class="upload-text">Clique para selecionar ou arraste uma imagem</div>
             <div class="upload-subtext">Suporta JPG, PNG, WebP até 10MB</div>
         </div>
@@ -254,11 +263,11 @@
         <div class="results" id="results">
             <div class="image-container">
                 <div class="image-box">
-                    <h3>📷 Imagem Original</h3>
+                    <h3>Imagem Original</h3>
                     <img id="originalImage" alt="Imagem original" />
                 </div>
                 <div class="image-box">
-                    <h3>✨ Fundo Removido</h3>
+                    <h3>Fundo Removido</h3>
                     <div class="processed-image">
                         <img id="processedImage" alt="Imagem processada" />
                     </div>
@@ -267,22 +276,22 @@
             
             <div class="download-section">
                 <button class="btn" id="downloadBtn">
-                    💾 Baixar PNG sem Fundo
+                    Baixar PNG sem Fundo
                 </button>
                 <button class="btn" onclick="resetApp()" style="margin-left: 15px; background: linear-gradient(135deg, #95a5a6, #7f8c8d);">
-                    🔄 Nova Imagem
+                    Nova Imagem
                 </button>
             </div>
         </div>
         
         <div class="features">
             <div class="feature">
-                <div class="feature-icon">🤖</div>
+                <div class="feature-icon">AI</div>
                 <h3>IA Avançada</h3>
                 <p>Usa machine learning para detectar e remover fundos automaticamente</p>
             </div>
             <div class="feature">
-                <div class="feature-icon">🎯</div>
+                <div class="feature-icon">HD</div>
                 <h3>Alta Precisão</h3>
                 <p>Resultado profissional com bordas suaves e detalhes preservados</p>
             </div>
@@ -359,12 +368,15 @@
                 processing.style.display = 'block';
                 results.style.display = 'none';
 
+                // Otimizar imagem antes do processamento
+                const optimizedFile = await optimizeImageSize(file);
+
                 // Mostrar imagem original
-                const originalUrl = URL.createObjectURL(file);
+                const originalUrl = URL.createObjectURL(optimizedFile);
                 originalImage.src = originalUrl;
 
                 // Processar com IA
-                const imageBlob = await removeBackground(file);
+                const imageBlob = await removeBackground(optimizedFile);
                 
                 // Converter para URL para exibição
                 const processedUrl = URL.createObjectURL(imageBlob);
@@ -382,6 +394,47 @@
                 processing.style.display = 'none';
                 showError('Erro ao processar a imagem. Tente novamente ou escolha outra imagem.');
             }
+        }
+
+        function optimizeImageSize(file) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Calcular nova dimensão mantendo proporção
+                    let { width, height } = img;
+                    const maxDimension = 1000;
+                    
+                    if (width > maxDimension || height > maxDimension) {
+                        if (width > height) {
+                            height = (height * maxDimension) / width;
+                            width = maxDimension;
+                        } else {
+                            width = (width * maxDimension) / height;
+                            height = maxDimension;
+                        }
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    // Desenhar imagem redimensionada
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Converter para blob
+                    canvas.toBlob((blob) => {
+                        // Criar novo File object com o blob otimizado
+                        const optimizedFile = new File([blob], file.name, {
+                            type: file.type,
+                            lastModified: file.lastModified
+                        });
+                        resolve(optimizedFile);
+                    }, file.type, 0.85);
+                };
+                img.src = URL.createObjectURL(file);
+            });
         }
 
         function downloadImage() {
