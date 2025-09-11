@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor de Imagens</title>
+    <title>Editor Prático de Imagens</title>
     <style>
         * {
             margin: 0;
@@ -454,6 +454,10 @@
             setupEventListeners();
             canvas = document.getElementById('imageCanvas');
             ctx = canvas.getContext('2d');
+            
+            // Debug: verificar se os elementos existem
+            console.log('Canvas:', canvas);
+            console.log('Context:', ctx);
         });
 
         function setupEventListeners() {
@@ -521,15 +525,29 @@
 
             const img = new Image();
             img.onload = () => {
-                setupCanvas(img);
-                updateImageInfo(file, img);
-                document.getElementById('editorContainer').style.display = 'block';
-                document.querySelector('.reset-btn').style.display = 'block';
+                try {
+                    setupCanvas(img);
+                    updateImageInfo(file, img);
+                    document.getElementById('editorContainer').style.display = 'block';
+                    document.querySelector('.reset-btn').style.display = 'block';
+                } catch (error) {
+                    console.error('Erro ao carregar imagem:', error);
+                    alert('Erro ao carregar a imagem. Tente novamente.');
+                }
+            };
+            img.onerror = () => {
+                alert('Erro ao carregar a imagem. Verifique se o arquivo não está corrompido.');
             };
             img.src = URL.createObjectURL(file);
         }
 
         function setupCanvas(img) {
+            // Verificar se o canvas e contexto estão disponíveis
+            if (!canvas || !ctx) {
+                console.error('Canvas não inicializado');
+                return;
+            }
+
             // Definir dimensões do canvas
             const maxWidth = 800;
             const maxHeight = 600;
@@ -540,13 +558,20 @@
             canvas.width = width * imageScale;
             canvas.height = height * imageScale;
 
+            console.log('Canvas dimensões:', canvas.width, canvas.height);
+
             // Desenhar imagem
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
             // Salvar dados originais
-            originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            currentImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            try {
+                originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                currentImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                console.log('ImageData salvo com sucesso');
+            } catch (error) {
+                console.error('Erro ao salvar ImageData:', error);
+            }
 
             setupCanvasEvents();
         }
@@ -840,4 +865,38 @@
         function formatFileSize(bytes) {
             if (bytes === 0) return '0 Bytes';
             const k = 1024;
-            const sizes = ['
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function resetEditor() {
+            // Ocultar editor
+            document.getElementById('editorContainer').style.display = 'none';
+            document.querySelector('.reset-btn').style.display = 'none';
+            
+            // Limpar canvas
+            if (ctx) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+            
+            // Resetar variáveis
+            originalImageData = null;
+            currentImageData = null;
+            cropArea = null;
+            
+            // Resetar controles
+            resetAdjustments();
+            
+            // Limpar input
+            document.getElementById('fileInput').value = '';
+            
+            // Cancelar crop se ativo
+            cancelCrop();
+            
+            // Resetar ferramenta
+            selectTool('crop');
+        }
+    </script>
+</body>
+</html>
