@@ -414,6 +414,35 @@
                 </div>
             </div>
             
+            <div class="control-row">
+                <div class="input-group">
+                    <label>📐 Orientação da imagem:</label>
+                    <select id="imageRotation">
+                        <option value="0">Original</option>
+                        <option value="90">Girar 90° (horário)</option>
+                        <option value="180">Girar 180°</option>
+                        <option value="270">Girar 270° (anti-horário)</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label>📊 Modo de layout:</label>
+                    <select id="layoutMode">
+                        <option value="auto">Automático (máximo)</option>
+                        <option value="manual">Manual (escolher)</option>
+                    </select>
+                </div>
+                
+                <div class="input-group" id="manualControls" style="display: none;">
+                    <label>🔢 Colunas × Linhas:</label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="number" id="manualCols" value="6" min="1" max="20" style="width: 60px;">
+                        <span>×</span>
+                        <input type="number" id="manualRows" value="9" min="1" max="30" style="width: 60px;">
+                    </div>
+                </div>
+            </div>
+            
             <div class="spacing-info">
                 <strong>💡 Dica:</strong> O espaçamento de 1mm entre imagens facilita o corte com estilete. A borda fina ajuda a marcar onde cortar.
             </div>
@@ -501,11 +530,22 @@
             
             const reader = new FileReader();
             reader.onload = (e) => {
-                currentImage = e.target.result;
-                
                 // Criar elemento temporário para calcular dimensões
                 const img = new Image();
                 img.onload = () => {
+                    // Corrigir orientação EXIF criando canvas
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Definir dimensões do canvas
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    
+                    // Desenhar imagem no canvas (isso remove dados EXIF)
+                    ctx.drawImage(img, 0, 0);
+                    
+                    // Obter nova imagem sem EXIF
+                    currentImage = canvas.toDataURL('image/jpeg', 0.9);
                     imageAspectRatio = img.width / img.height;
                     
                     // Mostrar preview
@@ -526,7 +566,7 @@
                     // Calcular layout inicial
                     calculateLayout();
                 };
-                img.src = currentImage;
+                img.src = e.target.result;
             };
             reader.readAsDataURL(file);
         }
@@ -535,25 +575,33 @@
             const maxSize = parseFloat(document.getElementById('maxSize').value);
             const sizeType = document.getElementById('sizeType').value;
             const spacing = parseFloat(document.getElementById('spacing').value) / 10; // mm para cm
+            const rotation = parseInt(document.getElementById('imageRotation').value);
+            const layoutMode = document.getElementById('layoutMode').value;
             
             if (!maxSize || !currentImage) return;
+            
+            // Calcular proporção considerando rotação
+            let workingAspectRatio = imageAspectRatio;
+            if (rotation === 90 || rotation === 270) {
+                workingAspectRatio = 1 / imageAspectRatio;
+            }
             
             let finalWidth, finalHeight;
             
             // Calcular dimensões finais baseado no tipo
             if (sizeType === 'height') {
                 finalHeight = maxSize;
-                finalWidth = maxSize * imageAspectRatio;
+                finalWidth = maxSize * workingAspectRatio;
             } else if (sizeType === 'width') {
                 finalWidth = maxSize;
-                finalHeight = maxSize / imageAspectRatio;
+                finalHeight = maxSize / workingAspectRatio;
             } else { // auto - maior lado
-                if (imageAspectRatio >= 1) { // landscape ou quadrado
+                if (workingAspectRatio >= 1) { // landscape ou quadrado
                     finalWidth = maxSize;
-                    finalHeight = maxSize / imageAspectRatio;
+                    finalHeight = maxSize / workingAspectRatio;
                 } else { // portrait
                     finalHeight = maxSize;
-                    finalWidth = maxSize * imageAspectRatio;
+                    finalWidth = maxSize * workingAspectRatio;
                 }
             }
             
@@ -561,12 +609,37 @@
             const availableWidth = 19; // cm
             const availableHeight = 27.7; // cm
             
-            // Calcular quantas imagens cabem (considerando espaçamento)
-            const widthWithSpacing = finalWidth + spacing;
-            const heightWithSpacing = finalHeight + spacing;
+            let imagesPerRow, imagesPerColumn;
             
-            const imagesPerRow = Math.floor((availableWidth + spacing) / widthWithSpacing);
-            const imagesPerColumn = Math.floor((availableHeight + spacing) / heightWithSpacing);
+            if (layoutMode === 'manual') {
+                // Modo manual - usar valores definidos pelo usuário
+                imagesPerRow = parseInt(document.getElementById('manualCols').value);
+                imagesPerColumn = parseInt(document.getElementById('manualRows').value);
+                
+                // Verificar se cabe na página
+                const totalWidthNeeded = (imagesPerRow * finalWidth) + ((imagesPerRow - 1) * spacing);
+                const totalHeightNeeded = (imagesPerColumn * finalHeight) + ((imagesPerColumn - 1) * spacing);
+                
+                if (totalWidthNeeded > availableWidth || totalHeightNeeded > availableHeight) {
+                    // Reduzir automaticamente se não couber
+                    const maxCols = Math.floor((availableWidth + spacing) / (finalWidth + spacing));
+                    const maxRows = Math.floor((availableHeight + spacing) / (finalHeight + spacing));
+                    
+                    imagesPerRow = Math.min(imagesPerRow, maxCols);
+                    imagesPerColumn = Math.min(imagesPerColumn, maxRows);
+                    
+                    document.getElementById('manualCols').value = imagesPerRow;
+                    document.getElementById('manualRows').value = imagesPerColumn;
+                }
+            } else {
+                // Modo automático - calcular máximo que cabe
+                const widthWithSpacing = finalWidth + spacing;
+                const heightWithSpacing = finalHeight + spacing;
+                
+                imagesPerRow = Math.floor((availableWidth + spacing) / widthWithSpacing);
+                imagesPerColumn = Math.floor((availableHeight + spacing) / heightWithSpacing);
+            }
+            
             const totalImages = imagesPerRow * imagesPerColumn;
             
             // Calcular área utilizada
@@ -587,7 +660,7 @@
             // Habilitar botão se houver pelo menos 1 imagem
             document.getElementById('generateBtn').disabled = totalImages === 0;
             
-            return { finalWidth, finalHeight, imagesPerRow, imagesPerColumn, totalImages, spacing };
+            return { finalWidth, finalHeight, imagesPerRow, imagesPerColumn, totalImages, spacing, rotation };
         }
         
         function updatePreviewGrid(perRow, perColumn, width, height, spacing) {
@@ -642,6 +715,7 @@
                 
                 const borderWidth = parseFloat(document.getElementById('borderWidth').value) / 10; // mm para cm
                 const borderColor = document.getElementById('borderColor').value;
+                const rotation = layout.rotation;
                 
                 // Margens de 1cm
                 const marginX = 1;
@@ -665,14 +739,34 @@
                             );
                         }
                         
-                        // Adicionar imagem
+                        // Salvar estado do contexto para rotação
+                        doc.saveGraphicsState();
+                        
+                        if (rotation !== 0) {
+                            // Calcular centro da imagem para rotação
+                            const centerX = x + layout.finalWidth / 2;
+                            const centerY = y + layout.finalHeight / 2;
+                            
+                            // Aplicar rotação no centro da imagem
+                            doc.setGState(new doc.GState({CTM: [1, 0, 0, 1, centerX, centerY]}));
+                            doc.rotate(rotation);
+                            doc.setGState(new doc.GState({CTM: [1, 0, 0, 1, -layout.finalWidth/2, -layout.finalHeight/2]}));
+                        }
+                        
+                        // Adicionar imagem (com ou sem rotação)
+                        const imgX = rotation !== 0 ? 0 : x;
+                        const imgY = rotation !== 0 ? 0 : y;
+                        
                         doc.addImage(
                             currentImage, 
                             'JPEG', 
-                            x, y, 
+                            imgX, imgY, 
                             layout.finalWidth, 
                             layout.finalHeight
                         );
+                        
+                        // Restaurar estado do contexto
+                        doc.restoreGraphicsState();
                     }
                 }
                 
@@ -681,13 +775,15 @@
                 doc.setTextColor(120);
                 const spacingMM = (layout.spacing * 10).toFixed(1);
                 const borderMM = (borderWidth * 10).toFixed(1);
+                const rotationText = rotation > 0 ? ` | Rotação: ${rotation}°` : '';
                 doc.text(
-                    `Gerado em: ${new Date().toLocaleString('pt-BR')} | Total: ${layout.totalImages} imagens | Tamanho: ${layout.finalWidth.toFixed(1)}×${layout.finalHeight.toFixed(1)}cm | Espaçamento: ${spacingMM}mm | Borda: ${borderMM}mm`, 
+                    `Gerado em: ${new Date().toLocaleString('pt-BR')} | Total: ${layout.totalImages} imagens | Tamanho: ${layout.finalWidth.toFixed(1)}×${layout.finalHeight.toFixed(1)}cm | Espaçamento: ${spacingMM}mm | Borda: ${borderMM}mm${rotationText}`, 
                     1, 28.7
                 );
                 
                 // Salvar
-                const fileName = `imagens_${layout.finalWidth.toFixed(1)}x${layout.finalHeight.toFixed(1)}cm_esp${spacingMM}mm_${new Date().toISOString().slice(0,10)}.pdf`;
+                const rotSuffix = rotation > 0 ? `_rot${rotation}` : '';
+                const fileName = `imagens_${layout.finalWidth.toFixed(1)}x${layout.finalHeight.toFixed(1)}cm_${layout.imagesPerRow}x${layout.imagesPerColumn}_esp${spacingMM}mm${rotSuffix}_${new Date().toISOString().slice(0,10)}.pdf`;
                 doc.save(fileName);
                 
                 // Restaurar botão
@@ -706,6 +802,7 @@
             document.querySelector('.reset-btn').style.display = 'none';
             uploadArea.style.display = 'block';
             document.getElementById('previewGrid').style.display = 'none';
+            document.getElementById('manualControls').style.display = 'none';
             
             // Resetar valores
             document.getElementById('maxSize').value = 3;
@@ -713,7 +810,25 @@
             document.getElementById('spacing').value = 1;
             document.getElementById('borderWidth').value = 0.2;
             document.getElementById('borderColor').value = 'none';
+            document.getElementById('imageRotation').value = 0;
+            document.getElementById('layoutMode').value = 'auto';
+            document.getElementById('manualCols').value = 6;
+            document.getElementById('manualRows').value = 9;
             document.getElementById('imageInput').value = '';
+        }
+        
+        // Função para mostrar/ocultar controles manuais
+        function toggleManualControls() {
+            const layoutMode = document.getElementById('layoutMode').value;
+            const manualControls = document.getElementById('manualControls');
+            
+            if (layoutMode === 'manual') {
+                manualControls.style.display = 'block';
+            } else {
+                manualControls.style.display = 'none';
+            }
+            
+            if (currentImage) calculateLayout();
         }
         
         // Event listeners para recálculo automático
@@ -722,6 +837,10 @@
         document.getElementById('spacing').addEventListener('input', calculateLayout);
         document.getElementById('borderWidth').addEventListener('input', calculateLayout);
         document.getElementById('borderColor').addEventListener('change', calculateLayout);
+        document.getElementById('imageRotation').addEventListener('change', calculateLayout);
+        document.getElementById('layoutMode').addEventListener('change', toggleManualControls);
+        document.getElementById('manualCols').addEventListener('input', calculateLayout);
+        document.getElementById('manualRows').addEventListener('input', calculateLayout);
     </script>
 </body>
 </html>
