@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duplicador de Imagens para PDF A4</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.06);
+            border: 1px solid #f0f0f0;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #f5f5f5;
+            padding-bottom: 30px;
+        }
+        
+        .title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .title-accent {
+            color: #ff8c00;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+        
+        .upload-area {
+            border: 2px dashed #e0e0e0;
+            border-radius: 12px;
+            padding: 50px 20px;
+            text-align: center;
+            background: #fafafa;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 30px;
+        }
+        
+        .upload-area:hover {
+            border-color: #ff8c00;
+            background: #fff8f0;
+        }
+        
+        .upload-area.dragover {
+            border-color: #ff8c00;
+            background: #fff4e6;
+            transform: scale(1.01);
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #ff8c00;
+        }
+        
+        .upload-text {
+            font-size: 1.2rem;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .upload-subtext {
+            color: #888;
+            font-size: 0.95rem;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .image-preview {
+            display: none;
+            text-align: center;
+            margin: 30px 0;
+            padding: 25px;
+            background: #fafafa;
+            border-radius: 12px;
+            border: 1px solid #f0f0f0;
+        }
+        
+        .preview-image {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-bottom: 15px;
+            border: 1px solid #f0f0f0;
+        }
+        
+        .image-info {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .controls {
+            display: none;
+            margin-top: 30px;
+            padding: 30px;
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #f0f0f0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        
+        .control-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .control-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .input-group {
+            position: relative;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95rem;
+        }
+        
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #f0f0f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+            color: #333;
+        }
+        
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #ff8c00;
+            box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.1);
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+            transform: scale(1.2);
+            accent-color: #ff8c00;
+        }
+        
+        .checkbox-group label {
+            margin: 0;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        .info-card {
+            background: linear-gradient(135deg, #fff8f0, #fff4e6);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            border-left: 4px solid #ff8c00;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .info-item {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid rgba(255, 140, 0, 0.1);
+        }
+        
+        .info-label {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #ff8c00;
+        }
+        
+        .generate-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #ff8c00, #ff9500);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .generate-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, #e67c00, #ff8c00);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 140, 0, 0.25);
+        }
+        
+        .generate-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .preview-grid {
+            display: none;
+            margin-top: 25px;
+            padding: 25px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #f0f0f0;
+        }
+        
+        .preview-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 1.1rem;
+        }
+        
+        .grid-container {
+            display: grid;
+            gap: 1px;
+            max-height: 350px;
+            overflow: auto;
+            padding: 15px;
+            background: #f8f8f8;
+            border-radius: 8px;
+            border: 1px solid #f0f0f0;
+        }
+        
+        .preview-item {
+            background: #ff8c00;
+            border-radius: 2px;
+            opacity: 0.8;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .reset-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .reset-btn:hover {
+            background: #ff5252;
+            transform: translateY(-1px);
+        }
+        
+        .github-badge {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: #333;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            font-weight: 600;
+        }
+        
+        .github-badge:hover {
+            background: #24292e;
+            transform: scale(1.05);
+        }
+        
+        .spacing-info {
+            background: #f0f8ff;
+            border: 1px solid #e0e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-size: 0.9rem;
+            color: #555;
+        }
+        
+        @media (max-width: 768px) {
+            .control-group, .control-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .title {
+                font-size: 1.8rem;
+            }
+            
+            .github-badge, .reset-btn {
+                position: relative;
+                top: auto;
+                right: auto;
+                left: auto;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="#" class="github-badge">📁 GitHub Pages</a>
+    
+    <div class="container">
+        <button class="reset-btn" onclick="resetAll()" style="display: none;">🔄 Nova Imagem</button>
+        
+        <div class="header">
+            <h1 class="title">🖼️ Duplicador de <span class="title-accent">Imagens</span></h1>
+            <p class="subtitle">Prepare suas imagens para impressão em A4 com espaçamento e bordas para corte</p>
+        </div>
+        
+        <div class="upload-area" onclick="document.getElementById('imageInput').click()">
+            <div class="upload-icon">📤</div>
+            <div class="upload-text">Clique aqui ou arraste sua imagem</div>
+            <div class="upload-subtext">Suporte: JPG, PNG, SVG, WebP (máx. 10MB)</div>
+            <input type="file" id="imageInput" class="file-input" accept="image/*">
+        </div>
+        
+        <div class="image-preview" id="imagePreview">
+            <h3>Imagem Carregada:</h3>
+            <img id="previewImg" class="preview-image" alt="Preview">
+            <div class="image-info" id="imageInfo"></div>
+        </div>
+        
+        <div class="controls" id="controls">
+            <div class="control-group">
+                <div class="input-group">
+                    <label>📏 Tamanho Máximo:</label>
+                    <input type="number" id="maxSize" value="3" min="0.5" max="15" step="0.1">
+                </div>
+                
+                <div class="input-group">
+                    <label>📐 Dimensão de Referência:</label>
+                    <select id="sizeType">
+                        <option value="height">Altura</option>
+                        <option value="width">Largura</option>
+                        <option value="auto">Maior lado</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="control-row">
+                <div class="input-group">
+                    <label>📏 Espaçamento entre imagens (mm):</label>
+                    <input type="number" id="spacing" value="1" min="0" max="5" step="0.5">
+                </div>
+                
+                <div class="input-group">
+                    <label>🖼️ Espessura da borda (mm):</label>
+                    <input type="number" id="borderWidth" value="0.2" min="0" max="2" step="0.1">
+                </div>
+                
+                <div class="input-group">
+                    <label>🎨 Cor da borda:</label>
+                    <select id="borderColor">
+                        <option value="none">Sem borda</option>
+                        <option value="#000000">Preto</option>
+                        <option value="#808080">Cinza</option>
+                        <option value="#ff8c00">Laranja</option>
+                        <option value="#0066cc">Azul</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="spacing-info">
+                <strong>💡 Dica:</strong> O espaçamento de 1mm entre imagens facilita o corte com estilete. A borda fina ajuda a marcar onde cortar.
+            </div>
+            
+            <div class="info-card">
+                <strong>📊 Informações de Impressão:</strong>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Tamanho Final</div>
+                        <div class="info-value" id="finalSize">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Por Linha</div>
+                        <div class="info-value" id="perRow">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Por Coluna</div>
+                        <div class="info-value" id="perColumn">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Total</div>
+                        <div class="info-value" id="totalCount">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Área Utilizada</div>
+                        <div class="info-value" id="usedArea">-</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="preview-grid" id="previewGrid">
+                <div class="preview-title">📋 Preview do Layout A4:</div>
+                <div class="grid-container" id="gridContainer"></div>
+            </div>
+            
+            <button class="generate-btn" id="generateBtn" onclick="generatePDF()">
+                📄 Gerar PDF para Impressão
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let currentImage = null;
+        let imageAspectRatio = 1;
+        
+        // Configurar drag and drop
+        const uploadArea = document.querySelector('.upload-area');
+        const fileInput = document.getElementById('imageInput');
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleImageUpload(files[0]);
+            }
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleImageUpload(e.target.files[0]);
+            }
+        });
+        
+        function handleImageUpload(file) {
+            // Validar arquivo
+            if (!file.type.startsWith('image/')) {
+                alert('Por favor, selecione apenas arquivos de imagem.');
+                return;
+            }
+            
+            if (file.size > 10 * 1024 * 1024) {
+                alert('Arquivo muito grande. Máximo 10MB.');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                currentImage = e.target.result;
+                
+                // Criar elemento temporário para calcular dimensões
+                const img = new Image();
+                img.onload = () => {
+                    imageAspectRatio = img.width / img.height;
+                    
+                    // Mostrar preview
+                    document.getElementById('previewImg').src = currentImage;
+                    document.getElementById('imageInfo').innerHTML = `
+                        <strong>${file.name}</strong><br>
+                        Dimensões: ${img.width} × ${img.height}px<br>
+                        Proporção: ${imageAspectRatio.toFixed(2)}:1<br>
+                        Tamanho: ${(file.size / 1024).toFixed(1)} KB
+                    `;
+                    
+                    // Mostrar controles
+                    document.getElementById('imagePreview').style.display = 'block';
+                    document.getElementById('controls').style.display = 'block';
+                    document.querySelector('.reset-btn').style.display = 'block';
+                    uploadArea.style.display = 'none';
+                    
+                    // Calcular layout inicial
+                    calculateLayout();
+                };
+                img.src = currentImage;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function calculateLayout() {
+            const maxSize = parseFloat(document.getElementById('maxSize').value);
+            const sizeType = document.getElementById('sizeType').value;
+            const spacing = parseFloat(document.getElementById('spacing').value) / 10; // mm para cm
+            
+            if (!maxSize || !currentImage) return;
+            
+            let finalWidth, finalHeight;
+            
+            // Calcular dimensões finais baseado no tipo
+            if (sizeType === 'height') {
+                finalHeight = maxSize;
+                finalWidth = maxSize * imageAspectRatio;
+            } else if (sizeType === 'width') {
+                finalWidth = maxSize;
+                finalHeight = maxSize / imageAspectRatio;
+            } else { // auto - maior lado
+                if (imageAspectRatio >= 1) { // landscape ou quadrado
+                    finalWidth = maxSize;
+                    finalHeight = maxSize / imageAspectRatio;
+                } else { // portrait
+                    finalHeight = maxSize;
+                    finalWidth = maxSize * imageAspectRatio;
+                }
+            }
+            
+            // Área disponível A4 (21 x 29.7 cm) menos margens (1cm cada lado)
+            const availableWidth = 19; // cm
+            const availableHeight = 27.7; // cm
+            
+            // Calcular quantas imagens cabem (considerando espaçamento)
+            const widthWithSpacing = finalWidth + spacing;
+            const heightWithSpacing = finalHeight + spacing;
+            
+            const imagesPerRow = Math.floor((availableWidth + spacing) / widthWithSpacing);
+            const imagesPerColumn = Math.floor((availableHeight + spacing) / heightWithSpacing);
+            const totalImages = imagesPerRow * imagesPerColumn;
+            
+            // Calcular área utilizada
+            const usedWidth = (imagesPerRow * finalWidth) + ((imagesPerRow - 1) * spacing);
+            const usedHeight = (imagesPerColumn * finalHeight) + ((imagesPerColumn - 1) * spacing);
+            const usedPercentage = ((usedWidth * usedHeight) / (availableWidth * availableHeight) * 100);
+            
+            // Atualizar interface
+            document.getElementById('finalSize').textContent = `${finalWidth.toFixed(1)} × ${finalHeight.toFixed(1)} cm`;
+            document.getElementById('perRow').textContent = imagesPerRow;
+            document.getElementById('perColumn').textContent = imagesPerColumn;
+            document.getElementById('totalCount').textContent = totalImages;
+            document.getElementById('usedArea').textContent = `${usedPercentage.toFixed(1)}%`;
+            
+            // Mostrar preview do grid
+            updatePreviewGrid(imagesPerRow, imagesPerColumn, finalWidth, finalHeight, spacing);
+            
+            // Habilitar botão se houver pelo menos 1 imagem
+            document.getElementById('generateBtn').disabled = totalImages === 0;
+            
+            return { finalWidth, finalHeight, imagesPerRow, imagesPerColumn, totalImages, spacing };
+        }
+        
+        function updatePreviewGrid(perRow, perColumn, width, height, spacing) {
+            const gridContainer = document.getElementById('gridContainer');
+            const previewGrid = document.getElementById('previewGrid');
+            
+            if (perRow === 0 || perColumn === 0) {
+                previewGrid.style.display = 'none';
+                return;
+            }
+            
+            // Limpar grid anterior
+            gridContainer.innerHTML = '';
+            
+            // Definir grid CSS com espaçamento
+            const cellSize = Math.min(280 / perRow, 180 / perColumn);
+            const gap = Math.max(1, cellSize * (spacing / width * 10)); // Proporção do espaçamento
+            
+            gridContainer.style.gridTemplateColumns = `repeat(${perRow}, ${cellSize}px)`;
+            gridContainer.style.gap = `${gap}px`;
+            
+            // Adicionar células
+            for (let i = 0; i < perRow * perColumn; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'preview-item';
+                cell.style.width = `${cellSize}px`;
+                cell.style.height = `${cellSize * (height / width)}px`;
+                gridContainer.appendChild(cell);
+            }
+            
+            previewGrid.style.display = 'block';
+        }
+        
+        function generatePDF() {
+            if (!currentImage) return;
+            
+            const layout = calculateLayout();
+            if (layout.totalImages === 0) {
+                alert('A imagem é muito grande para caber na página com o tamanho especificado.');
+                return;
+            }
+            
+            // Mostrar loading
+            const btn = document.getElementById('generateBtn');
+            const originalText = btn.textContent;
+            btn.textContent = '⏳ Gerando PDF...';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('portrait', 'cm', 'a4');
+                
+                const borderWidth = parseFloat(document.getElementById('borderWidth').value) / 10; // mm para cm
+                const borderColor = document.getElementById('borderColor').value;
+                
+                // Margens de 1cm
+                const marginX = 1;
+                const marginY = 1;
+                
+                // Posicionar imagens com espaçamento
+                for (let row = 0; row < layout.imagesPerColumn; row++) {
+                    for (let col = 0; col < layout.imagesPerRow; col++) {
+                        const x = marginX + (col * (layout.finalWidth + layout.spacing));
+                        const y = marginY + (row * (layout.finalHeight + layout.spacing));
+                        
+                        // Desenhar borda se especificada
+                        if (borderColor !== 'none' && borderWidth > 0) {
+                            doc.setDrawColor(borderColor);
+                            doc.setLineWidth(borderWidth);
+                            doc.rect(
+                                x - borderWidth/2, 
+                                y - borderWidth/2, 
+                                layout.finalWidth + borderWidth, 
+                                layout.finalHeight + borderWidth
+                            );
+                        }
+                        
+                        // Adicionar imagem
+                        doc.addImage(
+                            currentImage, 
+                            'JPEG', 
+                            x, y, 
+                            layout.finalWidth, 
+                            layout.finalHeight
+                        );
+                    }
+                }
+                
+                // Rodapé com informações detalhadas
+                doc.setFontSize(7);
+                doc.setTextColor(120);
+                const spacingMM = (layout.spacing * 10).toFixed(1);
+                const borderMM = (borderWidth * 10).toFixed(1);
+                doc.text(
+                    `Gerado em: ${new Date().toLocaleString('pt-BR')} | Total: ${layout.totalImages} imagens | Tamanho: ${layout.finalWidth.toFixed(1)}×${layout.finalHeight.toFixed(1)}cm | Espaçamento: ${spacingMM}mm | Borda: ${borderMM}mm`, 
+                    1, 28.7
+                );
+                
+                // Salvar
+                const fileName = `imagens_${layout.finalWidth.toFixed(1)}x${layout.finalHeight.toFixed(1)}cm_esp${spacingMM}mm_${new Date().toISOString().slice(0,10)}.pdf`;
+                doc.save(fileName);
+                
+                // Restaurar botão
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }, 100);
+        }
+        
+        function resetAll() {
+            currentImage = null;
+            imageAspectRatio = 1;
+            
+            // Resetar interface
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('controls').style.display = 'none';
+            document.querySelector('.reset-btn').style.display = 'none';
+            uploadArea.style.display = 'block';
+            document.getElementById('previewGrid').style.display = 'none';
+            
+            // Resetar valores
+            document.getElementById('maxSize').value = 3;
+            document.getElementById('sizeType').value = 'height';
+            document.getElementById('spacing').value = 1;
+            document.getElementById('borderWidth').value = 0.2;
+            document.getElementById('borderColor').value = 'none';
+            document.getElementById('imageInput').value = '';
+        }
+        
+        // Event listeners para recálculo automático
+        document.getElementById('maxSize').addEventListener('input', calculateLayout);
+        document.getElementById('sizeType').addEventListener('change', calculateLayout);
+        document.getElementById('spacing').addEventListener('input', calculateLayout);
+        document.getElementById('borderWidth').addEventListener('input', calculateLayout);
+        document.getElementById('borderColor').addEventListener('change', calculateLayout);
+    </script>
+</body>
+</html>
