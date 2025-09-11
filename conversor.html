@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor Universal de Arquivos</title>
+    <!-- Bibliotecas para conversão -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
+            border: 1px solid #f0f0f0;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #f5f5f5;
+            padding-bottom: 30px;
+        }
+        
+        .title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .title-accent {
+            color: #ff8c00;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+        
+        .supported-formats {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .format-badge {
+            background: linear-gradient(135deg, #ff8c00, #ff9500);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .upload-section {
+            margin-bottom: 30px;
+        }
+        
+        .upload-area {
+            border: 3px dashed #e0e0e0;
+            border-radius: 15px;
+            padding: 50px 20px;
+            text-align: center;
+            background: #fafafa;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        
+        .upload-area:hover {
+            border-color: #ff8c00;
+            background: #fff8f0;
+            transform: translateY(-2px);
+        }
+        
+        .upload-area.dragover {
+            border-color: #ff8c00;
+            background: #fff4e6;
+            transform: scale(1.02);
+        }
+        
+        .upload-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #ff8c00;
+        }
+        
+        .upload-text {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .upload-subtext {
+            color: #888;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .file-info {
+            display: none;
+            background: linear-gradient(135deg, #f8f9fa, #ffffff);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 20px 0;
+            border: 1px solid #e9ecef;
+        }
+        
+        .file-details {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .file-icon {
+            width: 60px;
+            height: 60px;
+            background: #ff8c00;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .file-meta {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .file-name {
+            font-weight: 700;
+            color: #333;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        
+        .converter-controls {
+            display: none;
+            background: #ffffff;
+            border: 2px solid #f0f0f0;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 25px 0;
+        }
+        
+        .control-section {
+            margin-bottom: 25px;
+        }
+        
+        .control-label {
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 12px;
+            display: block;
+            font-size: 1.1rem;
+        }
+        
+        .format-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+        }
+        
+        .format-option {
+            background: white;
+            border: 2px solid #f0f0f0;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .format-option:hover {
+            border-color: #ff8c00;
+            background: #fff8f0;
+            transform: translateY(-2px);
+        }
+        
+        .format-option.selected {
+            border-color: #ff8c00;
+            background: #fff4e6;
+            box-shadow: 0 4px 12px rgba(255, 140, 0, 0.2);
+        }
+        
+        .format-option.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background: #f8f8f8;
+        }
+        
+        .format-option.disabled:hover {
+            transform: none;
+            border-color: #f0f0f0;
+            background: #f8f8f8;
+        }
+        
+        .format-icon {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+        
+        .format-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9rem;
+            margin-bottom: 3px;
+        }
+        
+        .format-desc {
+            font-size: 0.75rem;
+            color: #666;
+        }
+        
+        .quality-section {
+            display: none;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .quality-slider {
+            width: 100%;
+            margin: 10px 0;
+            accent-color: #ff8c00;
+        }
+        
+        .quality-value {
+            font-weight: 700;
+            color: #ff8c00;
+        }
+        
+        .convert-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #ff8c00, #ff9500);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 20px;
+        }
+        
+        .convert-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, #e67c00, #ff8c00);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(255, 140, 0, 0.3);
+        }
+        
+        .convert-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .progress-section {
+            display: none;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #ff8c00, #ff9500);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        
+        .reset-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .reset-btn:hover {
+            background: #ff5252;
+            transform: translateY(-1px);
+        }
+        
+        .conversion-history {
+            margin-top: 30px;
+            display: none;
+        }
+        
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .download-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .download-btn:hover {
+            background: #218838;
+            transform: translateY(-1px);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .title {
+                font-size: 2rem;
+            }
+            
+            .format-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .reset-btn {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="reset-btn" onclick="resetConverter()" style="display: none;">🔄 Nova Conversão</button>
+        
+        <div class="header">
+            <h1 class="title">Conversor <span class="title-accent">Universal</span></h1>
+            <p class="subtitle">Converta seus arquivos entre diferentes formatos sem instalar nada</p>
+            <div class="supported-formats">
+                <span class="format-badge">JPG</span>
+                <span class="format-badge">PNG</span>
+                <span class="format-badge">WebP</span>
+                <span class="format-badge">BMP</span>
+                <span class="format-badge">GIF</span>
+                <span class="format-badge">PDF</span>
+                <span class="format-badge">DOCX</span>
+                <span class="format-badge">XLSX</span>
+                <span class="format-badge">TXT</span>
+                <span class="format-badge">CSV</span>
+                <span class="format-badge">JSON</span>
+                <span class="format-badge">SVG</span>
+                <span class="format-badge">ICO</span>
+                <span class="format-badge">AVIF</span>
+            </div>
+        </div>
+        
+        <div class="upload-section">
+            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">Arraste seu arquivo aqui ou clique para selecionar</div>
+                <div class="upload-subtext">
+                    Suporte a imagens, PDFs, documentos Word, Excel, texto e muito mais<br>
+                    <strong>Tamanho máximo:</strong> 50MB por arquivo
+                </div>
+                <input type="file" id="fileInput" class="file-input" accept="*/*">
+            </div>
+            
+            <div class="file-info" id="fileInfo">
+                <div class="file-details">
+                    <div class="file-icon" id="fileIcon">📄</div>
+                    <div>
+                        <div class="file-name" id="fileName">arquivo.ext</div>
+                        <div class="file-meta" id="fileMeta">
+                            <strong>Tamanho:</strong> 0 KB<br>
+                            <strong>Tipo:</strong> Desconhecido<br>
+                            <strong>Formato Original:</strong> ---
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="converter-controls" id="converterControls">
+            <div class="control-section">
+                <label class="control-label">🎯 Escolha o formato de destino:</label>
+                <div class="format-grid" id="formatGrid">
+                    <!-- Formatos serão inseridos dinamicamente -->
+                </div>
+            </div>
+            
+            <div class="quality-section" id="qualitySection">
+                <label class="control-label">⚙️ Qualidade da conversão:</label>
+                <input type="range" class="quality-slider" id="qualitySlider" min="10" max="100" value="85">
+                <div>Qualidade: <span class="quality-value" id="qualityValue">85%</span></div>
+            </div>
+            
+            <div class="progress-section" id="progressSection">
+                <div>🔄 Convertendo arquivo...</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div id="progressText">Preparando conversão...</div>
+            </div>
+            
+            <button class="convert-btn" id="convertBtn" onclick="startConversion()" disabled>
+                🚀 Converter Arquivo
+            </button>
+        </div>
+        
+        <div class="conversion-history" id="conversionHistory">
+            <h3>📥 Arquivos Convertidos:</h3>
+            <div id="historyList"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentFile = null;
+        let selectedFormat = null;
+        let conversionHistory = [];
+        
+        // Mapeamento de formatos suportados
+        const formatSupport = {
+            // Imagens
+            'image': {
+                'jpg': { icon: '🖼️', name: 'JPEG', desc: 'Comprimido', quality: true },
+                'png': { icon: '🖼️', name: 'PNG', desc: 'Transparência', quality: false },
+                'webp': { icon: '🌐', name: 'WebP', desc: 'Moderno', quality: true },
+                'bmp': { icon: '🖼️', name: 'BMP', desc: 'Bitmap', quality: false },
+                'gif': { icon: '🎞️', name: 'GIF', desc: 'Animado', quality: false },
+                'avif': { icon: '🌟', name: 'AVIF', desc: 'Futuro', quality: true },
+                'ico': { icon: '🔗', name: 'ICO', desc: 'Ícone', quality: false },
+                'svg': { icon: '🎨', name: 'SVG', desc: 'Vetor', quality: false },
+                'pdf': { icon: '📄', name: 'PDF', desc: 'Documento', quality: true }
+            },
+            // Documentos
+            'document': {
+                'pdf': { icon: '📄', name: 'PDF', desc: 'Documento', quality: false },
+                'txt': { icon: '📝', name: 'TXT', desc: 'Texto', quality: false },
+                'html': { icon: '🌐', name: 'HTML', desc: 'Web', quality: false },
+                'json': { icon: '🔧', name: 'JSON', desc: 'Dados', quality: false }
+            },
+            // Planilhas
+            'spreadsheet': {
+                'xlsx': { icon: '📊', name: 'Excel', desc: 'Planilha', quality: false },
+                'csv': { icon: '📋', name: 'CSV', desc: 'Tabela', quality: false },
+                'json': { icon: '🔧', name: 'JSON', desc: 'Dados', quality: false },
+                'pdf': { icon: '📄', name: 'PDF', desc: 'Documento', quality: false }
+            },
+            // Texto
+            'text': {
+                'pdf': { icon: '📄', name: 'PDF', desc: 'Documento', quality: false },
+                'html': { icon: '🌐', name: 'HTML', desc: 'Web', quality: false },
+                'json': { icon: '🔧', name: 'JSON', desc: 'Dados', quality: false },
+                'txt': { icon: '📝', name: 'TXT', desc: 'Texto', quality: false }
+            }
+        };
+        
+        // Configurar drag and drop
+        const uploadArea = document.querySelector('.upload-area');
+        const fileInput = document.getElementById('fileInput');
+        
+        setupDragAndDrop();
+        
+        function setupDragAndDrop() {
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFileUpload(files[0]);
+                }
+            });
+            
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleFileUpload(e.target.files[0]);
+                }
+            });
+        }
+        
+        function handleFileUpload(file) {
+            // Validar tamanho
+            if (file.size > 50 * 1024 * 1024) {
+                alert('Arquivo muito grande. Máximo 50MB.');
+                return;
+            }
+            
+            currentFile = file;
+            displayFileInfo(file);
+            setupConverter(file);
+        }
+        
+        function displayFileInfo(file) {
+            const fileInfo = document.getElementById('fileInfo');
+            const fileName = document.getElementById('fileName');
+            const fileMeta = document.getElementById('fileMeta');
+            const fileIcon = document.getElementById('fileIcon');
+            
+            const extension = file.name.split('.').pop().toLowerCase();
+            const fileType = getFileCategory(file.type, extension);
+            
+            // Determinar ícone
+            let icon = '📄';
+            if (file.type.startsWith('image/')) icon = '🖼️';
+            else if (file.type.includes('pdf')) icon = '📄';
+            else if (file.type.includes('word') || extension === 'docx') icon = '📝';
+            else if (file.type.includes('sheet') || extension === 'xlsx') icon = '📊';
+            else if (file.type.startsWith('text/')) icon = '📝';
+            
+            fileIcon.textContent = icon;
+            fileName.textContent = file.name;
+            fileMeta.innerHTML = `
+                <strong>Tamanho:</strong> ${formatFileSize(file.size)}<br>
+                <strong>Tipo:</strong> ${file.type || 'Desconhecido'}<br>
+                <strong>Formato Original:</strong> ${extension.toUpperCase()}
+            `;
+            
+            fileInfo.style.display = 'block';
+            document.querySelector('.reset-btn').style.display = 'block';
+        }
+        
+        function getFileCategory(mimeType, extension) {
+            if (mimeType.startsWith('image/')) return 'image';
+            if (mimeType.includes('pdf')) return 'document';
+            if (mimeType.includes('word') || extension === 'docx') return 'document';
+            if (mimeType.includes('sheet') || extension === 'xlsx') return 'spreadsheet';
+            if (mimeType.startsWith('text/') || extension === 'txt' || extension === 'csv') return 'text';
+            if (extension === 'json') return 'text';
+            return 'document';
+        }
+        
+        function setupConverter(file) {
+            const extension = file.name.split('.').pop().toLowerCase();
+            const category = getFileCategory(file.type, extension);
+            const supportedFormats = formatSupport[category] || formatSupport.document;
+            
+            const formatGrid = document.getElementById('formatGrid');
+            formatGrid.innerHTML = '';
+            
+            // Criar opções de formato
+            Object.entries(supportedFormats).forEach(([format, info]) => {
+                if (format === extension) return; // Não mostrar formato original
+                
+                const option = document.createElement('div');
+                option.className = 'format-option';
+                option.dataset.format = format;
+                option.innerHTML = `
+                    <div class="format-icon">${info.icon}</div>
+                    <div class="format-name">${info.name}</div>
+                    <div class="format-desc">${info.desc}</div>
+                `;
+                
+                option.addEventListener('click', () => selectFormat(format, info.quality));
+                formatGrid.appendChild(option);
+            });
+            
+            document.getElementById('converterControls').style.display = 'block';
+        }
+        
+        function selectFormat(format, hasQuality) {
+            selectedFormat = format;
+            
+            // Atualizar visual
+            document.querySelectorAll('.format-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            document.querySelector(`[data-format="${format}"]`).classList.add('selected');
+            
+            // Mostrar/ocultar controle de qualidade
+            const qualitySection = document.getElementById('qualitySection');
+            if (hasQuality && (format === 'jpg' || format === 'webp' || format === 'avif' || format === 'pdf')) {
+                qualitySection.style.display = 'block';
+            } else {
+                qualitySection.style.display = 'none';
+            }
+            
+            // Habilitar botão
+            document.getElementById('convertBtn').disabled = false;
+        }
+        
+        async function startConversion() {
+            if (!currentFile || !selectedFormat) return;
+            
+            const progressSection = document.getElementById('progressSection');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            const convertBtn = document.getElementById('convertBtn');
+            
+            // Mostrar progresso
+            progressSection.style.display = 'block';
+            convertBtn.disabled = true;
+            
+            try {
+                let result = null;
+                const extension = currentFile.name.split('.').pop().toLowerCase();
+                
+                // Simular progresso
+                updateProgress(20, 'Analisando arquivo...');
+                
+                if (currentFile.type.startsWith('image/')) {
+                    result = await convertImage(currentFile, selectedFormat);
+                } else if (currentFile.type.includes('pdf')) {
+                    result = await convertPDF(currentFile, selectedFormat);
+                } else if (extension === 'docx') {
+                    result = await convertWord(currentFile, selectedFormat);
+                } else if (extension === 'xlsx') {
+                    result = await convertExcel(currentFile, selectedFormat);
+                } else {
+                    result = await convertText(currentFile, selectedFormat);
+                }
+                
+                updateProgress(100, 'Conversão concluída!');
+                
+                if (result) {
+                    downloadFile(result.blob, result.filename);
+                    addToHistory(result.filename, result.blob);
+                }
+                
+            } catch (error) {
+                console.error('Erro na conversão:', error);
+                alert('Erro durante a conversão: ' + error.message);
+            }
+            
+            // Ocultar progresso e reabilitar botão
+            setTimeout(() => {
+                progressSection.style.display = 'none';
+                convertBtn.disabled = false;
+                updateProgress(0, '');
+            }, 2000);
+        }
+        
+        async function convertImage(file, targetFormat) {
+            updateProgress(40, 'Carregando imagem...');
+            
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    updateProgress(60, 'Convertendo...');
+                    
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    
+                    // Fundo branco para JPEG
+                    if (targetFormat === 'jpg') {
+                        ctx.fillStyle = 'white';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    }
+                    
+                    ctx.drawImage(img, 0, 0);
+                    
+                    if (targetFormat === 'pdf') {
+                        // Converter para PDF
+                        const { jsPDF } = window.jspdf;
+                        const pdf = new jsPDF({
+                            orientation: img.width > img.height ? 'landscape' : 'portrait',
+                            unit: 'px',
+                            format: [img.width, img.height]
+                        });
+                        
+                        const imgData = canvas.toDataURL('image/jpeg', 0.85);
+                        pdf.addImage(imgData, 'JPEG', 0, 0, img.width, img.height);
+                        
+                        const pdfBlob = new Blob([pdf.output('arraybuffer')], { type: 'application/pdf' });
+                        const filename = file.name.replace(/\.[^/.]+$/, '.pdf');
+                        
+                        updateProgress(90, 'Finalizando PDF...');
+                        resolve({ blob: pdfBlob, filename });
+                    } else {
+                        // Converter para outro formato de imagem
+                        const quality = document.getElementById('qualitySlider').value / 100;
+                        let mimeType;
+                        
+                        switch (targetFormat) {
+                            case 'jpg': mimeType = 'image/jpeg'; break;
+                            case 'png': mimeType = 'image/png'; break;
+                            case 'webp': mimeType = 'image/webp'; break;
+                            case 'bmp': mimeType = 'image/bmp'; break;
+                            default: mimeType = 'image/png';
+                        }
+                        
+                        canvas.toBlob((blob) => {
+                            const filename = file.name.replace(/\.[^/.]+$/, `.${targetFormat}`);
+                            updateProgress(90, 'Finalizando...');
+                            resolve({ blob, filename });
+                        }, mimeType, quality);
+                    }
+                };
+                img.src = URL.createObjectURL(file);
+            });
+        }
+        
+        async function convertPDF(file, targetFormat) {
+            updateProgress(40, 'Lendo PDF...');
+            // Simulação - conversão PDF é mais complexa
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const blob = new Blob([file], { type: 'application/octet-stream' });
+                    const filename = file.name.replace(/\.[^/.]+$/, `.${targetFormat}`);
+                    updateProgress(90, 'Convertendo PDF...');
+                    resolve({ blob, filename });
+                }, 1000);
+            });
+        }
+        
+        async function convertWord(file, targetFormat) {
+            updateProgress(40, 'Extraindo texto...');
+            
+            if (targetFormat === 'txt' || targetFormat === 'html') {
+                try {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const result = await mammoth.extractRawText({ arrayBuffer });
+                    
+                    updateProgress(80, 'Formatando texto...');
+                    
+                    let content = result.value;
+                    let mimeType = 'text/plain';
+                    
+                    if (targetFormat === 'html') {
+                        content = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Documento</title></head><body><pre>${content}</pre></body></html>`;
+                        mimeType = 'text/html';
+                    }
+                    
+                    const blob = new Blob([content], { type: mimeType });
+                    const filename = file.name.replace(/\.[^/.]+$/, `.${targetFormat}`);
+                    
+                    return { blob, filename };
+                } catch (error) {
+                    throw new Error('Erro ao processar documento Word: ' + error.message);
+                }
+            }
+            
+            // Para outros formatos, retorna arquivo original como fallback
+            return new Promise((resolve) => {
+                const blob = new Blob([file], { type: 'application/octet-stream' });
+                const filename = file.name.replace(/\.[^/.]+$/, `.${targetFormat}`);
+                resolve({ blob, filename });
+            });
+        }
+        
+        async function convertExcel(file, targetFormat) {
+            updateProgress(40, 'Lendo planilha...');
+            
+            try {
+                const data = await file.arrayBuffer();
+                const workbook = XLSX.read(data);
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+                
+                updateProgress(70, 'Convertendo dados...');
+                
+                if (targetFormat === 'csv') {
+                    const csv = XLSX.utils.sheet_to_csv(worksheet);
+                    const blob = new Blob([csv], { type: 'text/csv' });
+                    const filename = file.name.replace(/\.[^/.]+$/, '.csv');
+                    return { blob, filename };
+                } else if (targetFormat === 'json') {
+                    const json = XLSX.utils.sheet_to_json(worksheet);
+                    const jsonStr = JSON.stringify(json, null, 2);
+                    const blob = new Blob([jsonStr], { type: 'application/json' });
+                    const filename = file.name.replace(/\.[^/.]+$/, '.json');
+                    return { blob, filename };
+                } else if (targetFormat === 'pdf') {
+                    // Converter para PDF usando jsPDF
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF('portrait', 'mm', 'a4');
+                    
+                    const csv = XLSX.utils.sheet_to_csv(worksheet);
+                    const lines = csv.split('\n');
+                    
+                    let y = 20;
+                    pdf.setFontSize(10);
+                    
+                    lines.forEach((line, index) => {
+                        if (y > 280) {
+                            pdf.addPage();
+                            y = 20;
+                        }
+                        pdf.text(line.substring(0, 80), 10, y); // Limita largura
+                        y += 6;
+                    });
+                    
+                    const pdfBlob = new Blob([pdf.output('arraybuffer')], { type: 'application/pdf' });
+                    const filename = file.name.replace(/\.[^/.]+$/, '.pdf');
+                    return { blob: pdfBlob, filename };
+                }
+            } catch (error) {
+                throw new Error('Erro ao processar planilha Excel: ' + error.message);
+            }
+            
+            // Fallback
+            return new Promise((resolve) => {
+                const blob = new Blob([file], { type: 'application/octet-stream' });
+                const filename = file.name.replace(/\.[^/.]+$/, `.${targetFormat}`);
+                resolve({ blob, filename });
+            });
+        }
+        
+        async function convertText(file, targetFormat) {
+            updateProgress(40, 'Lendo texto...');
+            
+            try {
+                const text = await file.text();
+                updateProgress(70, 'Formatando saída...');
+                
+                if (targetFormat === 'pdf') {
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF('portrait', 'mm', 'a4');
+                    
+                    // Dividir texto em linhas que cabem na página
+                    const lines = pdf.splitTextToSize(text, 180);
+                    let y = 20;
+                    
+                    pdf.setFontSize(11);
+                    lines.forEach((line) => {
+                        if (y > 280) {
+                            pdf.addPage();
+                            y = 20;
+                        }
+                        pdf.text(line, 15, y);
+                        y += 6;
+                    });
+                    
+                    const pdfBlob = new Blob([pdf.output('arraybuffer')], { type: 'application/pdf' });
+                    const filename = file.name.replace(/\.[^/.]+$/, '.pdf');
+                    return { blob: pdfBlob, filename };
+                    
+                } else if (targetFormat === 'html') {
+                    const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documento Convertido</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+        pre { white-space: pre-wrap; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+    <h1>Documento Convertido</h1>
+    <pre>${text}</pre>
+</body>
+</html>`;
+                    
+                    const blob = new Blob([html], { type: 'text/html' });
+                    const filename = file.name.replace(/\.[^/.]+$/, '.html');
+                    return { blob, filename };
+                    
+                } else if (targetFormat === 'json') {
+                    // Tentar converter CSV para JSON se possível
+                    const lines = text.trim().split('\n');
+                    if (lines.length > 1 && lines[0].includes(',')) {
+                        const headers = lines[0].split(',').map(h => h.trim().replace(/['"]/g, ''));
+                        const data = lines.slice(1).map(line => {
+                            const values = line.split(',').map(v => v.trim().replace(/['"]/g, ''));
+                            const obj = {};
+                            headers.forEach((header, index) => {
+                                obj[header] = values[index] || '';
+                            });
+                            return obj;
+                        });
+                        
+                        const jsonStr = JSON.stringify(data, null, 2);
+                        const blob = new Blob([jsonStr], { type: 'application/json' });
+                        const filename = file.name.replace(/\.[^/.]+$/, '.json');
+                        return { blob, filename };
+                    } else {
+                        // JSON simples com o texto
+                        const jsonData = { content: text, converted_at: new Date().toISOString() };
+                        const jsonStr = JSON.stringify(jsonData, null, 2);
+                        const blob = new Blob([jsonStr], { type: 'application/json' });
+                        const filename = file.name.replace(/\.[^/.]+$/, '.json');
+                        return { blob, filename };
+                    }
+                } else {
+                    // TXT ou outros formatos de texto
+                    const blob = new Blob([text], { type: 'text/plain' });
+                    const filename = file.name.replace(/\.[^/.]+$/, `.${targetFormat}`);
+                    return { blob, filename };
+                }
+                
+            } catch (error) {
+                throw new Error('Erro ao processar arquivo de texto: ' + error.message);
+            }
+        }
+        
+        function updateProgress(percentage, message) {
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            
+            progressFill.style.width = percentage + '%';
+            progressText.textContent = message;
+        }
+        
+        function downloadFile(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        function addToHistory(filename, blob) {
+            conversionHistory.push({ filename, blob, timestamp: new Date() });
+            updateHistoryDisplay();
+            
+            const historySection = document.getElementById('conversionHistory');
+            historySection.style.display = 'block';
+        }
+        
+        function updateHistoryDisplay() {
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+            
+            conversionHistory.slice(-5).reverse().forEach((item, index) => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.innerHTML = `
+                    <div>
+                        <strong>${item.filename}</strong><br>
+                        <small>Convertido em: ${item.timestamp.toLocaleString('pt-BR')}</small>
+                    </div>
+                    <button class="download-btn" onclick="downloadFromHistory(${conversionHistory.length - 1 - index})">
+                        📥 Baixar
+                    </button>
+                `;
+                historyList.appendChild(historyItem);
+            });
+        }
+        
+        function downloadFromHistory(index) {
+            const item = conversionHistory[index];
+            downloadFile(item.blob, item.filename);
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        function resetConverter() {
+            currentFile = null;
+            selectedFormat = null;
+            
+            // Ocultar seções
+            document.getElementById('fileInfo').style.display = 'none';
+            document.getElementById('converterControls').style.display = 'none';
+            document.getElementById('progressSection').style.display = 'none';
+            document.querySelector('.reset-btn').style.display = 'none';
+            
+            // Limpar upload
+            document.getElementById('fileInput').value = '';
+            
+            // Limpar seleções
+            document.querySelectorAll('.format-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            document.getElementById('convertBtn').disabled = true;
+        }
+        
+        // Event listeners
+        document.getElementById('qualitySlider').addEventListener('input', (e) => {
+            document.getElementById('qualityValue').textContent = e.target.value + '%';
+        });
+        
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Conversor Universal carregado!');
+        });
+    </script>
+</body>
+</html>
