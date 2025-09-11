@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central de Ferramentas</title>
+    <style>
+        /* --- Estilos Gerais e Reset --- */
+        :root {
+            --cor-primaria: #F59E0B; /* Laranja */
+            --cor-primaria-hover: #D97706; /* Laranja mais escuro */
+            --cor-fundo: #FFFFFF; /* Branco */
+            --cor-texto: #1F2937;
+            --cor-texto-suave: #6B7280;
+            --cor-borda: #E5E7EB;
+            --cor-fundo-input: #F9FAFB;
+            --cor-sucesso: #10B981;
+            --cor-erro: #EF4444;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--cor-fundo);
+            color: var(--cor-texto);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        * { box-sizing: border-box; }
+
+        /* --- Componentes UI --- */
+        .container { max-width: 1200px; margin: auto; padding: 0 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .header h1 { font-size: 2rem; font-weight: bold; }
+        .filtros { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
+        .input-group { flex-grow: 1; position: relative; }
+        .input, .select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--cor-borda);
+            border-radius: 0.375rem;
+            background-color: var(--cor-fundo-input);
+            font-size: 1rem;
+        }
+        .input-group input { padding-left: 2.5rem; }
+        .input-group .icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--cor-texto-suave); }
+        .select { appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem; }
+        .grid-consultas { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+        .card {
+            border: 1px solid var(--cor-borda);
+            border-radius: 0.5rem;
+            background-color: var(--cor-fundo);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1);
+        }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1); }
+        .card-header { padding: 1.5rem; }
+        .card-title { font-size: 1.25rem; font-weight: 600; margin: 0 0 0.5rem 0; }
+        .card-description { color: var(--cor-texto-suave); margin: 0; }
+        .card-content { padding: 1.5rem; border-top: 1px solid var(--cor-borda); }
+        .card-footer { display: flex; justify-content: space-between; align-items: center; }
+        .custo { font-size: 1.25rem; font-weight: 600; }
+        .custo.gratis { color: var(--cor-sucesso); }
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            background-color: var(--cor-primaria);
+            color: white;
+            font-size: 0.9rem;
+        }
+        .btn:hover { background-color: var(--cor-primaria-hover); }
+        .btn:disabled { background-color: #FBBF24; cursor: not-allowed; }
+        .btn-secondary { background-color: var(--cor-borda); color: var(--cor-texto); }
+        .btn-secondary:hover { background-color: #D1D5DB; }
+
+        /* --- Estilos do Modal --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: var(--cor-fundo);
+            margin: auto;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        }
+        .modal-header { margin-bottom: 1rem; }
+        .modal-title { font-size: 1.5rem; font-weight: 600; margin: 0; }
+        .modal-description { color: var(--cor-texto-suave); margin-top: 0.25rem; }
+        .modal-body { margin: 2rem 0; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 0.5rem; }
+        .modal.show { display: flex; }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--cor-primaria);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #pagamento-modal .qr-code { text-align: center; margin-bottom: 1.5rem; }
+        #pagamento-modal .qr-code img { max-width: 200px; margin: auto; }
+        #pagamento-modal .copia-cola-group { display: flex; gap: 0.5rem; }
+        #pagamento-modal .copia-cola-group input { flex-grow: 1; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header class="header">
+            <h1>Central de Ferramentas</h1>
+        </header>
+
+        <div class="filtros">
+            <div class="input-group">
+                <span class="icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/></svg>
+                </span>
+                <input type="text" id="busca" class="input" placeholder="Buscar consulta por nome...">
+            </div>
+            <select id="ordenacao" class="select" style="min-width: 200px;">
+                <option value="menor-maior">Menor Preço</option>
+                <option value="maior-menor">Maior Preço</option>
+            </select>
+        </div>
+
+        <div id="grid-consultas" class="grid-consultas">
+            <!-- Os cards das consultas serão inseridos aqui pelo JavaScript -->
+        </div>
+    </div>
+
+    <!-- Modal para Inserir Dados da Consulta -->
+    <div id="consulta-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="consulta-modal-title" class="modal-title"></h2>
+                <p class="modal-description">Preencha os dados para continuar.</p>
+            </div>
+            <div id="consulta-modal-body" class="modal-body">
+                <!-- Campos do formulário serão inseridos aqui -->
+            </div>
+            <div class="modal-footer">
+                <button id="consulta-modal-cancel" class="btn btn-secondary">Cancelar</button>
+                <button id="consulta-modal-confirm" class="btn">
+                    <span id="consulta-loader" style="display: none;" class="loader"></span>
+                    Confirmar Consulta
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Pagamento PIX -->
+    <div id="pagamento-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Pagamento da Consulta</h2>
+                <p class="modal-description">Pague o PIX abaixo para liberar o resultado. Custo: <strong id="pagamento-custo"></strong></p>
+            </div>
+            <div class="modal-body">
+                <div class="qr-code">
+                    <img id="pagamento-qrcode-img" src="" alt="QR Code PIX">
+                </div>
+                <div class="form-group">
+                    <label for="pagamento-copia-cola">PIX Copia e Cola</label>
+                    <div class="copia-cola-group">
+                        <input type="text" id="pagamento-copia-cola" class="input" readonly>
+                        <button id="copiar-btn" class="btn">Copiar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                 <button id="pagamento-modal-cancel" class="btn btn-secondary">Cancelar</button>
+                <button id="pagamento-confirmar" class="btn" style="width: 100%;">
+                    <span id="pagamento-loader" style="display: none;" class="loader"></span>
+                    Confirmar e Ver Resultado
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Resultado (a ser implementado) -->
+    <div id="resultado-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Resultado da Consulta</h2>
+            </div>
+            <div id="resultado-modal-body" class="modal-body">
+                <!-- O resultado será exibido aqui -->
+                <p>Pagamento confirmado! Processando e exibindo o resultado...</p>
+            </div>
+            <div class="modal-footer">
+                <button id="resultado-modal-close" class="btn">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // --- Definição das Consultas (igual ao seu código TSX) ---
+        const todasConsultas = [
+            { id: 'qrcode_diverso', nome: 'QR Code Diverso', descricao: 'Crie um QR Code para qualquer link ou texto.', custoOriginal: 0, tipo: 'gratuito', campos: [{ nome: 'conteudo', placeholder: 'Digite o link ou texto', tipo: 'text' }] },
+            { id: 'qrcode_whatsapp', nome: 'QR Code WhatsApp', descricao: 'Gere um QR Code para iniciar uma conversa.', custoOriginal: 0, tipo: 'gratuito', campos: [{ nome: 'telefone', placeholder: 'DDD + Número (só números)', tipo: 'number' }] },
+            { id: 'qrcode_instagram', nome: 'QR Code Instagram', descricao: 'Gere um QR Code para um perfil do Instagram.', custoOriginal: 0, tipo: 'gratuito', campos: [{ nome: 'perfil', placeholder: 'Digite o @ do perfil', tipo: 'text' }] },
+            { id: 'moedas', nome: 'Cotação de Moedas', descricao: 'Veja a cotação de moedas em tempo real.', custoOriginal: 1.00, tipo: 'premium', campos: [{ nome: 'codigo_moeda', placeholder: 'Selecione a Moeda', tipo: 'select', opcoes: [ { valor: 'USD-BRL', label: 'Dólar Americano (USD)' }, { valor: 'EUR-BRL', label: 'Euro (EUR)' }, { valor: 'GBP-BRL', label: 'Libra Esterlina (GBP)' }, { valor: 'ARS-BRL', label: 'Peso Argentino (ARS)' }, { valor: 'BTC-BRL', label: 'Bitcoin (BTC)' }, { valor: 'ETH-BRL', label: 'Ethereum (ETH)' } ] }] },
+            { id: 'cep', nome: 'Consulta CEP', descricao: 'Busque informações de endereço por CEP.', custoOriginal: 0.25, tipo: 'premium', campos: [{ nome: 'cep', placeholder: 'Digite o CEP', tipo: 'text' }] },
+            { id: 'cnpj_basico', nome: 'Dados CNPJ', descricao: 'Dados cadastrais de empresas na Receita Federal.', custoOriginal: 1.50, tipo: 'premium', campos: [{ nome: 'cnpj', placeholder: 'Digite o CNPJ', tipo: 'text' }] },
+            { id: 'banco', nome: 'Consulta Banco', descricao: 'Informações sobre um código de banco.', custoOriginal: 0.25, tipo: 'premium', campos: [{ nome: 'codigo', placeholder: 'Digite o código do banco', tipo: 'text' }] },
+            { id: 'ddd', nome: 'Consulta DDD', descricao: 'Encontre o estado e cidades de um DDD.', custoOriginal: 0.25, tipo: 'premium', campos: [{ nome: 'ddd', placeholder: 'Digite o DDD (2 dígitos)', tipo: 'number' }] },
+            { id: 'feriados', nome: 'Feriados Nacionais', descricao: 'Liste os feriados nacionais de um ano.', custoOriginal: 0.25, tipo: 'premium', campos: [{ nome: 'ano', placeholder: 'Digite o Ano (ex: 2025)', tipo: 'number' }] },
+            { id: 'fipe', nome: 'Tabela FIPE', descricao: 'Consulte o preço de um veículo pelo código FIPE.', custoOriginal: 0.25, tipo: 'premium', campos: [{ nome: 'codigo_fipe', placeholder: 'Digite o código FIPE', tipo: 'text' }] },
+            { id: 'dominio', nome: 'Consulta Domínio .BR', descricao: 'Verifique a situação de um domínio .br.', custoOriginal: 0.25, tipo: 'premium', campos: [{ nome: 'dominio', placeholder: 'ex: seudominio.com.br', tipo: 'text' }] },
+            { id: 'ibge_municipios', nome: 'Municípios por UF', descricao: 'Liste os municípios de uma Unidade Federativa.', custoOriginal: 0.25, tipo: 'premium', campos: [{ nome: 'sigla_uf', placeholder: 'Digite a sigla do Estado (ex: SP)', tipo: 'text' }] },
+            { id: 'cpf_dados', nome: 'Dados CPF', descricao: 'Informações cadastrais de pessoa física.', custoOriginal: 1.50, tipo: 'premium', campos: [{ nome: 'cpf', placeholder: 'Digite o CPF', tipo: 'text' }] },
+            { id: 'placa', nome: 'Placa (Completa)', descricao: 'Dados completos de veículos pela placa.', custoOriginal: 1.50, tipo: 'premium', campos: [{ nome: 'placa', placeholder: 'Digite a Placa', tipo: 'text' }] },
+            { id: 'nacional', nome: 'Placa (Base Nacional)', descricao: 'Verifique informações completas de um veículo.', custoOriginal: 1.50, tipo: 'premium', campos: [{ nome: 'placa', placeholder: 'Digite a Placa', tipo: 'text' }] },
+            { id: 'leilao', nome: 'Consulta Leilão', descricao: 'Verifique o histórico de leilão de um veículo.', custoOriginal: 1.50, tipo: 'premium', campos: [{ nome: 'placa', placeholder: 'Digite a Placa', tipo: 'text' }] },
+            { id: 'cpf_quod', nome: 'Restrições CPF', descricao: 'Consulta completa de restrições e score.', custoOriginal: 15.00, tipo: 'premium', campos: [{ nome: 'cpf', placeholder: 'Digite o CPF', tipo: 'text' }] },
+            { id: 'cnpj_quod', nome: 'Restrições CNPJ', descricao: 'Consulta completa de restrições e score.', custoOriginal: 20.00, tipo: 'premium', campos: [ { nome: 'cnpj', placeholder: 'Digite o CNPJ da Empresa', tipo: 'text' }, { nome: 'cpf_socio', placeholder: 'CPF de um dos Sócios', tipo: 'text' } ]},
+        ];
+
+        // --- Lógica da Aplicação ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const grid = document.getElementById('grid-consultas');
+            const buscaInput = document.getElementById('busca');
+            const ordenacaoSelect = document.getElementById('ordenacao');
+            
+            let consultaSelecionada = null;
+            let historicoIdAtual = null;
+
+            function renderizarConsultas() {
+                const termoBusca = buscaInput.value.toLowerCase();
+                const ordenacao = ordenacaoSelect.value;
+
+                const consultasFiltradas = todasConsultas.filter(c => c.nome.toLowerCase().includes(termoBusca));
+
+                consultasFiltradas.sort((a, b) => {
+                    if (ordenacao === 'menor-maior') return a.custoOriginal - b.custoOriginal;
+                    return b.custoOriginal - a.custoOriginal;
+                });
+
+                grid.innerHTML = '';
+                consultasFiltradas.forEach(consulta => {
+                    const custoDisplay = consulta.custoOriginal > 0 ? `R$ ${consulta.custoOriginal.toFixed(2)}` : 'Grátis';
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `
+                        <div class="card-header">
+                            <h3 class="card-title">${consulta.nome}</h3>
+                            <p class="card-description">${consulta.descricao}</p>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-footer">
+                                <span class="custo ${consulta.custoOriginal === 0 ? 'gratis' : ''}">${custoDisplay}</span>
+                                <button class="btn btn-consultar" data-id="${consulta.id}">
+                                    ${consulta.custoOriginal > 0 ? 'Consultar' : 'Gerar'}
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+
+            // --- Lógica dos Modais ---
+            const consultaModal = document.getElementById('consulta-modal');
+            const pagamentoModal = document.getElementById('pagamento-modal');
+            const resultadoModal = document.getElementById('resultado-modal');
+
+            function abrirModal(modal) { modal.classList.add('show'); }
+            function fecharModal(modal) { modal.classList.remove('show'); }
+
+            // Eventos para fechar modais
+            document.getElementById('consulta-modal-cancel').addEventListener('click', () => fecharModal(consultaModal));
+            document.getElementById('pagamento-modal-cancel').addEventListener('click', () => fecharModal(pagamentoModal));
+            document.getElementById('resultado-modal-close').addEventListener('click', () => fecharModal(resultadoModal));
+            window.addEventListener('click', (event) => {
+                if (event.target === consultaModal) fecharModal(consultaModal);
+                if (event.target === pagamentoModal) fecharModal(pagamentoModal);
+                if (event.target === resultadoModal) fecharModal(resultadoModal);
+            });
+
+            // Abrir modal de consulta
+            grid.addEventListener('click', (event) => {
+                if (event.target.classList.contains('btn-consultar')) {
+                    const id = event.target.getAttribute('data-id');
+                    consultaSelecionada = todasConsultas.find(c => c.id === id);
+                    
+                    document.getElementById('consulta-modal-title').innerText = consultaSelecionada.nome;
+                    const body = document.getElementById('consulta-modal-body');
+                    body.innerHTML = '';
+
+                    consultaSelecionada.campos.forEach(campo => {
+                        const group = document.createElement('div');
+                        group.className = 'form-group';
+                        let inputHtml = '';
+                        if (campo.tipo === 'select') {
+                            const options = campo.opcoes.map(opt => `<option value="${opt.valor}">${opt.label}</option>`).join('');
+                            inputHtml = `<select id="form-${campo.nome}" name="${campo.nome}" class="select">${options}</select>`;
+                        } else {
+                            inputHtml = `<input type="${campo.tipo}" id="form-${campo.nome}" name="${campo.nome}" placeholder="${campo.placeholder}" class="input">`;
+                        }
+                        group.innerHTML = `<label for="form-${campo.nome}">${campo.placeholder}</label>${inputHtml}`;
+                        body.appendChild(group);
+                    });
+                    
+                    abrirModal(consultaModal);
+                }
+            });
+
+            // Copiar código PIX
+            document.getElementById('copiar-btn').addEventListener('click', () => {
+                const input = document.getElementById('pagamento-copia-cola');
+                input.select();
+                document.execCommand('copy');
+                alert('Código PIX copiado!');
+            });
+
+            // --- Lógica de Submissão (CHAMADA PARA A EDGE FUNCTION) ---
+            
+            // 1. Iniciar Cobrança
+            document.getElementById('consulta-modal-confirm').addEventListener('click', async () => {
+                const dadosEntrada = {};
+                let formValido = true;
+                consultaSelecionada.campos.forEach(campo => {
+                    const input = document.getElementById(`form-${campo.nome}`);
+                    if (!input.value) {
+                        alert(`O campo "${campo.placeholder}" é obrigatório.`);
+                        formValido = false;
+                    }
+                    dadosEntrada[campo.nome] = input.value;
+                });
+
+                if (!formValido) return;
+
+                const loader = document.getElementById('consulta-loader');
+                loader.style.display = 'inline-block';
+
+                // ===================================================================
+                // AQUI VAI A CHAMADA PARA A SUA PRIMEIRA EDGE FUNCTION
+                // Exemplo: const response = await supabase.functions.invoke('gerar-cobranca-html', { ... });
+                // ===================================================================
+
+                // --- SIMULAÇÃO DE RESPOSTA DA EDGE FUNCTION ---
+                console.log("Iniciando cobrança com:", { consulta: consultaSelecionada, dadosEntrada });
+                setTimeout(() => { // Substitua este timeout pela sua chamada de API real
+                    const simulacaoResposta = {
+                        historicoId: 'hist_' + Date.now(),
+                        qrCodeUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=simulacao_pix',
+                        pixCopiaECola: 'simulacao_pix_copia_e_cola_gerado_pela_api',
+                        custo: consultaSelecionada.custoOriginal
+                    };
+                    // --- FIM DA SIMULAÇÃO ---
+
+                    loader.style.display = 'none';
+                    fecharModal(consultaModal);
+
+                    // Preenche e abre o modal de pagamento
+                    historicoIdAtual = simulacaoResposta.historicoId;
+                    document.getElementById('pagamento-custo').innerText = `R$ ${simulacaoResposta.custo.toFixed(2)}`;
+                    document.getElementById('pagamento-qrcode-img').src = simulacaoResposta.qrCodeUrl;
+                    document.getElementById('pagamento-copia-cola').value = simulacaoResposta.pixCopiaECola;
+                    abrirModal(pagamentoModal);
+
+                }, 2000);
+            });
+
+            // 2. Confirmar Pagamento e Executar Consulta
+            document.getElementById('pagamento-confirmar').addEventListener('click', async () => {
+                const loader = document.getElementById('pagamento-loader');
+                loader.style.display = 'inline-block';
+
+                // ===================================================================
+                // AQUI VAI A CHAMADA PARA A SUA SEGUNDA EDGE FUNCTION
+                // Exemplo: const response = await supabase.functions.invoke('confirmar-e-executar-html', { body: { historicoId: historicoIdAtual } });
+                // ===================================================================
+
+                // --- SIMULAÇÃO DE RESPOSTA DA EDGE FUNCTION ---
+                console.log("Confirmando pagamento para o histórico ID:", historicoIdAtual);
+                 setTimeout(() => { // Substitua este timeout pela sua chamada de API real
+                    const simulacaoResultado = {
+                        resultado: {
+                            message: "Consulta executada com sucesso!",
+                            dados: { info1: "Valor 1", info2: "Valor 2" }
+                        }
+                    };
+                    // --- FIM DA SIMULAÇÃO ---
+
+                    loader.style.display = 'none';
+                    fecharModal(pagamentoModal);
+
+                    // Exibe o modal de resultado (aqui você precisará formatar o resultado)
+                    document.getElementById('resultado-modal-body').innerText = JSON.stringify(simulacaoResultado.resultado, null, 2);
+                    abrirModal(resultadoModal);
+
+                }, 2000);
+            });
+
+
+            // Renderização inicial e eventos de filtro
+            buscaInput.addEventListener('input', renderizarConsultas);
+            ordenacaoSelect.addEventListener('change', renderizarConsultas);
+            renderizarConsultas();
+        });
+    </script>
+
+</body>
+</html>
