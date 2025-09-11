@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Fotos para Documentos</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+    <style>
+        /* Estilos Gerais e Reset */
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --light-bg: #f8f9fa;
+            --dark-text: #343a40;
+            --light-text: #6c757d;
+            --border-color: #dee2e6;
+            --white: #ffffff;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--light-bg);
+            color: var(--dark-text);
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 20px auto;
+            background: var(--white);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+        h1, h2, h3 { color: var(--dark-text); font-weight: 700; }
+        h1 { text-align: center; font-size: 2.5rem; margin-bottom: 10px; }
+        h1 .accent { color: var(--primary-color); }
+        .main-subtitle { text-align: center; color: var(--light-text); margin-bottom: 40px; font-size: 1.1rem; }
+
+        /* Estilos dos Botões */
+        .btn {
+            padding: 12px 25px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-primary { background-color: var(--primary-color); color: var(--white); }
+        .btn-primary:hover:not(:disabled) { background-color: #0056b3; transform: translateY(-2px); }
+        .btn-secondary { background-color: var(--secondary-color); color: var(--white); }
+        .btn-secondary:hover { background-color: #5a6268; }
+        .btn-success { background-color: var(--success-color); color: var(--white); }
+        .btn-success:hover { background-color: #218838; }
+        .btn:disabled { background-color: #ccc; cursor: not-allowed; transform: none; }
+
+        /* Seções do Wizard */
+        .wizard-step { display: none; }
+        .wizard-step.active { display: block; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .step-header {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .step-title { font-size: 1.8rem; }
+        .step-subtitle { color: var(--light-text); }
+
+        /* Etapa 1: Upload e Remoção de Fundo */
+        .upload-area {
+            border: 3px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 60px 20px;
+            text-align: center;
+            background: #fdfdfd;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .upload-area:hover { border-color: var(--primary-color); background: #f8f9ff; }
+        .upload-icon { font-size: 3rem; color: var(--primary-color); margin-bottom: 15px; }
+        .upload-text { font-size: 1.2rem; font-weight: 600; }
+        .upload-subtext { color: var(--light-text); }
+        #fileInput { display: none; }
+        .processing-feedback { text-align: center; margin: 40px 0; display: none; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-color); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Etapa 2: Edição e Corte */
+        .editor-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; }
+        .cropper-container { background: var(--light-bg); border-radius: 8px; overflow: hidden; }
+        .cropper-container img { max-width: 100%; display: block; }
+        .editor-controls .control-group { margin-bottom: 20px; }
+        .editor-controls label { display: block; font-weight: 600; margin-bottom: 8px; }
+        .size-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .size-btn { width: 100%; padding: 10px; background: var(--white); border: 2px solid var(--border-color); }
+        .size-btn.active { border-color: var(--primary-color); background: #e7f3ff; color: var(--primary-color); }
+        .slider-control { margin-top: 15px; }
+        .slider-control input[type="range"] { width: 100%; accent-color: var(--primary-color); }
+        .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        
+        /* Etapa 3: Layout de Impressão */
+        .layout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-weight: 600; margin-bottom: 8px; }
+        .input-group input, .input-group select { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem; }
+        .info-card { background: #e7f3ff; border-left: 4px solid var(--primary-color); padding: 20px; border-radius: 8px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+        .info-item .info-label { font-size: 0.9rem; color: var(--light-text); }
+        .info-item .info-value { font-size: 1.1rem; font-weight: 700; color: var(--primary-color); }
+        .final-actions { margin-top: 30px; display: flex; gap: 15px; justify-content: center; }
+
+        /* Responsividade */
+        @media (max-width: 992px) {
+            .editor-layout, .layout-grid { grid-template-columns: 1fr; }
+            .editor-controls { margin-top: 30px; }
+        }
+        @media (max-width: 768px) {
+            .container { padding: 20px; }
+            h1 { font-size: 2rem; }
+            .final-actions { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Gerador de Fotos para <span class="accent">Documentos</span></h1>
+        <p class="main-subtitle">Crie suas fotos 2x2, 3x4 ou 5x7 em 3 passos simples.</p>
+
+        <!-- ETAPA 1: REMOVER FUNDO -->
+        <div id="step1" class="wizard-step active">
+            <div class="step-header">
+                <h2 class="step-title">Passo 1: Envie sua foto</h2>
+                <p class="step-subtitle">Nossa IA removerá o fundo automaticamente para você.</p>
+            </div>
+            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-icon">📤</div>
+                <div class="upload-text">Clique aqui ou arraste sua imagem</div>
+                <div class="upload-subtext">Suporte: JPG, PNG, WebP (máx. 10MB)</div>
+                <input type="file" id="fileInput" accept="image/*">
+            </div>
+            <div id="processing-feedback" class="processing-feedback">
+                <div class="spinner"></div>
+                <p>Removendo o fundo... Por favor, aguarde.</p>
+            </div>
+        </div>
+
+        <!-- ETAPA 2: AJUSTAR E CORTAR -->
+        <div id="step2" class="wizard-step">
+            <div class="step-header">
+                <h2 class="step-title">Passo 2: Ajuste e corte a foto</h2>
+                <p class="step-subtitle">Escolha o tamanho, posicione e ajuste a imagem como desejar.</p>
+            </div>
+            <div class="editor-layout">
+                <div class="cropper-container">
+                    <img id="cropper-image" alt="Imagem para cortar">
+                </div>
+                <div class="editor-controls">
+                    <div class="control-group">
+                        <label>Tamanho do Documento</label>
+                        <div class="size-buttons">
+                            <button class="btn size-btn" data-ratio="3/4">3x4 cm</button>
+                            <button class="btn size-btn" data-ratio="5/7">5x7 cm</button>
+                            <button class="btn size-btn" data-ratio="1/1">2x2 cm</button>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label>Zoom</label>
+                        <input type="range" id="zoom-slider" min="0" max="2" value="0.5" step="0.01" class="slider-control">
+                    </div>
+                    <div class="control-group">
+                        <label>Luminosidade</label>
+                        <input type="range" id="brightness-slider" min="0.5" max="1.5" value="1" step="0.01" class="slider-control">
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-secondary" onclick="goToStep(1)">Voltar</button>
+                        <button class="btn btn-primary" onclick="processCropAndGoToStep3()">Avançar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ETAPA 3: LAYOUT DE IMPRESSÃO -->
+        <div id="step3" class="wizard-step">
+            <div class="step-header">
+                <h2 class="step-title">Passo 3: Prepare para Impressão</h2>
+                <p class="step-subtitle">Configure o layout e salve seu arquivo em PDF ou JPG.</p>
+            </div>
+            <div class="layout-grid">
+                <div class="layout-controls">
+                    <div class="input-group">
+                        <label for="pageSize">Tamanho do Papel</label>
+                        <select id="pageSize">
+                            <option value="10x15">10x15 cm</option>
+                            <option value="A4">A4 (21x29.7 cm)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="layoutMode">Modo de Layout</label>
+                        <select id="layoutMode">
+                            <option value="auto">Automático (Preencher)</option>
+                            <option value="manual">Manual</option>
+                        </select>
+                    </div>
+                    <div id="manualControls" style="display: none;">
+                        <div class="input-group">
+                            <label for="manualCols">Colunas</label>
+                            <input type="number" id="manualCols" value="2" min="1">
+                        </div>
+                        <div class="input-group">
+                            <label for="manualRows">Linhas</label>
+                            <input type="number" id="manualRows" value="2" min="1">
+                        </div>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <h3>Resumo da Impressão</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">Tamanho da Foto</div>
+                            <div class="info-value" id="finalSize">-</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Total de Fotos</div>
+                            <div class="info-value" id="totalCount">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="final-actions">
+                <button class="btn btn-secondary" onclick="goToStep(2)">Voltar</button>
+                <button class="btn btn-success" id="generatePdfBtn">📄 Salvar em PDF</button>
+                <button class="btn btn-success" id="generateJpgBtn">🖼️ Salvar em JPG</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Importa a função de remoção de fundo
+        import { removeBackground } from 'https://cdn.skypack.dev/@imgly/background-removal';
+
+        let cropper;
+        let originalFile = null;
+        let imageWithoutBg = null;
+        let croppedImage = null;
+        let currentAspectRatio = 3 / 4;
+
+        const fileInput = document.getElementById('fileInput');
+        const cropperImage = document.getElementById('cropper-image');
+        const zoomSlider = document.getElementById('zoom-slider');
+        const brightnessSlider = document.getElementById('brightness-slider');
+
+        // Navegação entre etapas
+        window.goToStep = (step) => {
+            document.querySelectorAll('.wizard-step').forEach(s => s.classList.remove('active'));
+            document.getElementById(`step${step}`).classList.add('active');
+        };
+
+        // ETAPA 1: Lógica de Upload e Remoção de Fundo
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            originalFile = file;
+
+            document.querySelector('.upload-area').style.display = 'none';
+            document.getElementById('processing-feedback').style.display = 'block';
+
+            try {
+                const blob = await removeBackground(file);
+                imageWithoutBg = URL.createObjectURL(blob);
+                setupCropper(imageWithoutBg);
+                goToStep(2);
+            } catch (error) {
+                console.error("Erro ao remover fundo:", error);
+                alert("Não foi possível remover o fundo. Tente outra imagem.");
+                resetApp();
+            } finally {
+                document.querySelector('.upload-area').style.display = 'block';
+                document.getElementById('processing-feedback').style.display = 'none';
+            }
+        });
+
+        // ETAPA 2: Lógica do Cropper e Ajustes
+        function setupCropper(imageUrl) {
+            cropperImage.src = imageUrl;
+            if (cropper) {
+                cropper.destroy();
+            }
+            cropper = new Cropper(cropperImage, {
+                aspectRatio: currentAspectRatio,
+                viewMode: 2,
+                dragMode: 'move',
+                autoCropArea: 0.9,
+                responsive: true,
+                background: false,
+                ready() {
+                    // Ajusta o zoom inicial
+                    const canvasData = cropper.getCanvasData();
+                    const containerData = cropper.getContainerData();
+                    const initialZoom = Math.min(containerData.width / canvasData.naturalWidth, containerData.height / canvasData.naturalHeight);
+                    cropper.zoomTo(initialZoom);
+                    zoomSlider.value = initialZoom;
+                }
+            });
+        }
+
+        document.querySelectorAll('.size-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentAspectRatio = eval(btn.dataset.ratio);
+                cropper.setAspectRatio(currentAspectRatio);
+            });
+        });
+
+        zoomSlider.addEventListener('input', (e) => cropper.zoomTo(e.target.value));
+        brightnessSlider.addEventListener('input', (e) => {
+            cropper.getCanvasElement().style.filter = `brightness(${e.target.value})`;
+        });
+
+        window.processCropAndGoToStep3 = () => {
+            const canvas = cropper.getCroppedCanvas({
+                width: 1000, // Alta resolução para impressão
+                fillColor: '#fff',
+                imageSmoothingEnabled: true,
+                imageSmoothingQuality: 'high',
+            });
+            
+            // Aplica o brilho permanentemente
+            const ctx = canvas.getContext('2d');
+            ctx.filter = `brightness(${brightnessSlider.value})`;
+            ctx.drawImage(canvas, 0, 0);
+
+            croppedImage = canvas.toDataURL('image/png');
+            updateLayoutInfo();
+            goToStep(3);
+        };
+
+        // ETAPA 3: Lógica do Layout de Impressão
+        const pageSizeSelect = document.getElementById('pageSize');
+        const layoutModeSelect = document.getElementById('layoutMode');
+        const manualColsInput = document.getElementById('manualCols');
+        const manualRowsInput = document.getElementById('manualRows');
+
+        [pageSizeSelect, layoutModeSelect, manualColsInput, manualRowsInput].forEach(el => {
+            el.addEventListener('change', updateLayoutInfo);
+        });
+
+        layoutModeSelect.addEventListener('change', () => {
+            document.getElementById('manualControls').style.display = layoutModeSelect.value === 'manual' ? 'block' : 'none';
+        });
+
+        function updateLayoutInfo() {
+            const { cols, rows, photoWidth, photoHeight } = calculateLayout();
+            document.getElementById('finalSize').textContent = `${(photoWidth / 10).toFixed(1)}x${(photoHeight / 10).toFixed(1)} cm`;
+            document.getElementById('totalCount').textContent = cols * rows;
+        }
+
+        function calculateLayout() {
+            const paperSize = pageSizeSelect.value;
+            const mode = layoutModeSelect.value;
+            
+            const paper = {
+                '10x15': { width: 100, height: 150 }, // em mm
+                'A4': { width: 210, height: 297 }
+            };
+            const margin = 5; // 5mm de margem
+            const paperWidth = paper[paperSize].width - 2 * margin;
+            const paperHeight = paper[paperSize].height - 2 * margin;
+
+            let photoWidth, photoHeight;
+            if (currentAspectRatio === 1) { // 2x2
+                photoWidth = 20; photoHeight = 20;
+            } else if (currentAspectRatio > 1) { // 5x7
+                photoWidth = 50; photoHeight = 70;
+            } else { // 3x4
+                photoWidth = 30; photoHeight = 40;
+            }
+
+            let cols, rows;
+            if (mode === 'auto') {
+                cols = Math.floor(paperWidth / photoWidth);
+                rows = Math.floor(paperHeight / photoHeight);
+            } else {
+                cols = parseInt(manualColsInput.value) || 1;
+                rows = parseInt(manualRowsInput.value) || 1;
+            }
+            return { cols, rows, photoWidth, photoHeight, margin };
+        }
+
+        async function generateOutput(format) {
+            const { jsPDF } = window.jspdf;
+            const { cols, rows, photoWidth, photoHeight, margin } = calculateLayout();
+            const paperSize = pageSizeSelect.value;
+            const orientation = paperSize === 'A4' ? 'portrait' : 'landscape';
+            
+            if (format === 'pdf') {
+                const doc = new jsPDF(orientation, 'mm', paperSize === 'A4' ? 'a4' : [150, 100]);
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        const x = margin + c * photoWidth;
+                        const y = margin + r * photoHeight;
+                        doc.addImage(croppedImage, 'PNG', x, y, photoWidth, photoHeight);
+                    }
+                }
+                doc.save(`fotos_documento_${new Date().getTime()}.pdf`);
+            } else { // JPG
+                const paper = { '10x15': { width: 150, height: 100 }, 'A4': { width: 210, height: 297 } };
+                const canvas = document.createElement('canvas');
+                const dpi = 300;
+                const scale = dpi / 25.4; // 25.4 mm/inch
+                canvas.width = (orientation === 'landscape' ? paper[paperSize].height : paper[paperSize].width) * scale;
+                canvas.height = (orientation === 'landscape' ? paper[paperSize].width : paper[paperSize].height) * scale;
+
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                const img = new Image();
+                img.src = croppedImage;
+                await new Promise(resolve => img.onload = resolve);
+
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        const x = (margin + c * photoWidth) * scale;
+                        const y = (margin + r * photoHeight) * scale;
+                        ctx.drawImage(img, x, y, photoWidth * scale, photoHeight * scale);
+                    }
+                }
+                const link = document.createElement('a');
+                link.download = `fotos_documento_${new Date().getTime()}.jpg`;
+                link.href = canvas.toDataURL('image/jpeg', 0.95);
+                link.click();
+            }
+        }
+
+        document.getElementById('generatePdfBtn').addEventListener('click', () => generateOutput('pdf'));
+        document.getElementById('generateJpgBtn').addEventListener('click', () => generateOutput('jpg'));
+
+        // Função para resetar tudo
+        function resetApp() {
+            if (cropper) cropper.destroy();
+            fileInput.value = '';
+            originalFile = null;
+            imageWithoutBg = null;
+            croppedImage = null;
+            goToStep(1);
+        }
+        
+        // Inicia o app na primeira etapa
+        goToStep(1);
+    </script>
+</body>
+</html>
