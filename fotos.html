@@ -10,7 +10,9 @@
     <style>
         /* Estilos Gerais e Reset */
         :root {
-            --primary-color: #007bff;
+            --primary-color: #ff8c00; /* Cor primária alterada para laranja */
+            --primary-hover: #e67c00;
+            --primary-light-bg: #fff8f0;
             --secondary-color: #6c757d;
             --light-bg: #f8f9fa;
             --dark-text: #343a40;
@@ -18,7 +20,6 @@
             --border-color: #dee2e6;
             --white: #ffffff;
             --success-color: #28a745;
-            --danger-color: #dc3545;
             --shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -58,7 +59,7 @@
             gap: 8px;
         }
         .btn-primary { background-color: var(--primary-color); color: var(--white); }
-        .btn-primary:hover:not(:disabled) { background-color: #0056b3; transform: translateY(-2px); }
+        .btn-primary:hover:not(:disabled) { background-color: var(--primary-hover); transform: translateY(-2px); }
         .btn-secondary { background-color: var(--secondary-color); color: var(--white); }
         .btn-secondary:hover { background-color: #5a6268; }
         .btn-success { background-color: var(--success-color); color: var(--white); }
@@ -87,7 +88,7 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        .upload-area:hover { border-color: var(--primary-color); background: #f8f9ff; }
+        .upload-area:hover { border-color: var(--primary-color); background: var(--primary-light-bg); }
         .upload-icon { font-size: 3rem; color: var(--primary-color); margin-bottom: 15px; }
         .upload-text { font-size: 1.2rem; font-weight: 600; }
         .upload-subtext { color: var(--light-text); }
@@ -104,7 +105,7 @@
         .editor-controls label { display: block; font-weight: 600; margin-bottom: 8px; }
         .size-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .size-btn { width: 100%; padding: 10px; background: var(--white); border: 2px solid var(--border-color); }
-        .size-btn.active { border-color: var(--primary-color); background: #e7f3ff; color: var(--primary-color); }
+        .size-btn.active { border-color: var(--primary-color); background: var(--primary-light-bg); color: var(--primary-color); }
         .slider-control { margin-top: 15px; }
         .slider-control input[type="range"] { width: 100%; accent-color: var(--primary-color); }
         .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
@@ -114,7 +115,7 @@
         .input-group { margin-bottom: 15px; }
         .input-group label { display: block; font-weight: 600; margin-bottom: 8px; }
         .input-group input, .input-group select { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem; }
-        .info-card { background: #e7f3ff; border-left: 4px solid var(--primary-color); padding: 20px; border-radius: 8px; }
+        .info-card { background: var(--primary-light-bg); border-left: 4px solid var(--primary-color); padding: 20px; border-radius: 8px; }
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
         .info-item .info-label { font-size: 0.9rem; color: var(--light-text); }
         .info-item .info-value { font-size: 1.1rem; font-weight: 700; color: var(--primary-color); }
@@ -142,17 +143,17 @@
         <div id="step1" class="wizard-step active">
             <div class="step-header">
                 <h2 class="step-title">Passo 1: Envie sua foto</h2>
-                <p class="step-subtitle">Nossa IA removerá o fundo automaticamente para você.</p>
+                <p class="step-subtitle">Sua imagem será otimizada e o fundo removido automaticamente.</p>
             </div>
             <div class="upload-area" onclick="document.getElementById('fileInput').click()">
                 <div class="upload-icon">📤</div>
                 <div class="upload-text">Clique aqui ou arraste sua imagem</div>
-                <div class="upload-subtext">Suporte: JPG, PNG, WebP (máx. 10MB)</div>
+                <div class="upload-subtext">Suporte: JPG, PNG, WebP (Imagens grandes são otimizadas)</div>
                 <input type="file" id="fileInput" accept="image/*">
             </div>
             <div id="processing-feedback" class="processing-feedback">
                 <div class="spinner"></div>
-                <p>Removendo o fundo... Por favor, aguarde.</p>
+                <p>Otimizando e removendo o fundo... Por favor, aguarde.</p>
             </div>
         </div>
 
@@ -170,7 +171,7 @@
                     <div class="control-group">
                         <label>Tamanho do Documento</label>
                         <div class="size-buttons">
-                            <button class="btn size-btn" data-ratio="3/4">3x4 cm</button>
+                            <button class="btn size-btn active" data-ratio="3/4">3x4 cm</button>
                             <button class="btn size-btn" data-ratio="5/7">5x7 cm</button>
                             <button class="btn size-btn" data-ratio="1/1">2x2 cm</button>
                         </div>
@@ -247,7 +248,6 @@
     </div>
 
     <script type="module">
-        // Importa a função de remoção de fundo
         import { removeBackground } from 'https://cdn.skypack.dev/@imgly/background-removal';
 
         let cropper;
@@ -261,13 +261,12 @@
         const zoomSlider = document.getElementById('zoom-slider');
         const brightnessSlider = document.getElementById('brightness-slider');
 
-        // Navegação entre etapas
         window.goToStep = (step) => {
             document.querySelectorAll('.wizard-step').forEach(s => s.classList.remove('active'));
             document.getElementById(`step${step}`).classList.add('active');
         };
 
-        // ETAPA 1: Lógica de Upload e Remoção de Fundo
+        // ETAPA 1: Otimização, Upload e Remoção de Fundo
         fileInput.addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -277,13 +276,14 @@
             document.getElementById('processing-feedback').style.display = 'block';
 
             try {
-                const blob = await removeBackground(file);
+                const optimizedBlob = await optimizeImage(file, 1000);
+                const blob = await removeBackground(optimizedBlob);
                 imageWithoutBg = URL.createObjectURL(blob);
                 setupCropper(imageWithoutBg);
                 goToStep(2);
             } catch (error) {
-                console.error("Erro ao remover fundo:", error);
-                alert("Não foi possível remover o fundo. Tente outra imagem.");
+                console.error("Erro ao processar imagem:", error);
+                alert("Não foi possível processar a imagem. Tente outra.");
                 resetApp();
             } finally {
                 document.querySelector('.upload-area').style.display = 'block';
@@ -291,12 +291,42 @@
             }
         });
 
+        function optimizeImage(file, maxDimension) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let { width, height } = img;
+
+                        if (width > maxDimension || height > maxDimension) {
+                            if (width > height) {
+                                height = (height * maxDimension) / width;
+                                width = maxDimension;
+                            } else {
+                                width = (width * maxDimension) / height;
+                                height = maxDimension;
+                            }
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        canvas.toBlob(resolve, file.type, 0.9);
+                    };
+                    img.onerror = reject;
+                    img.src = event.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
         // ETAPA 2: Lógica do Cropper e Ajustes
         function setupCropper(imageUrl) {
             cropperImage.src = imageUrl;
-            if (cropper) {
-                cropper.destroy();
-            }
+            if (cropper) cropper.destroy();
             cropper = new Cropper(cropperImage, {
                 aspectRatio: currentAspectRatio,
                 viewMode: 2,
@@ -305,7 +335,6 @@
                 responsive: true,
                 background: false,
                 ready() {
-                    // Ajusta o zoom inicial
                     const canvasData = cropper.getCanvasData();
                     const containerData = cropper.getContainerData();
                     const initialZoom = Math.min(containerData.width / canvasData.naturalWidth, containerData.height / canvasData.naturalHeight);
@@ -326,23 +355,28 @@
 
         zoomSlider.addEventListener('input', (e) => cropper.zoomTo(e.target.value));
         brightnessSlider.addEventListener('input', (e) => {
-            cropper.getCanvasElement().style.filter = `brightness(${e.target.value})`;
+            const canvasElement = cropper.getCanvasElement();
+            if (canvasElement) {
+                canvasElement.style.filter = `brightness(${e.target.value})`;
+            }
         });
 
         window.processCropAndGoToStep3 = () => {
             const canvas = cropper.getCroppedCanvas({
-                width: 1000, // Alta resolução para impressão
+                width: 1000,
                 fillColor: '#fff',
                 imageSmoothingEnabled: true,
                 imageSmoothingQuality: 'high',
             });
             
-            // Aplica o brilho permanentemente
-            const ctx = canvas.getContext('2d');
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+            const ctx = tempCanvas.getContext('2d');
             ctx.filter = `brightness(${brightnessSlider.value})`;
             ctx.drawImage(canvas, 0, 0);
 
-            croppedImage = canvas.toDataURL('image/png');
+            croppedImage = tempCanvas.toDataURL('image/png');
             updateLayoutInfo();
             goToStep(3);
         };
@@ -371,22 +405,15 @@
             const paperSize = pageSizeSelect.value;
             const mode = layoutModeSelect.value;
             
-            const paper = {
-                '10x15': { width: 100, height: 150 }, // em mm
-                'A4': { width: 210, height: 297 }
-            };
-            const margin = 5; // 5mm de margem
+            const paper = { '10x15': { width: 100, height: 150 }, 'A4': { width: 210, height: 297 } };
+            const margin = 5;
             const paperWidth = paper[paperSize].width - 2 * margin;
             const paperHeight = paper[paperSize].height - 2 * margin;
 
             let photoWidth, photoHeight;
-            if (currentAspectRatio === 1) { // 2x2
-                photoWidth = 20; photoHeight = 20;
-            } else if (currentAspectRatio > 1) { // 5x7
-                photoWidth = 50; photoHeight = 70;
-            } else { // 3x4
-                photoWidth = 30; photoHeight = 40;
-            }
+            if (currentAspectRatio === 1) { photoWidth = 20; photoHeight = 20; }
+            else if (currentAspectRatio > 1) { photoWidth = 70; photoHeight = 50; } // 5x7
+            else { photoWidth = 30; photoHeight = 40; } // 3x4
 
             let cols, rows;
             if (mode === 'auto') {
@@ -403,10 +430,11 @@
             const { jsPDF } = window.jspdf;
             const { cols, rows, photoWidth, photoHeight, margin } = calculateLayout();
             const paperSize = pageSizeSelect.value;
-            const orientation = paperSize === 'A4' ? 'portrait' : 'landscape';
-            
+            const paperConfig = { '10x15': { size: [150, 100], orientation: 'landscape' }, 'A4': { size: 'a4', orientation: 'portrait' } };
+            const config = paperConfig[paperSize];
+
             if (format === 'pdf') {
-                const doc = new jsPDF(orientation, 'mm', paperSize === 'A4' ? 'a4' : [150, 100]);
+                const doc = new jsPDF(config.orientation, 'mm', config.size);
                 for (let r = 0; r < rows; r++) {
                     for (let c = 0; c < cols; c++) {
                         const x = margin + c * photoWidth;
@@ -416,12 +444,12 @@
                 }
                 doc.save(`fotos_documento_${new Date().getTime()}.pdf`);
             } else { // JPG
-                const paper = { '10x15': { width: 150, height: 100 }, 'A4': { width: 210, height: 297 } };
+                const paperMm = { '10x15': { width: 150, height: 100 }, 'A4': { width: 210, height: 297 } };
                 const canvas = document.createElement('canvas');
                 const dpi = 300;
-                const scale = dpi / 25.4; // 25.4 mm/inch
-                canvas.width = (orientation === 'landscape' ? paper[paperSize].height : paper[paperSize].width) * scale;
-                canvas.height = (orientation === 'landscape' ? paper[paperSize].width : paper[paperSize].height) * scale;
+                const scale = dpi / 25.4;
+                canvas.width = paperMm[paperSize].width * scale;
+                canvas.height = paperMm[paperSize].height * scale;
 
                 const ctx = canvas.getContext('2d');
                 ctx.fillStyle = 'white';
@@ -448,7 +476,6 @@
         document.getElementById('generatePdfBtn').addEventListener('click', () => generateOutput('pdf'));
         document.getElementById('generateJpgBtn').addEventListener('click', () => generateOutput('jpg'));
 
-        // Função para resetar tudo
         function resetApp() {
             if (cropper) cropper.destroy();
             fileInput.value = '';
@@ -458,7 +485,6 @@
             goToStep(1);
         }
         
-        // Inicia o app na primeira etapa
         goToStep(1);
     </script>
 </body>
