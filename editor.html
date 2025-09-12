@@ -479,6 +479,7 @@
             // Debug: verificar se os elementos existem
             console.log('Canvas:', canvas);
             console.log('Context:', ctx);
+            console.log('Editor inicializado');
         });
 
         function setupEventListeners() {
@@ -526,14 +527,18 @@
                 const element = document.getElementById(slider.id);
                 const valueElement = document.getElementById(slider.valueId);
 
-                element.addEventListener('input', (e) => {
-                    valueElement.textContent = e.target.value + slider.suffix;
-                    applyFilters();
-                });
+                if (element && valueElement) {
+                    element.addEventListener('input', (e) => {
+                        valueElement.textContent = e.target.value + slider.suffix;
+                        applyFilters();
+                    });
+                }
             });
         }
 
         function loadImage(file) {
+            console.log('Tentando carregar arquivo:', file.name);
+            
             if (!file.type.startsWith('image/')) {
                 alert('Por favor, selecione um arquivo de imagem válido.');
                 return;
@@ -546,6 +551,7 @@
 
             const img = new Image();
             img.onload = () => {
+                console.log('Imagem carregada, dimensões:', img.width, img.height);
                 try {
                     // Salvar referência da imagem original
                     originalImage = img;
@@ -554,15 +560,18 @@
                     saveImageState();
                     document.getElementById('editorContainer').style.display = 'block';
                     document.querySelector('.reset-btn').style.display = 'block';
-                    console.log('Imagem carregada com sucesso');
+                    console.log('Imagem configurada com sucesso');
                 } catch (error) {
-                    console.error('Erro ao carregar imagem:', error);
+                    console.error('Erro ao configurar imagem:', error);
                     alert('Erro ao carregar a imagem. Tente novamente.');
                 }
             };
-            img.onerror = () => {
+            
+            img.onerror = (error) => {
+                console.error('Erro ao carregar imagem:', error);
                 alert('Erro ao carregar a imagem. Verifique se o arquivo não está corrompido.');
             };
+            
             img.src = URL.createObjectURL(file);
         }
 
