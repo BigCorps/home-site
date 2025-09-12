@@ -530,11 +530,20 @@
                         <div class="pix-fields" id="pixFields">
                             <div class="form-group">
                                 <label for="pixChave">Chave PIX *</label>
-                                <input type="text" id="pixChave" placeholder="email@empresa.com ou CPF/CNPJ">
+                                <input type="text" id="pixChave" placeholder="email@empresa.com, CPF, CNPJ ou chave aleatória">
+                                <small style="color: #666; font-size: 0.85rem; margin-top: 5px;">
+                                    Formatos aceitos: Email, CPF (000.000.000-00), CNPJ (00.000.000/0001-00) ou chave aleatória
+                                </small>
                             </div>
                             <div class="alert alert-warning">
-                                <strong>Dica:</strong> O QR Code PIX será gerado automaticamente com base nos dados preenchidos. Use uma chave PIX válida para garantir o funcionamento.
+                                <strong>Informação:</strong> O QR Code PIX é gerado seguindo o padrão EMV do Banco Central do Brasil. Certifique-se de usar uma chave PIX válida e ativa.
                             </div>
+                            
+                            <!-- Botão de teste do PIX -->
+                            <button type="button" class="btn btn-outline" onclick="testarPIX()" style="width: 100%; margin-top: 10px;">
+                                🔍 Testar Geração do PIX
+                            </button>
+                            <div id="pixTestResult" style="display: none; margin-top: 10px; padding: 10px; border-radius: 5px;"></div>
                         </div>
                     </div>
                 </div>
@@ -563,73 +572,119 @@
             }).format(value || 0);
         };
         
-        // Gerar string PIX EMV
+        // Gerar string PIX EMV completa (padrão Banco Central)
         function generatePixEMV(pixKey, merchantName, merchantCity, amount = null) {
-            const payloadFormatIndicator = '000201';
-            const merchantAccountInformation = '26' + String(pixKey.length + 17).padStart(2, '0') + 
-                '0014BR.GOV.BCB.PIX01' + String(pixKey.length).padStart(2, '0') + pixKey;
-            const merchantCategoryCode = '52040000';
-            const transactionCurrency = '5303986';
-            const countryCode = '5802BR';
-            const merchantNameField = '59' + String(merchantName.length).padStart(2, '0') + merchantName;
-            const merchantCityField = '60' + String(merchantCity.length).padStart(2, '0') + merchantCity;
+            // Limpar e validar entradas
+            pixKey = pixKey.trim();
+            merchantName = merchantName.trim().substring(0, 25); // Máximo 25 caracteres
+            merchantCity = merchantCity.trim().substring(0, 15); // Máximo 15 caracteres
             
-            let payload = payloadFormatIndicator + merchantAccountInformation + merchantCategoryCode + 
-                         transactionCurrency + countryCode + merchantNameField + merchantCityField;
-            
-            if (amount && amount > 0) {
-                const amountStr = amount.toFixed(2);
-                payload += '54' + String(amountStr.length).padStart(2, '0') + amountStr;
+            // Função para criar campo EMV
+            function createEMVField(id, value) {
+                const valueStr = String(value);
+                const length = valueStr.length.toString().padStart(2, '0');
+                return id + length + valueStr;
             }
             
-            payload += '6304';
+            // Campos obrigatórios do EMV PIX
+            let emv = '';
             
-            // Calcular CRC16
-            function crc16(data) {
-                const polynomial = 0x1021;
+            // Payload Format Indicator (sempre 01)
+            emv += createEMVField('00', '01');
+            
+            // Merchant Account Information
+            let merchantAccountInfo = '';
+            merchantAccountInfo += createEMVField('00', 'BR.GOV.BCB.PIX');
+            merchantAccountInfo += createEMVField('01', pixKey);
+            emv += createEMVField('26', merchantAccountInfo);
+            
+            // Merchant Category Code (7372 = PIX)
+            emv += createEMVField('52', '7372');
+            
+            // Transaction Currency (986 = BRL)
+            emv += createEMVField('53', '986');
+            
+            // Transaction Amount (se especificado)
+            if (amount && amount > 0) {
+                const amountStr = amount.toFixed(2);
+                emv += createEMVField('54', amountStr);
+            }
+            
+            // Country Code (BR)
+            emv += createEMVField('58', 'BR');
+            
+            // Merchant Name
+            emv += createEMVField('59', merchantName);
+            
+            // Merchant City
+            emv += createEMVField('60', merchantCity);
+            
+            // CRC16 placeholder
+            emv += '6304';
+            
+            // Calcular CRC16 (CCITT)
+            function calculateCRC16(data) {
                 let crc = 0xFFFF;
+                const polynomial = 0x1021;
                 
                 for (let i = 0; i < data.length; i++) {
                     crc ^= (data.charCodeAt(i) << 8);
+                    
                     for (let j = 0; j < 8; j++) {
-                        if (crc & 0x8000) {
-                            crc = (crc << 1) ^ polynomial;
+                        if ((crc & 0x8000) !== 0) {
+                            crc = ((crc << 1) ^ polynomial) & 0xFFFF;
                         } else {
-                            crc <<= 1;
+                            crc = (crc << 1) & 0xFFFF;
                         }
-                        crc &= 0xFFFF;
                     }
                 }
                 
                 return crc.toString(16).toUpperCase().padStart(4, '0');
             }
             
-            payload += crc16(payload);
-            return payload;
+            // Adicionar CRC16 calculado
+            const crc = calculateCRC16(emv);
+            emv += crc;
+            
+            return emv;
         }
         
-        // Gerar QR Code PIX
+        // Gerar QR Code PIX com EMV correto
         async function generatePixQRCode(pixKey, merchantName, merchantCity, amount = null) {
             try {
+                // Gerar string EMV PIX
                 const pixString = generatePixEMV(pixKey, merchantName, merchantCity, amount);
                 
+                // Verificar se a string EMV foi gerada corretamente
+                if (!pixString || pixString.length < 50) {
+                    throw new Error('Erro ao gerar código PIX EMV');
+                }
+                
+                // Gerar QR Code usando QRCode.js
                 const canvas = document.createElement('canvas');
                 await QRCode.toCanvas(canvas, pixString, {
-                    width: 200,
-                    margin: 1,
+                    width: 256,
+                    margin: 2,
                     color: {
                         dark: '#000000',
                         light: '#FFFFFF'
-                    }
+                    },
+                    errorCorrectionLevel: 'M'
                 });
                 
                 return {
                     qrCodeImage: canvas.toDataURL('image/png'),
-                    pixString: pixString
+                    pixString: pixString,
+                    isValid: true
                 };
             } catch (error) {
                 console.error('Erro ao gerar QR Code PIX:', error);
-                return null;
+                return {
+                    qrCodeImage: null,
+                    pixString: null,
+                    isValid: false,
+                    error: error.message
+                };
             }
         }
         
@@ -868,34 +923,77 @@
                 
                 // PIX se habilitado
                 if (incluirPix && pixChave) {
-                    const pixData = await generatePixQRCode(
-                        pixChave,
-                        empresaNome,
-                        `${empresaCidade}/${empresaEstado}`,
-                        total
-                    );
-                    
-                    if (pixData && yPosition < pageHeight - 80) {
+                    try {
+                        // Validar dados PIX antes de gerar
+                        if (pixChave.length < 3) {
+                            throw new Error('Chave PIX muito curta');
+                        }
+                        
+                        if (empresaNome.length < 3) {
+                            throw new Error('Nome da empresa muito curto');
+                        }
+                        
+                        if (empresaCidade.length < 2) {
+                            throw new Error('Nome da cidade muito curto');
+                        }
+                        
+                        console.log('Gerando PIX com dados:', {
+                            chave: pixChave,
+                            nome: empresaNome,
+                            cidade: `${empresaCidade}/${empresaEstado}`,
+                            valor: total
+                        });
+                        
+                        const pixData = await generatePixQRCode(
+                            pixChave,
+                            empresaNome,
+                            `${empresaCidade}/${empresaEstado}`,
+                            total
+                        );
+                        
+                        if (pixData && pixData.isValid && pixData.qrCodeImage && yPosition < pageHeight - 80) {
+                            doc.setFont(undefined, 'bold');
+                            doc.setFontSize(14);
+                            doc.text('Pagamento via PIX', 15, yPosition);
+                            yPosition += 10;
+                            
+                            // QR Code
+                            doc.addImage(pixData.qrCodeImage, 'PNG', 15, yPosition, 50, 50);
+                            
+                            // Dados do PIX
+                            doc.setFont(undefined, 'normal');
+                            doc.setFontSize(9);
+                            doc.text('Chave PIX:', 75, yPosition + 10);
+                            doc.text(pixChave.substring(0, 35), 75, yPosition + 16);
+                            
+                            doc.text('Valor:', 75, yPosition + 26);
+                            doc.text(formatCurrency(total), 75, yPosition + 32);
+                            
+                            doc.text('PIX Copia e Cola:', 75, yPosition + 42);
+                            const splitPixString = doc.splitTextToSize(pixData.pixString, pageWidth - 85);
+                            doc.text(splitPixString, 75, yPosition + 48);
+                            
+                            console.log('PIX gerado com sucesso:', pixData.pixString);
+                        } else if (pixData && !pixData.isValid) {
+                            console.error('Erro ao gerar PIX:', pixData.error);
+                            // Adicionar mensagem de erro no PDF
+                            doc.setFont(undefined, 'bold');
+                            doc.setFontSize(12);
+                            doc.text('Erro ao gerar PIX', 15, yPosition);
+                            doc.setFont(undefined, 'normal');
+                            doc.setFontSize(10);
+                            doc.text('Verifique os dados informados e tente novamente.', 15, yPosition + 10);
+                        }
+                        
+                    } catch (pixError) {
+                        console.error('Erro na geração do PIX:', pixError);
+                        // Adicionar mensagem de erro no PDF
                         doc.setFont(undefined, 'bold');
-                        doc.setFontSize(14);
-                        doc.text('Pagamento via PIX', 15, yPosition);
-                        yPosition += 10;
-                        
-                        // QR Code
-                        doc.addImage(pixData.qrCodeImage, 'PNG', 15, yPosition, 50, 50);
-                        
-                        // Dados do PIX
+                        doc.setFontSize(12);
+                        doc.text('Erro ao processar PIX', 15, yPosition);
                         doc.setFont(undefined, 'normal');
-                        doc.setFontSize(9);
-                        doc.text('Chave PIX:', 75, yPosition + 10);
-                        doc.text(pixChave, 75, yPosition + 16);
-                        
-                        doc.text('Valor:', 75, yPosition + 26);
-                        doc.text(formatCurrency(total), 75, yPosition + 32);
-                        
-                        doc.text('PIX Copia e Cola:', 75, yPosition + 42);
-                        const splitPixString = doc.splitTextToSize(pixData.pixString, pageWidth - 85);
-                        doc.text(splitPixString, 75, yPosition + 48);
+                        doc.setFontSize(10);
+                        doc.text(`Erro: ${pixError.message}`, 15, yPosition + 10);
                     }
                 }
                 
@@ -954,7 +1052,63 @@
             }
         }
         
-        // Máscara para telefone
+        // Função para testar geração do PIX
+        async function testarPIX() {
+            const empresaNome = document.getElementById('empresaNome').value.trim();
+            const empresaCidade = document.getElementById('empresaCidade').value.trim();
+            const empresaEstado = document.getElementById('empresaEstado').value.trim();
+            const pixChave = document.getElementById('pixChave').value.trim();
+            const resultDiv = document.getElementById('pixTestResult');
+            
+            // Validações básicas
+            if (!empresaNome || !empresaCidade || !empresaEstado || !pixChave) {
+                resultDiv.style.display = 'block';
+                resultDiv.style.background = '#fee';
+                resultDiv.style.border = '1px solid #fcc';
+                resultDiv.style.color = '#c33';
+                resultDiv.innerHTML = '<strong>❌ Erro:</strong> Preencha todos os campos obrigatórios (Nome da Empresa, Cidade, Estado e Chave PIX)';
+                return;
+            }
+            
+            try {
+                // Tentar gerar o PIX
+                const pixData = await generatePixQRCode(
+                    pixChave,
+                    empresaNome,
+                    `${empresaCidade}/${empresaEstado}`,
+                    100.00 // Valor de teste
+                );
+                
+                if (pixData && pixData.isValid) {
+                    resultDiv.style.display = 'block';
+                    resultDiv.style.background = '#efe';
+                    resultDiv.style.border = '1px solid #cfc';
+                    resultDiv.style.color = '#363';
+                    resultDiv.innerHTML = `
+                        <strong>✅ Sucesso!</strong> PIX gerado corretamente.<br>
+                        <small>Chave: ${pixChave}</small><br>
+                        <small>Código EMV gerado com ${pixData.pixString.length} caracteres</small><br>
+                        <div style="margin-top: 10px;">
+                            <img src="${pixData.qrCodeImage}" style="width: 100px; height: 100px; border: 1px solid #ccc;">
+                        </div>
+                    `;
+                } else {
+                    resultDiv.style.display = 'block';
+                    resultDiv.style.background = '#fff3cd';
+                    resultDiv.style.border = '1px solid #ffeaa7';
+                    resultDiv.style.color = '#856404';
+                    resultDiv.innerHTML = `<strong>⚠️ Aviso:</strong> Erro ao gerar PIX: ${pixData?.error || 'Erro desconhecido'}`;
+                }
+                
+            } catch (error) {
+                resultDiv.style.display = 'block';
+                resultDiv.style.background = '#fee';
+                resultDiv.style.border = '1px solid #fcc';
+                resultDiv.style.color = '#c33';
+                resultDiv.innerHTML = `<strong>❌ Erro:</strong> ${error.message}`;
+            }
+        }
+        
         function aplicarMascaraTelefone(input) {
             let valor = input.value.replace(/\D/g, '');
             if (valor.length <= 11) {
