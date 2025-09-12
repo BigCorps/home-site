@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerador de Orçamento Profissional</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -530,9 +530,9 @@
                         <div class="pix-fields" id="pixFields">
                             <div class="form-group">
                                 <label for="pixChave">Chave PIX *</label>
-                                <input type="text" id="pixChave" placeholder="email@empresa.com, CPF, CNPJ ou chave aleatória">
+                                <input type="text" id="pixChave" placeholder="Ex: email@empresa.com, (11) 99999-9999, 123.456.789-10">
                                 <small style="color: #666; font-size: 0.85rem; margin-top: 5px;">
-                                    Formatos aceitos: Email, CPF (000.000.000-00), CNPJ (00.000.000/0001-00) ou chave aleatória
+                                    Formatos aceitos: Email, Telefone (11) 99999-9999, CPF 000.000.000-00, CNPJ 00.000.000/0001-00 ou chave aleatória
                                 </small>
                             </div>
                             <div class="alert alert-warning">
@@ -649,19 +649,81 @@
             return emv;
         }
         
-        // Gerar QR Code PIX com EMV correto
+        // Validar tipos de chave PIX
+        function validarChavePIX(chave) {
+            chave = chave.trim();
+            
+            // CPF (com ou sem formatação)
+            const cpfRegex = /^(\d{3}\.?\d{3}\.?\d{3}-?\d{2})$/;
+            if (cpfRegex.test(chave)) {
+                return { valida: true, tipo: 'CPF', chave: chave.replace(/\D/g, '') };
+            }
+            
+            // CNPJ (com ou sem formatação)
+            const cnpjRegex = /^(\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2})$/;
+            if (cnpjRegex.test(chave)) {
+                return { valida: true, tipo: 'CNPJ', chave: chave.replace(/\D/g, '') };
+            }
+            
+            // Email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (emailRegex.test(chave)) {
+                return { valida: true, tipo: 'Email', chave: chave.toLowerCase() };
+            }
+            
+            // Telefone (11 dígitos)
+            const telefoneRegex = /^(\+?55)?[-.\s]?\(?(\d{2})\)?[-.\s]?9?\d{4}[-.\s]?\d{4}$/;
+            if (telefoneRegex.test(chave)) {
+                const numeroLimpo = chave.replace(/\D/g, '');
+                const numero = numeroLimpo.length === 13 ? numeroLimpo.substring(2) : numeroLimpo;
+                if (numero.length === 11) {
+                    return { valida: true, tipo: 'Telefone', chave: `+55${numero}` };
+                }
+            }
+            
+            // Chave aleatória (32 caracteres, letras minúsculas e números)
+            const aleatoriaRegex = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
+            if (aleatoriaRegex.test(chave)) {
+                return { valida: true, tipo: 'Aleatória', chave: chave };
+            }
+            
+            // Se chegou até aqui, pode ser uma chave aleatória sem formatação
+            if (chave.length >= 32 && /^[a-zA-Z0-9]+$/.test(chave)) {
+                return { valida: true, tipo: 'Aleatória', chave: chave };
+            }
+            
+            return { valida: false, tipo: null, chave: null };
+        }
+        
+        // Gerar QR Code PIX com validação melhorada
         async function generatePixQRCode(pixKey, merchantName, merchantCity, amount = null) {
             try {
+                // Verificar se QRCode está disponível
+                if (typeof QRCode === 'undefined') {
+                    throw new Error('Biblioteca QRCode não carregada. Recarregue a página e tente novamente.');
+                }
+                
+                // Validar chave PIX
+                const validacao = validarChavePIX(pixKey);
+                if (!validacao.valida) {
+                    throw new Error('Chave PIX inválida. Use CPF, CNPJ, email, telefone ou chave aleatória.');
+                }
+                
+                console.log('Chave PIX validada:', validacao);
+                
                 // Gerar string EMV PIX
-                const pixString = generatePixEMV(pixKey, merchantName, merchantCity, amount);
+                const pixString = generatePixEMV(validacao.chave, merchantName, merchantCity, amount);
                 
                 // Verificar se a string EMV foi gerada corretamente
                 if (!pixString || pixString.length < 50) {
                     throw new Error('Erro ao gerar código PIX EMV');
                 }
                 
+                console.log('String EMV gerada:', pixString);
+                
                 // Gerar QR Code usando QRCode.js
                 const canvas = document.createElement('canvas');
+                
                 await QRCode.toCanvas(canvas, pixString, {
                     width: 256,
                     margin: 2,
@@ -675,10 +737,12 @@
                 return {
                     qrCodeImage: canvas.toDataURL('image/png'),
                     pixString: pixString,
-                    isValid: true
+                    isValid: true,
+                    chaveInfo: validacao
                 };
+                
             } catch (error) {
-                console.error('Erro ao gerar QR Code PIX:', error);
+                console.error('Erro detalhado ao gerar QR Code PIX:', error);
                 return {
                     qrCodeImage: null,
                     pixString: null,
@@ -1066,11 +1130,36 @@
                 resultDiv.style.background = '#fee';
                 resultDiv.style.border = '1px solid #fcc';
                 resultDiv.style.color = '#c33';
-                resultDiv.innerHTML = '<strong>❌ Erro:</strong> Preencha todos os campos obrigatórios (Nome da Empresa, Cidade, Estado e Chave PIX)';
+                resultDiv.innerHTML = '<strong>Erro:</strong> Preencha todos os campos obrigatórios (Nome da Empresa, Cidade, Estado e Chave PIX)';
+                return;
+            }
+            
+            // Primeiro, validar a chave PIX
+            const validacao = validarChavePIX(pixChave);
+            if (!validacao.valida) {
+                resultDiv.style.display = 'block';
+                resultDiv.style.background = '#fff3cd';
+                resultDiv.style.border = '1px solid #ffeaa7';
+                resultDiv.style.color = '#856404';
+                resultDiv.innerHTML = `
+                    <strong>Chave PIX Inválida</strong><br>
+                    Exemplos de formatos aceitos:<br>
+                    • Email: email@empresa.com<br>
+                    • CPF: 123.456.789-10 ou 12345678910<br>
+                    • CNPJ: 12.345.678/0001-90 ou 12345678000190<br>
+                    • Telefone: (11) 99999-9999 ou +5511999999999<br>
+                    • Chave aleatória: abc123-def456-ghi789
+                `;
                 return;
             }
             
             try {
+                resultDiv.style.display = 'block';
+                resultDiv.style.background = '#f0f8ff';
+                resultDiv.style.border = '1px solid #cce7ff';
+                resultDiv.style.color = '#0066cc';
+                resultDiv.innerHTML = 'Gerando PIX... aguarde...';
+                
                 // Tentar gerar o PIX
                 const pixData = await generatePixQRCode(
                     pixChave,
@@ -1080,32 +1169,33 @@
                 );
                 
                 if (pixData && pixData.isValid) {
-                    resultDiv.style.display = 'block';
                     resultDiv.style.background = '#efe';
                     resultDiv.style.border = '1px solid #cfc';
                     resultDiv.style.color = '#363';
                     resultDiv.innerHTML = `
-                        <strong>✅ Sucesso!</strong> PIX gerado corretamente.<br>
-                        <small>Chave: ${pixChave}</small><br>
-                        <small>Código EMV gerado com ${pixData.pixString.length} caracteres</small><br>
-                        <div style="margin-top: 10px;">
-                            <img src="${pixData.qrCodeImage}" style="width: 100px; height: 100px; border: 1px solid #ccc;">
+                        <strong>PIX gerado com sucesso!</strong><br>
+                        <strong>Tipo:</strong> ${pixData.chaveInfo.tipo}<br>
+                        <strong>Chave processada:</strong> ${pixData.chaveInfo.chave}<br>
+                        <strong>Código EMV:</strong> ${pixData.pixString.length} caracteres<br>
+                        <div style="margin-top: 15px; text-align: center;">
+                            <img src="${pixData.qrCodeImage}" style="width: 120px; height: 120px; border: 1px solid #ccc; border-radius: 5px;">
+                            <br><small>QR Code de teste (valor: R$ 100,00)</small>
                         </div>
                     `;
                 } else {
-                    resultDiv.style.display = 'block';
                     resultDiv.style.background = '#fff3cd';
                     resultDiv.style.border = '1px solid #ffeaa7';
                     resultDiv.style.color = '#856404';
-                    resultDiv.innerHTML = `<strong>⚠️ Aviso:</strong> Erro ao gerar PIX: ${pixData?.error || 'Erro desconhecido'}`;
+                    resultDiv.innerHTML = `<strong>Erro na geração:</strong> ${pixData?.error || 'Erro desconhecido'}`;
                 }
                 
             } catch (error) {
+                console.error('Erro no teste PIX:', error);
                 resultDiv.style.display = 'block';
                 resultDiv.style.background = '#fee';
                 resultDiv.style.border = '1px solid #fcc';
                 resultDiv.style.color = '#c33';
-                resultDiv.innerHTML = `<strong>❌ Erro:</strong> ${error.message}`;
+                resultDiv.innerHTML = `<strong>Erro:</strong> ${error.message}`;
             }
         }
         
