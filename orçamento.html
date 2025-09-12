@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerador de Orçamento Profissional</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf-autotable.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
     <style>
         * {
@@ -96,10 +95,6 @@
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         }
         
-        .grid-3 {
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        }
-        
         .full-width {
             grid-column: 1 / -1;
         }
@@ -117,8 +112,7 @@
         }
         
         .form-group input,
-        .form-group textarea,
-        .form-group select {
+        .form-group textarea {
             width: 100%;
             padding: 12px 15px;
             border: 2px solid #f0f0f0;
@@ -130,8 +124,7 @@
         }
         
         .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
+        .form-group textarea:focus {
             outline: none;
             border-color: #ff8c00;
             box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.1);
@@ -237,6 +230,7 @@
             background: #fafafa;
             border-radius: 10px;
             border: 1px solid #f0f0f0;
+            margin-bottom: 10px;
         }
         
         .item-subtotal {
@@ -370,16 +364,6 @@
             color: #856404;
         }
         
-        .alert-success {
-            background: #d1edff;
-            border: 1px solid #bee5eb;
-            color: #0c5460;
-        }
-        
-        .hidden {
-            display: none !important;
-        }
-        
         @media (max-width: 768px) {
             .container {
                 padding: 20px;
@@ -425,7 +409,7 @@
                             <label>Logo da Empresa</label>
                             <div class="logo-preview" id="logoPreview" onclick="document.getElementById('logoInput').click()">
                                 <div class="logo-placeholder">
-                                    📸<br>Clique para<br>adicionar logo
+                                    Clique para<br>adicionar logo
                                 </div>
                             </div>
                             <input type="file" id="logoInput" accept="image/*" style="display: none;">
@@ -502,7 +486,7 @@
             <div class="card-content">
                 <div id="itensContainer"></div>
                 <button type="button" class="btn btn-outline" onclick="adicionarItem()">
-                    ➕ Adicionar Item
+                    Adicionar Item
                 </button>
             </div>
         </div>
@@ -549,7 +533,7 @@
                                 <input type="text" id="pixChave" placeholder="email@empresa.com ou CPF/CNPJ">
                             </div>
                             <div class="alert alert-warning">
-                                💡 <strong>Dica:</strong> O QR Code PIX será gerado automaticamente com base nos dados preenchidos. Use uma chave PIX válida para garantir o funcionamento.
+                                <strong>Dica:</strong> O QR Code PIX será gerado automaticamente com base nos dados preenchidos. Use uma chave PIX válida para garantir o funcionamento.
                             </div>
                         </div>
                     </div>
@@ -559,16 +543,15 @@
         
         <div class="action-buttons">
             <button type="button" class="btn btn-outline" onclick="limparFormulario()">
-                🗑️ Limpar Formulário
+                Limpar Formulário
             </button>
             <button type="button" class="btn btn-primary" id="gerarPdfBtn" onclick="gerarPDF()">
-                📄 Gerar PDF
+                Gerar PDF
             </button>
         </div>
     </div>
 
     <script>
-        const { jsPDF } = window.jspdf;
         let logoBase64 = null;
         let itemCounter = 0;
         
@@ -630,7 +613,6 @@
             try {
                 const pixString = generatePixEMV(pixKey, merchantName, merchantCity, amount);
                 
-                // Gerar QR Code usando a biblioteca qrcode.js
                 const canvas = document.createElement('canvas');
                 await QRCode.toCanvas(canvas, pixString, {
                     width: 200,
@@ -678,7 +660,7 @@
                 </div>
                 <div class="form-group">
                     <label>&nbsp;</label>
-                    <button type="button" class="btn btn-danger" onclick="removerItem(${itemCounter})">✕</button>
+                    <button type="button" class="btn btn-danger" onclick="removerItem(${itemCounter})">×</button>
                 </div>
             `;
             
@@ -715,32 +697,6 @@
             document.getElementById('totalValue').textContent = formatCurrency(total);
         }
         
-        // Upload de logo
-        document.getElementById('logoInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    logoBase64 = e.target.result;
-                    document.getElementById('logoPreview').innerHTML = `<img src="${logoBase64}" alt="Logo">`;
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-        
-        // Toggle PIX fields
-        document.getElementById('incluirPix').addEventListener('change', function() {
-            const pixFields = document.getElementById('pixFields');
-            if (this.checked) {
-                pixFields.classList.add('show');
-            } else {
-                pixFields.classList.remove('show');
-            }
-        });
-        
-        // Event listeners para cálculos
-        document.getElementById('desconto').addEventListener('input', calcularTotais);
-        
         // Gerar PDF
         async function gerarPDF() {
             const btn = document.getElementById('gerarPdfBtn');
@@ -770,6 +726,7 @@
             btn.innerHTML = '<span class="loading"></span> Gerando PDF...';
             
             try {
+                const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
                 const pageWidth = doc.internal.pageSize.width;
                 const pageHeight = doc.internal.pageSize.height;
@@ -787,6 +744,37 @@
                 
                 doc.setFontSize(10);
                 doc.setFont(undefined, 'normal');
+                const empresaDoc = document.getElementById('empresaDoc').value;
+                const empresaTel = document.getElementById('empresaTel').value;
+                const empresaEmail = document.getElementById('empresaEmail').value;
+                const empresaEnd = document.getElementById('empresaEnd').value;
+                
+                if (empresaEnd) doc.text(empresaEnd, logoBase64 ? 50 : 15, 32);
+                if (empresaDoc) doc.text(`Documento: ${empresaDoc}`, logoBase64 ? 50 : 15, 38);
+                if (empresaTel) doc.text(`Telefone: ${empresaTel}`, logoBase64 ? 50 : 15, 44);
+                if (empresaEmail) doc.text(`Email: ${empresaEmail}`, logoBase64 ? 50 : 15, 50);
+                
+                yPosition = 65;
+                
+                // Título e data
+                doc.setFontSize(20);
+                doc.setFont(undefined, 'bold');
+                doc.text('ORÇAMENTO', 15, yPosition);
+                
+                doc.setFontSize(10);
+                doc.setFont(undefined, 'normal');
+                doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, pageWidth - 60, yPosition);
+                
+                yPosition += 15;
+                
+                // Dados do cliente
+                doc.setFontSize(12);
+                doc.setFont(undefined, 'bold');
+                doc.text('DADOS DO CLIENTE', 15, yPosition);
+                yPosition += 8;
+                
+                doc.setFontSize(10);
+                doc.setFont(undefined, 'normal');
                 
                 const clienteEmail = document.getElementById('clienteEmail').value;
                 const clienteTel = document.getElementById('clienteTel').value;
@@ -800,75 +788,67 @@
                 
                 yPosition += 15;
                 
-                // Tabela de itens
-                const items = [];
+                // Itens (tabela manual)
+                doc.setFontSize(12);
+                doc.setFont(undefined, 'bold');
+                doc.text('ITENS DO ORÇAMENTO', 15, yPosition);
+                yPosition += 10;
+                
+                // Cabeçalho da tabela
+                doc.setFontSize(9);
+                doc.text('Descrição', 15, yPosition);
+                doc.text('Qtd', 120, yPosition);
+                doc.text('Valor Unit.', 140, yPosition);
+                doc.text('Subtotal', 170, yPosition);
+                yPosition += 5;
+                
+                // Linha separadora
+                doc.line(15, yPosition, 195, yPosition);
+                yPosition += 5;
+                
+                // Itens
+                let subtotal = 0;
+                doc.setFont(undefined, 'normal');
+                
                 document.querySelectorAll('.item-row').forEach(row => {
                     const descricao = row.querySelector('.item-descricao').value;
                     const quantidade = parseFloat(row.querySelector('.item-quantidade').value) || 0;
                     const valor = parseFloat(row.querySelector('.item-valor').value) || 0;
-                    const subtotal = quantidade * valor;
+                    const itemSubtotal = quantidade * valor;
+                    subtotal += itemSubtotal;
                     
                     if (descricao.trim()) {
-                        items.push([
-                            descricao,
-                            quantidade.toFixed(2),
-                            formatCurrency(valor),
-                            formatCurrency(subtotal)
-                        ]);
+                        doc.text(descricao.substring(0, 40), 15, yPosition);
+                        doc.text(quantidade.toString(), 120, yPosition);
+                        doc.text(formatCurrency(valor), 140, yPosition);
+                        doc.text(formatCurrency(itemSubtotal), 170, yPosition);
+                        yPosition += 6;
                     }
                 });
                 
-                if (items.length > 0) {
-                    doc.autoTable({
-                        startY: yPosition,
-                        head: [['Descrição', 'Qtd', 'Valor Unit.', 'Subtotal']],
-                        body: items,
-                        theme: 'striped',
-                        headStyles: {
-                            fillColor: [255, 140, 0],
-                            textColor: [255, 255, 255],
-                            fontStyle: 'bold'
-                        },
-                        styles: {
-                            fontSize: 10,
-                            cellPadding: 5
-                        },
-                        columnStyles: {
-                            1: { halign: 'center' },
-                            2: { halign: 'right' },
-                            3: { halign: 'right' }
-                        }
-                    });
-                    
-                    yPosition = doc.lastAutoTable.finalY + 15;
-                }
+                yPosition += 10;
                 
                 // Totais
-                const subtotal = items.reduce((sum, item) => {
-                    const valor = parseFloat(item[2].replace('R$', '').replace(/\./g, '').replace(',', '.'));
-                    const qtd = parseFloat(item[1]);
-                    return sum + (valor * qtd);
-                }, 0);
-                
                 const desconto = parseFloat(document.getElementById('desconto').value) || 0;
                 const total = subtotal - desconto;
                 
-                const totalsX = pageWidth - 80;
-                doc.setFontSize(12);
-                doc.text('Subtotal:', totalsX - 40, yPosition);
-                doc.text(formatCurrency(subtotal), totalsX, yPosition, { align: 'right' });
+                const totalsX = 140;
+                doc.setFontSize(11);
+                doc.setFont(undefined, 'normal');
+                doc.text('Subtotal:', totalsX, yPosition);
+                doc.text(formatCurrency(subtotal), 170, yPosition);
                 yPosition += 8;
                 
                 if (desconto > 0) {
-                    doc.text('Desconto:', totalsX - 40, yPosition);
-                    doc.text(formatCurrency(desconto), totalsX, yPosition, { align: 'right' });
+                    doc.text('Desconto:', totalsX, yPosition);
+                    doc.text(formatCurrency(desconto), 170, yPosition);
                     yPosition += 8;
                 }
                 
                 doc.setFont(undefined, 'bold');
                 doc.setFontSize(14);
-                doc.text('TOTAL:', totalsX - 40, yPosition);
-                doc.text(formatCurrency(total), totalsX, yPosition, { align: 'right' });
+                doc.text('TOTAL:', totalsX, yPosition);
+                doc.text(formatCurrency(total), 170, yPosition);
                 yPosition += 15;
                 
                 // Observações
@@ -905,29 +885,6 @@
                         doc.addImage(pixData.qrCodeImage, 'PNG', 15, yPosition, 50, 50);
                         
                         // Dados do PIX
-                        doc.setFont(undefined, 'normal');
-                        doc.setFontSize(9);
-                        doc.text('Chave PIX:', 75, yPosition + 10);
-                        doc.text(pixChave, 75, yPosition + 16);
-                        
-                        doc.text('Valor:', 75, yPosition + 26);
-                        doc.text(formatCurrency(total), 75, yPosition + 32);
-                        
-                        doc.text('PIX Copia e Cola:', 75, yPosition + 42);
-                        const splitPixString = doc.splitTextToSize(pixData.pixString, pageWidth - 85);
-                        doc.text(splitPixString, 75, yPosition + 48);
-                    } else if (pixData) {
-                        // Se não couber na página, adicionar nova página
-                        doc.addPage();
-                        yPosition = 20;
-                        
-                        doc.setFont(undefined, 'bold');
-                        doc.setFontSize(14);
-                        doc.text('Pagamento via PIX', 15, yPosition);
-                        yPosition += 10;
-                        
-                        doc.addImage(pixData.qrCodeImage, 'PNG', 15, yPosition, 50, 50);
-                        
                         doc.setFont(undefined, 'normal');
                         doc.setFontSize(9);
                         doc.text('Chave PIX:', 75, yPosition + 10);
@@ -978,7 +935,7 @@
                 logoBase64 = null;
                 document.getElementById('logoPreview').innerHTML = `
                     <div class="logo-placeholder">
-                        📸<br>Clique para<br>adicionar logo
+                        Clique para<br>adicionar logo
                     </div>
                 `;
                 
@@ -997,13 +954,7 @@
             }
         }
         
-        // Inicialização
-        document.addEventListener('DOMContentLoaded', function() {
-            adicionarItem(); // Adicionar primeiro item
-            calcularTotais(); // Calcular totais iniciais
-        });
-        
-        // Máscara para telefone (opcional)
+        // Máscara para telefone
         function aplicarMascaraTelefone(input) {
             let valor = input.value.replace(/\D/g, '');
             if (valor.length <= 11) {
@@ -1015,35 +966,64 @@
             input.value = valor;
         }
         
-        // Aplicar máscaras nos campos de telefone
-        document.getElementById('empresaTel').addEventListener('input', function() {
-            aplicarMascaraTelefone(this);
-        });
-        
-        document.getElementById('clienteTel').addEventListener('input', function() {
-            aplicarMascaraTelefone(this);
-        });
-        
-        // Máscara para CNPJ/CPF (opcional)
-        document.getElementById('empresaDoc').addEventListener('input', function() {
-            let valor = this.value.replace(/\D/g, '');
-            if (valor.length <= 11) {
-                // CPF
-                valor = valor.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-                valor = valor.replace(/(\d{3})(\d{3})(\d{3})/, '$1.$2.$3');
-                valor = valor.replace(/(\d{3})(\d{3})/, '$1.$2');
-                valor = valor.replace(/(\d{3})/, '$1');
-            } else {
-                // CNPJ
-                valor = valor.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
-                valor = valor.replace(/(\d{2})(\d{3})(\d{3})(\d{4})/, '$1.$2.$3/$4');
-                valor = valor.replace(/(\d{2})(\d{3})(\d{3})/, '$1.$2.$3');
-                valor = valor.replace(/(\d{2})(\d{3})/, '$1.$2');
-                valor = valor.replace(/(\d{2})/, '$1');
-            }
-            this.value = valor;
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Upload de logo
+            document.getElementById('logoInput').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        logoBase64 = e.target.result;
+                        document.getElementById('logoPreview').innerHTML = `<img src="${logoBase64}" alt="Logo">`;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // Toggle PIX fields
+            document.getElementById('incluirPix').addEventListener('change', function() {
+                const pixFields = document.getElementById('pixFields');
+                if (this.checked) {
+                    pixFields.classList.add('show');
+                } else {
+                    pixFields.classList.remove('show');
+                }
+            });
+            
+            // Event listener para desconto
+            document.getElementById('desconto').addEventListener('input', calcularTotais);
+            
+            // Máscaras para telefones
+            document.getElementById('empresaTel').addEventListener('input', function() {
+                aplicarMascaraTelefone(this);
+            });
+            
+            document.getElementById('clienteTel').addEventListener('input', function() {
+                aplicarMascaraTelefone(this);
+            });
+            
+            // Máscara para CNPJ/CPF
+            document.getElementById('empresaDoc').addEventListener('input', function() {
+                let valor = this.value.replace(/\D/g, '');
+                if (valor.length <= 11) {
+                    // CPF
+                    valor = valor.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+                    valor = valor.replace(/(\d{3})(\d{3})(\d{3})/, '$1.$2.$3');
+                    valor = valor.replace(/(\d{3})(\d{3})/, '$1.$2');
+                } else {
+                    // CNPJ
+                    valor = valor.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+                    valor = valor.replace(/(\d{2})(\d{3})(\d{3})(\d{4})/, '$1.$2.$3/$4');
+                    valor = valor.replace(/(\d{2})(\d{3})(\d{3})/, '$1.$2.$3');
+                }
+                this.value = valor;
+            });
+            
+            // Inicializar com um item
+            adicionarItem();
+            calcularTotais();
         });
     </script>
 </body>
-</html>);
-               
+</html>
