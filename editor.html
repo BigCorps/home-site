@@ -376,14 +376,10 @@
                     </div>
 
                     <div class="tool-section">
-                        <div class="tool-title">Navegação</div>
+                        <div class="tool-title">Ferramentas</div>
                         <div class="tool-group">
-                            <div class="tool-btn active" data-tool="move" onclick="selectTool('move')">Mover/Zoom</div>
-                            <div class="tool-btn" data-tool="crop" onclick="selectTool('crop')">Selecionar Área</div>
-                        </div>
-                        <div style="font-size: 0.8rem; color: #666; margin-top: 10px;">
-                            <div>Mover: Arraste para mover, scroll para zoom</div>
-                            <div>Cortar: Arraste para selecionar área</div>
+                            <div class="tool-btn" data-tool="move" onclick="selectTool('move')">Mover</div>
+                            <div class="tool-btn active" data-tool="crop" onclick="selectTool('crop')">Cortar</div>
                         </div>
                     </div>
 
@@ -457,18 +453,15 @@
     </div>
 
     <script type="module">
-        // Importar biblioteca de remoção de fundo
         import { removeBackground as removeBgAI } from 'https://cdn.skypack.dev/@imgly/background-removal';
 
-        let canvas, ctx, originalImageData, currentImageData, originalImage;
-        let currentTool = 'move';
+        let canvas, ctx, originalImageData, currentImageData, originalImageFile;
+        let currentTool = 'crop';
         let isDragging = false;
         let startX, startY, currentX, currentY;
         let cropArea = null;
         let imageScale = 1;
-        let imageX = 0, imageY = 0;
-        let panX = 0, panY = 0;
-        let zoomLevel = 1;
+        let imageOffsetX = 0, imageOffsetY = 0;
 
         // Configuração inicial
         document.addEventListener('DOMContentLoaded', () => {
@@ -479,7 +472,6 @@
             // Debug: verificar se os elementos existem
             console.log('Canvas:', canvas);
             console.log('Context:', ctx);
-            console.log('Editor inicializado');
         });
 
         function setupEventListeners() {
@@ -527,18 +519,14 @@
                 const element = document.getElementById(slider.id);
                 const valueElement = document.getElementById(slider.valueId);
 
-                if (element && valueElement) {
-                    element.addEventListener('input', (e) => {
-                        valueElement.textContent = e.target.value + slider.suffix;
-                        applyFilters();
-                    });
-                }
+                element.addEventListener('input', (e) => {
+                    valueElement.textContent = e.target.value + slider.suffix;
+                    applyFilters();
+                });
             });
         }
 
         function loadImage(file) {
-            console.log('Tentando carregar arquivo:', file.name);
-            
             if (!file.type.startsWith('image/')) {
                 alert('Por favor, selecione um arquivo de imagem válido.');
                 return;
@@ -549,29 +537,24 @@
                 return;
             }
 
+            // Salvar referência do arquivo original
+            originalImageFile = file;
+
             const img = new Image();
             img.onload = () => {
-                console.log('Imagem carregada, dimensões:', img.width, img.height);
                 try {
-                    // Salvar referência da imagem original
-                    originalImage = img;
                     setupCanvas(img);
                     updateImageInfo(file, img);
-                    saveImageState();
                     document.getElementById('editorContainer').style.display = 'block';
                     document.querySelector('.reset-btn').style.display = 'block';
-                    console.log('Imagem configurada com sucesso');
                 } catch (error) {
-                    console.error('Erro ao configurar imagem:', error);
+                    console.error('Erro ao carregar imagem:', error);
                     alert('Erro ao carregar a imagem. Tente novamente.');
                 }
             };
-            
-            img.onerror = (error) => {
-                console.error('Erro ao carregar imagem:', error);
+            img.onerror = () => {
                 alert('Erro ao carregar a imagem. Verifique se o arquivo não está corrompido.');
             };
-            
             img.src = URL.createObjectURL(file);
         }
 
@@ -582,45 +565,32 @@
                 return;
             }
 
-            // Salvar referência da imagem original
-            originalImage = img;
+            // Definir dimensões do canvas
+            const maxWidth = 800;
+            const maxHeight = 600;
+            let { width, height } = img;
 
-            // Definir dimensões do canvas (tamanho fixo da área de visualização)
-            canvas.width = 800;
-            canvas.height = 600;
-
-            // Calcular escala para caber a imagem no canvas
-            imageScale = Math.min(canvas.width / img.width, canvas.height / img.height);
+            imageScale = Math.min(maxWidth / width, maxHeight / height, 1);
             
-            // Centralizar imagem
-            imageX = (canvas.width - img.width * imageScale) / 2;
-            imageY = (canvas.height - img.height * imageScale) / 2;
-            
-            zoomLevel = 1;
-            panX = 0;
-            panY = 0;
+            canvas.width = width * imageScale;
+            canvas.height = height * imageScale;
 
-            console.log('Canvas configurado:', canvas.width, canvas.height);
-            console.log('Imagem escala:', imageScale);
-
-            drawImage();
-            setupCanvasEvents();
-        }
-
-        function drawImage() {
-            if (!originalImage) return;
-
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Aplicar transformações de zoom e pan
-            const finalScale = imageScale * zoomLevel;
-            const finalX = imageX + panX;
-            const finalY = imageY + panY;
-            const finalWidth = originalImage.width * finalScale;
-            const finalHeight = originalImage.height * finalScale;
+            console.log('Canvas dimensões:', canvas.width, canvas.height);
 
             // Desenhar imagem
-            ctx.drawImage(originalImage, finalX, finalY, finalWidth, finalHeight);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            // Salvar dados originais
+            try {
+                originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                currentImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                console.log('ImageData salvo com sucesso');
+            } catch (error) {
+                console.error('Erro ao salvar ImageData:', error);
+            }
+
+            setupCanvasEvents();
         }
 
         function setupCanvasEvents() {
@@ -628,18 +598,15 @@
             canvas.addEventListener('mousemove', duringAction);
             canvas.addEventListener('mouseup', endAction);
             canvas.addEventListener('mouseleave', endAction);
-            canvas.addEventListener('wheel', handleZoom);
         }
 
         function startAction(e) {
             const rect = canvas.getBoundingClientRect();
             startX = e.clientX - rect.left;
             startY = e.clientY - rect.top;
-            isDragging = true;
             
             if (currentTool === 'crop') {
-                // Limpar crop anterior
-                cancelCrop();
+                isDragging = true;
                 document.getElementById('cropBtn').style.display = 'block';
                 document.getElementById('cancelCropBtn').style.display = 'block';
             }
@@ -652,42 +619,13 @@
             currentX = e.clientX - rect.left;
             currentY = e.clientY - rect.top;
 
-            if (currentTool === 'move') {
-                // Mover imagem
-                const deltaX = currentX - startX;
-                const deltaY = currentY - startY;
-                panX += deltaX;
-                panY += deltaY;
-                startX = currentX;
-                startY = currentY;
-                drawImage();
-            } else if (currentTool === 'crop') {
+            if (currentTool === 'crop') {
                 drawCropOverlay();
             }
         }
 
         function endAction() {
             isDragging = false;
-        }
-
-        function handleZoom(e) {
-            if (currentTool !== 'move') return;
-            
-            e.preventDefault();
-            const rect = canvas.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
-            
-            const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
-            const newZoom = Math.max(0.1, Math.min(5, zoomLevel * zoomFactor));
-            
-            // Ajustar pan para zoom centrado no mouse
-            const zoomChange = newZoom / zoomLevel;
-            panX = mouseX - (mouseX - panX) * zoomChange;
-            panY = mouseY - (mouseY - panY) * zoomChange;
-            
-            zoomLevel = newZoom;
-            drawImage();
         }
 
         function drawCropOverlay() {
@@ -719,79 +657,41 @@
             document.querySelector(`[data-tool="${tool}"]`).classList.add('active');
 
             // Atualizar cursor
-            canvas.style.cursor = tool === 'crop' ? 'crosshair' : 'grab';
+            canvas.style.cursor = tool === 'crop' ? 'crosshair' : 'move';
 
             // Limpar overlay se mudar de ferramenta
             if (tool !== 'crop') {
-                cancelCrop();
+                document.getElementById('cropOverlay').style.display = 'none';
+                document.getElementById('cropBtn').style.display = 'none';
+                document.getElementById('cancelCropBtn').style.display = 'none';
             }
         }
 
         function applyCrop() {
-            if (!cropArea || !originalImage) return;
+            if (!cropArea) return;
 
-            // Converter coordenadas do canvas para coordenadas da imagem original
-            const finalScale = imageScale * zoomLevel;
-            const finalX = imageX + panX;
-            const finalY = imageY + panY;
+            const scaleX = canvas.width / canvas.getBoundingClientRect().width;
+            const scaleY = canvas.height / canvas.getBoundingClientRect().height;
 
-            // Calcular área de crop na imagem original
-            const cropX = Math.max(0, (cropArea.x - finalX) / finalScale);
-            const cropY = Math.max(0, (cropArea.y - finalY) / finalScale);
-            const cropWidth = Math.min(originalImage.width - cropX, cropArea.width / finalScale);
-            const cropHeight = Math.min(originalImage.height - cropY, cropArea.height / finalScale);
+            const cropX = cropArea.x * scaleX;
+            const cropY = cropArea.y * scaleY;
+            const cropWidth = cropArea.width * scaleX;
+            const cropHeight = cropArea.height * scaleY;
 
-            // Criar canvas temporário para crop
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCanvas.width = cropWidth;
-            tempCanvas.height = cropHeight;
-
-            // Desenhar área cortada
-            tempCtx.drawImage(
-                originalImage,
-                cropX, cropY, cropWidth, cropHeight,
-                0, 0, cropWidth, cropHeight
-            );
-
-            // Criar nova imagem a partir do crop
-            const newImg = new Image();
-            newImg.onload = () => {
-                originalImage = newImg;
-                resetViewport();
-                drawImage();
-                saveImageState();
-            };
-            newImg.src = tempCanvas.toDataURL();
-
+            // Criar nova imagem cortada
+            const croppedImageData = ctx.getImageData(cropX, cropY, cropWidth, cropHeight);
+            
+            canvas.width = cropWidth;
+            canvas.height = cropHeight;
+            
+            ctx.putImageData(croppedImageData, 0, 0);
+            
+            // Atualizar dados
+            originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            currentImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            
             cancelCrop();
             updateImageDimensions();
-        }
-
-        function resetViewport() {
-            // Recalcular posição e escala para nova imagem
-            imageScale = Math.min(canvas.width / originalImage.width, canvas.height / originalImage.height);
-            imageX = (canvas.width - originalImage.width * imageScale) / 2;
-            imageY = (canvas.height - originalImage.height * imageScale) / 2;
-            zoomLevel = 1;
-            panX = 0;
-            panY = 0;
-        }
-
-        function saveImageState() {
-            // Salvar estado atual da imagem para os filtros
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCanvas.width = originalImage.width;
-            tempCanvas.height = originalImage.height;
-            tempCtx.drawImage(originalImage, 0, 0);
-            
-            try {
-                originalImageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
-                currentImageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
-            } catch (error) {
-                console.error('Erro ao salvar estado:', error);
-            }
         }
 
         function cancelCrop() {
@@ -802,72 +702,59 @@
         }
 
         function rotateImage(degrees) {
-            if (!originalImage) return;
-
             const tempCanvas = document.createElement('canvas');
             const tempCtx = tempCanvas.getContext('2d');
             
             if (Math.abs(degrees) === 90) {
-                tempCanvas.width = originalImage.height;
-                tempCanvas.height = originalImage.width;
+                tempCanvas.width = canvas.height;
+                tempCanvas.height = canvas.width;
             } else {
-                tempCanvas.width = originalImage.width;
-                tempCanvas.height = originalImage.height;
+                tempCanvas.width = canvas.width;
+                tempCanvas.height = canvas.height;
             }
             
             tempCtx.translate(tempCanvas.width / 2, tempCanvas.height / 2);
             tempCtx.rotate((degrees * Math.PI) / 180);
-            tempCtx.drawImage(originalImage, -originalImage.width / 2, -originalImage.height / 2);
+            tempCtx.drawImage(canvas, -canvas.width / 2, -canvas.height / 2);
             
-            const newImg = new Image();
-            newImg.onload = () => {
-                originalImage = newImg;
-                resetViewport();
-                drawImage();
-                saveImageState();
-                updateImageDimensions();
-            };
-            newImg.src = tempCanvas.toDataURL();
+            canvas.width = tempCanvas.width;
+            canvas.height = tempCanvas.height;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(tempCanvas, 0, 0);
+            
+            originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            currentImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            updateImageDimensions();
         }
 
         function flipImage(direction) {
-            if (!originalImage) return;
-
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCanvas.width = originalImage.width;
-            tempCanvas.height = originalImage.height;
-            
-            tempCtx.save();
+            ctx.save();
             
             if (direction === 'horizontal') {
-                tempCtx.scale(-1, 1);
-                tempCtx.drawImage(originalImage, -originalImage.width, 0);
+                ctx.scale(-1, 1);
+                ctx.drawImage(canvas, -canvas.width, 0);
             } else {
-                tempCtx.scale(1, -1);
-                tempCtx.drawImage(originalImage, 0, -originalImage.height);
+                ctx.scale(1, -1);
+                ctx.drawImage(canvas, 0, -canvas.height);
             }
             
-            tempCtx.restore();
+            ctx.restore();
             
-            const newImg = new Image();
-            newImg.onload = () => {
-                originalImage = newImg;
-                drawImage();
-                saveImageState();
-            };
-            newImg.src = tempCanvas.toDataURL();
+            originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            currentImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         }
 
         function applyFilters() {
-            if (!originalImage) return;
-
+            // Restaurar imagem original
+            ctx.putImageData(originalImageData, 0, 0);
+            
             // Obter valores dos controles
             const brightness = parseInt(document.getElementById('brightnessSlider').value);
             const contrast = parseInt(document.getElementById('contrastSlider').value);
             const saturation = parseInt(document.getElementById('saturationSlider').value);
+            const sharpness = parseInt(document.getElementById('sharpnessSlider').value);
             
-            // Aplicar filtros CSS ao canvas
+            // Aplicar filtros CSS
             let filters = [];
             
             if (brightness !== 0) {
@@ -883,18 +770,84 @@
             }
             
             canvas.style.filter = filters.join(' ');
+            
+            // Aplicar nitidez (efeito visual aproximado)
+            if (sharpness > 0) {
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const sharpened = applySharpen(imageData, sharpness / 100);
+                ctx.putImageData(sharpened, 0, 0);
+            }
+        }
+
+        function applySharpen(imageData, amount) {
+            const data = imageData.data;
+            const width = imageData.width;
+            const height = imageData.height;
+            const output = new ImageData(width, height);
+            const outputData = output.data;
+            
+            // Kernel de nitidez simples
+            const kernel = [
+                0, -amount, 0,
+                -amount, 1 + 4 * amount, -amount,
+                0, -amount, 0
+            ];
+            
+            for (let y = 1; y < height - 1; y++) {
+                for (let x = 1; x < width - 1; x++) {
+                    for (let c = 0; c < 3; c++) {
+                        let sum = 0;
+                        for (let ky = -1; ky <= 1; ky++) {
+                            for (let kx = -1; kx <= 1; kx++) {
+                                const idx = ((y + ky) * width + (x + kx)) * 4 + c;
+                                const kIdx = (ky + 1) * 3 + (kx + 1);
+                                sum += data[idx] * kernel[kIdx];
+                            }
+                        }
+                        const idx = (y * width + x) * 4 + c;
+                        outputData[idx] = Math.min(255, Math.max(0, sum));
+                    }
+                    // Alpha channel
+                    const idx = (y * width + x) * 4 + 3;
+                    outputData[idx] = data[idx];
+                }
+            }
+            
+            return output;
+        }
+
+        function resetAdjustments() {
+            document.getElementById('brightnessSlider').value = 0;
+            document.getElementById('contrastSlider').value = 100;
+            document.getElementById('saturationSlider').value = 100;
+            document.getElementById('sharpnessSlider').value = 0;
+            
+            document.getElementById('brightnessValue').textContent = '0';
+            document.getElementById('contrastValue').textContent = '100%';
+            document.getElementById('saturationValue').textContent = '100%';
+            document.getElementById('sharpnessValue').textContent = '0';
+            
+            canvas.style.filter = '';
+            ctx.putImageData(originalImageData, 0, 0);
         }
 
         function downloadImage() {
-            if (!originalImage) return;
-
-            // Criar canvas final com a imagem e filtros aplicados
-            const exportCanvas = document.createElement('canvas');
-            const exportCtx = exportCanvas.getContext('2d');
+            // Aplicar filtros permanentemente antes do download
+            applyFiltersToImageData();
             
-            exportCanvas.width = originalImage.width;
-            exportCanvas.height = originalImage.height;
+            const link = document.createElement('a');
+            link.download = 'imagem_editada.png';
+            link.click();
+        }
 
+        function applyFiltersToImageData() {
+            // Criar canvas temporário para aplicar filtros
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+            
             // Aplicar filtros
             const brightness = parseInt(document.getElementById('brightnessSlider').value);
             const contrast = parseInt(document.getElementById('contrastSlider').value);
@@ -905,56 +858,99 @@
             if (contrast !== 100) filters.push(`contrast(${contrast}%)`);
             if (saturation !== 100) filters.push(`saturate(${saturation}%)`);
             
-            exportCtx.filter = filters.join(' ');
-            exportCtx.drawImage(originalImage, 0, 0);
-
-            const link = document.createElement('a');
-            link.download = 'imagem_editada.png';
-            link.href = exportCanvas.toDataURL('image/png');
-            link.click();
+            tempCtx.filter = filters.join(' ');
+            tempCtx.drawImage(canvas, 0, 0);
+            
+            // Aplicar ao canvas principal
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(tempCanvas, 0, 0);
         }
 
-        function resetEditor() {
-            // Ocultar editor
-            document.getElementById('editorContainer').style.display = 'none';
-            document.querySelector('.reset-btn').style.display = 'none';
-            
-            // Resetar variáveis
-            originalImage = null;
-            originalImageData = null;
-            currentImageData = null;
-            cropArea = null;
-            imageScale = 1;
-            imageX = 0;
-            imageY = 0;
-            panX = 0;
-            panY = 0;
-            zoomLevel = 1;
-            
-            // Limpar canvas
-            if (ctx) {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                canvas.style.filter = '';
+        async function removeBackground() {
+            if (!originalImageFile) {
+                alert('Nenhuma imagem carregada');
+                return;
             }
+
+            const progressDiv = document.getElementById('removeBgProgress');
+            const btn = document.getElementById('removeBgBtn');
             
-            // Resetar controles
-            resetAdjustments();
-            
-            // Limpar input
-            document.getElementById('fileInput').value = '';
-            
-            // Cancelar crop se ativo
-            cancelCrop();
-            
-            // Resetar ferramenta
-            selectTool('move');
+            try {
+                // Mostrar progresso
+                progressDiv.style.display = 'block';
+                btn.disabled = true;
+                btn.textContent = 'Processando...';
+
+                // Otimizar imagem para processamento mais rápido
+                const optimizedBlob = await optimizeImageForBgRemoval(originalImageFile);
+
+                // Processar com IA
+                const resultBlob = await removeBgAI(optimizedBlob);
+
+                // Criar nova imagem com fundo removido
+                const newImg = new Image();
+                newImg.onload = () => {
+                    setupCanvas(newImg);
+                    
+                    // Resetar UI
+                    progressDiv.style.display = 'none';
+                    btn.disabled = false;
+                    btn.textContent = 'Remover Fundo';
+                };
+                newImg.src = URL.createObjectURL(resultBlob);
+
+            } catch (error) {
+                console.error('Erro na remoção de fundo:', error);
+                alert('Erro ao remover fundo. Tente novamente com uma imagem menor.');
+                
+                // Resetar UI
+                progressDiv.style.display = 'none';
+                btn.disabled = false;
+                btn.textContent = 'Remover Fundo';
+            }
+        }
+
+        function optimizeImageForBgRemoval(file) {
+            return new Promise(resolve => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Limitar dimensão máxima para 1000px
+                    let { width, height } = img;
+                    const maxDimension = 1000;
+                    
+                    if (width > maxDimension || height > maxDimension) {
+                        if (width > height) {
+                            height = (height * maxDimension) / width;
+                            width = maxDimension;
+                        } else {
+                            width = (width * maxDimension) / height;
+                            height = maxDimension;
+                        }
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    canvas.toBlob(resolve, 'image/png', 0.85);
+                };
+                img.src = URL.createObjectURL(file);
+            });
+        }
+
+        function updateImageInfo(file, img) {
+            document.getElementById('imageDimensions').textContent = 
+                `${Math.round(img.width)} x ${Math.round(img.height)}px`;
+            document.getElementById('imageSize').textContent = formatFileSize(file.size);
+            document.getElementById('imageFormat').textContent = file.type.split('/')[1].toUpperCase();
         }
 
         function updateImageDimensions() {
-            if (originalImage) {
-                document.getElementById('imageDimensions').textContent = 
-                    `${originalImage.width} x ${originalImage.height}px`;
-            }
+            document.getElementById('imageDimensions').textContent = 
+                `${canvas.width} x ${canvas.height}px`;
         }
 
         function formatFileSize(bytes) {
@@ -978,6 +974,7 @@
             // Resetar variáveis
             originalImageData = null;
             currentImageData = null;
+            originalImageFile = null;
             cropArea = null;
             
             // Resetar controles
@@ -992,6 +989,17 @@
             // Resetar ferramenta
             selectTool('crop');
         }
+
+        // Expor funções globalmente para uso com onclick
+        window.selectTool = selectTool;
+        window.rotateImage = rotateImage;
+        window.flipImage = flipImage;
+        window.applyCrop = applyCrop;
+        window.cancelCrop = cancelCrop;
+        window.downloadImage = downloadImage;
+        window.resetAdjustments = resetAdjustments;
+        window.resetEditor = resetEditor;
+        window.removeBackground = removeBackground;
     </script>
 </body>
 </html>
