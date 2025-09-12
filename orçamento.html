@@ -8,8 +8,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf-autotable.js"></script>
     <style>
         :root {
-            --cor-laranja: #F59E0B; /* Amarelo-alaranjado, como um botão laranja */
-            --cor-laranja-hover: #D97706; /* Laranja mais escuro para hover */
+            --cor-laranja: #F59E0B;
+            --cor-laranja-hover: #D97706;
             --fundo-branco: #FFFFFF;
             --texto-principal: #1F2937;
             --texto-secundario: #6B7280;
@@ -24,183 +24,47 @@
             padding: 2rem;
             font-size: 16px;
         }
-        .container {
-            max-width: 900px;
-            margin: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-        }
-        .card {
-            border: 1px solid var(--borda-cor);
-            border-radius: 0.75rem;
-            background-color: var(--fundo-branco);
-            box-shadow: 0 1px 3px 0 rgba(0,0,0,0.05);
-        }
-        .card-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid var(--borda-cor);
-        }
-        .card-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin: 0;
-        }
-        .card-description {
-            color: var(--texto-secundario);
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
-        }
-        .card-content {
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        .grid {
-            display: grid;
-            gap: 1rem;
-        }
+        .container { max-width: 900px; margin: auto; display: flex; flex-direction: column; gap: 2rem; }
+        .card { border: 1px solid var(--borda-cor); border-radius: 0.75rem; background-color: var(--fundo-branco); box-shadow: 0 1px 3px 0 rgba(0,0,0,0.05); }
+        .card-header { padding: 1.5rem; border-bottom: 1px solid var(--borda-cor); }
+        .card-title { font-size: 1.25rem; font-weight: 600; margin: 0; }
+        .card-description { color: var(--texto-secundario); font-size: 0.875rem; margin-top: 0.25rem; }
+        .card-content { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+        .grid { display: grid; gap: 1rem; }
         .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
         .col-span-2 { grid-column: span 2 / span 2; }
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-        label {
-            font-weight: 500;
-            font-size: 0.875rem;
-        }
-        input, textarea {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--borda-cor);
-            border-radius: 0.5rem;
-            background-color: var(--fundo-input);
-            box-sizing: border-box;
-            font-size: 1rem;
-        }
-        input:focus, textarea:focus {
-            outline: 2px solid var(--cor-laranja);
-            border-color: transparent;
-        }
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 0.5rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            font-size: 1rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-        .btn-primary {
-            background-color: var(--cor-laranja);
-            color: var(--fundo-branco);
-        }
-        .btn-primary:hover { background-color: var(--cor-laranja-hover); }
-        .btn-outline {
-            background-color: transparent;
-            color: var(--cor-laranja);
-            border: 1px solid var(--cor-laranja);
-        }
-        .btn-outline:hover { background-color: var(--cor-laranja); color: var(--fundo-branco); }
-        .btn-danger {
-            background-color: #EF4444;
-            color: white;
-        }
+        .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+        label { font-weight: 500; font-size: 0.875rem; }
+        input, textarea { width: 100%; padding: 0.75rem; border: 1px solid var(--borda-cor); border-radius: 0.5rem; background-color: var(--fundo-input); box-sizing: border-box; font-size: 1rem; }
+        input:focus, textarea:focus { outline: 2px solid var(--cor-laranja); border-color: transparent; }
+        .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer; transition: background-color 0.2s; font-size: 1rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .btn:disabled { background-color: #9CA3AF; cursor: not-allowed; }
+        .btn-primary { background-color: var(--cor-laranja); color: var(--fundo-branco); }
+        .btn-primary:not(:disabled):hover { background-color: var(--cor-laranja-hover); }
+        .btn-outline { background-color: transparent; color: var(--cor-laranja); border: 1px solid var(--cor-laranja); }
+        .btn-outline:not(:disabled):hover { background-color: var(--cor-laranja); color: var(--fundo-branco); }
+        .btn-danger { background-color: #EF4444; color: white; }
         .btn-danger:hover { background-color: #DC2626; }
-        .item-row {
-            display: grid;
-            grid-template-columns: 1fr 80px 120px 120px 40px;
-            gap: 0.5rem;
-            align-items: center;
-        }
-        .total-summary {
-            background-color: var(--fundo-input);
-            padding: 1rem;
-            border-radius: 0.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-        .total-summary div {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .total-summary .total {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--cor-laranja);
-            border-top: 1px solid var(--borda-cor);
-            padding-top: 0.75rem;
-        }
-        .switch-container {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 24px;
-        }
+        .item-row { display: grid; grid-template-columns: 1fr 80px 120px 120px 40px; gap: 0.5rem; align-items: center; }
+        .total-summary { background-color: var(--fundo-input); padding: 1rem; border-radius: 0.5rem; display: flex; flex-direction: column; gap: 0.75rem; }
+        .total-summary div { display: flex; justify-content: space-between; align-items: center; }
+        .total-summary .total { font-size: 1.5rem; font-weight: bold; color: var(--cor-laranja); border-top: 1px solid var(--borda-cor); padding-top: 0.75rem; }
+        .switch-container { display: flex; align-items: center; gap: 1rem; }
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 24px;
-        }
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px; width: 18px;
-            left: 3px; bottom: 3px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--cor-laranja); }
         input:checked + .slider:before { transform: translateX(20px); }
-        .logo-preview {
-            width: 128px;
-            height: 128px;
-            border: 2px dashed var(--borda-cor);
-            border-radius: 0.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            font-size: 0.8rem;
-            color: var(--texto-secundario);
-            cursor: pointer;
-            overflow: hidden;
-        }
-        .logo-preview img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
+        .logo-preview { width: 128px; height: 128px; border: 2px dashed var(--borda-cor); border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 0.8rem; color: var(--texto-secundario); cursor: pointer; overflow: hidden; }
+        .logo-preview img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--cor-laranja); border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @media (max-width: 768px) {
             body { padding: 1rem; }
             .grid-cols-2 { grid-template-columns: 1fr; }
             .col-span-2 { grid-column: span 1; }
-            .item-row {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-                padding: 1rem;
-                border: 1px solid var(--borda-cor);
-                border-radius: 0.5rem;
-            }
+            .item-row { grid-template-columns: 1fr; gap: 1rem; padding: 1rem; border: 1px solid var(--borda-cor); border-radius: 0.5rem; }
             .item-row .btn { width: 100%; }
         }
     </style>
@@ -215,39 +79,22 @@
 
         <!-- Dados da Empresa -->
         <div class="card">
-            <div class="card-header">
-                <h2 class="card-title">Dados da Sua Empresa</h2>
-            </div>
+            <div class="card-header"><h2 class="card-title">Dados da Sua Empresa</h2></div>
             <div class="card-content">
                 <div class="grid" style="grid-template-columns: 1fr 2fr; align-items: start;">
                     <div class="form-group">
                         <label>Logo da Empresa</label>
-                        <div id="logo-preview" class="logo-preview" onclick="document.getElementById('logo-upload').click()">
-                            <span>Clique para carregar</span>
-                        </div>
+                        <div id="logo-preview" class="logo-preview" onclick="document.getElementById('logo-upload').click()"><span>Clique para carregar</span></div>
                         <input type="file" id="logo-upload" accept="image/png, image/jpeg" style="display: none;">
                     </div>
                     <div class="grid grid-cols-2">
-                        <div class="form-group col-span-2">
-                            <label for="empresa-nome">Nome da Empresa</label>
-                            <input type="text" id="empresa-nome" placeholder="Sua Empresa LTDA">
-                        </div>
-                        <div class="form-group">
-                            <label for="empresa-doc">CNPJ / CPF</label>
-                            <input type="text" id="empresa-doc" placeholder="00.000.000/0001-00">
-                        </div>
-                        <div class="form-group">
-                            <label for="empresa-tel">Telefone</label>
-                            <input type="text" id="empresa-tel" placeholder="(11) 99999-9999">
-                        </div>
-                        <div class="form-group col-span-2">
-                            <label for="empresa-email">Email</label>
-                            <input type="email" id="empresa-email" placeholder="contato@suaempresa.com">
-                        </div>
-                        <div class="form-group col-span-2">
-                            <label for="empresa-end">Endereço</label>
-                            <input type="text" id="empresa-end" placeholder="Rua Exemplo, 123, Bairro, Cidade - UF">
-                        </div>
+                        <div class="form-group col-span-2"><label for="empresa-nome">Nome da Empresa</label><input type="text" id="empresa-nome" placeholder="Sua Empresa LTDA"></div>
+                        <div class="form-group"><label for="empresa-doc">CNPJ / CPF</label><input type="text" id="empresa-doc" placeholder="00.000.000/0001-00"></div>
+                        <div class="form-group"><label for="empresa-tel">Telefone</label><input type="text" id="empresa-tel" placeholder="(11) 99999-9999"></div>
+                        <div class="form-group col-span-2"><label for="empresa-email">Email</label><input type="email" id="empresa-email" placeholder="contato@suaempresa.com"></div>
+                        <div class="form-group"><label for="empresa-cidade">Cidade</label><input type="text" id="empresa-cidade" placeholder="São Paulo"></div>
+                        <div class="form-group"><label for="empresa-estado">Estado (UF)</label><input type="text" id="empresa-estado" placeholder="SP" maxlength="2"></div>
+                        <div class="form-group col-span-2"><label for="empresa-end">Endereço Completo</label><input type="text" id="empresa-end" placeholder="Rua Exemplo, 123, Bairro"></div>
                     </div>
                 </div>
             </div>
@@ -255,56 +102,31 @@
 
         <!-- Dados do Cliente -->
         <div class="card">
-            <div class="card-header">
-                <h2 class="card-title">Dados do Cliente</h2>
-            </div>
+            <div class="card-header"><h2 class="card-title">Dados do Cliente</h2></div>
             <div class="card-content grid grid-cols-2">
-                <div class="form-group">
-                    <label for="cliente-nome">Nome Completo</label>
-                    <input type="text" id="cliente-nome" placeholder="Nome do Cliente">
-                </div>
-                <div class="form-group">
-                    <label for="cliente-email">Email</label>
-                    <input type="email" id="cliente-email" placeholder="email@cliente.com">
-                </div>
-                <div class="form-group">
-                    <label for="cliente-tel">Telefone</label>
-                    <input type="text" id="cliente-tel" placeholder="(21) 98888-8888">
-                </div>
-                <div class="form-group">
-                    <label for="cliente-end">Endereço</label>
-                    <input type="text" id="cliente-end" placeholder="Endereço do Cliente (Opcional)">
-                </div>
+                <div class="form-group"><label for="cliente-nome">Nome Completo</label><input type="text" id="cliente-nome" placeholder="Nome do Cliente"></div>
+                <div class="form-group"><label for="cliente-email">Email</label><input type="email" id="cliente-email" placeholder="email@cliente.com"></div>
+                <div class="form-group"><label for="cliente-tel">Telefone</label><input type="text" id="cliente-tel" placeholder="(21) 98888-8888"></div>
+                <div class="form-group"><label for="cliente-end">Endereço</label><input type="text" id="cliente-end" placeholder="Endereço do Cliente (Opcional)"></div>
             </div>
         </div>
 
         <!-- Itens do Orçamento -->
         <div class="card">
-            <div class="card-header">
-                <h2 class="card-title">Itens do Orçamento</h2>
-            </div>
-            <div class="card-content" id="itens-container">
-                <!-- Linhas de itens serão adicionadas aqui via JS -->
-            </div>
-            <div style="padding: 0 1.5rem 1.5rem;">
-                <button id="add-item" class="btn btn-outline">Adicionar Item</button>
-            </div>
+            <div class="card-header"><h2 class="card-title">Itens do Orçamento</h2></div>
+            <div class="card-content" id="itens-container"></div>
+            <div style="padding: 0 1.5rem 1.5rem;"><button id="add-item" class="btn btn-outline">Adicionar Item</button></div>
         </div>
 
         <!-- Resumo e Opções -->
         <div class="card">
-            <div class="card-header">
-                <h2 class="card-title">Resumo e Opções</h2>
-            </div>
+            <div class="card-header"><h2 class="card-title">Resumo e Opções</h2></div>
             <div class="card-content grid grid-cols-2">
-                <div class="form-group">
-                    <label for="observacoes">Observações</label>
-                    <textarea id="observacoes" rows="6" placeholder="Ex: Condições de pagamento, validade da proposta, etc."></textarea>
-                </div>
+                <div class="form-group"><label for="observacoes">Observações</label><textarea id="observacoes" rows="8" placeholder="Ex: Condições de pagamento, validade da proposta, etc."></textarea></div>
                 <div style="display: flex; flex-direction: column; gap: 1rem;">
                     <div class="total-summary">
                         <div><span>Subtotal</span><span id="subtotal">R$ 0,00</span></div>
-                        <div>
+                        <div class="form-group" style="flex-direction: row; justify-content: space-between; align-items: center;">
                             <label for="desconto">Desconto (R$)</label>
                             <input type="number" id="desconto" value="0" step="0.01" style="width: 100px; text-align: right;">
                         </div>
@@ -312,21 +134,12 @@
                     </div>
                     <div class="form-group">
                         <div class="switch-container">
-                            <label class="switch">
-                                <input type="checkbox" id="incluir-qrcode">
-                                <span class="slider"></span>
-                            </label>
-                            <label for="incluir-qrcode">Incluir QR Code Pix Estático?</label>
+                            <label class="switch"><input type="checkbox" id="incluir-qrcode"><span class="slider"></span></label>
+                            <label for="incluir-qrcode">Incluir Pagamento Pix?</label>
                         </div>
                         <div id="qrcode-fields" style="display: none; margin-top: 1rem; display:flex; flex-direction:column; gap:1rem;">
-                            <div class="form-group">
-                                <label for="pix-key">Chave Pix</label>
-                                <input type="text" id="pix-key" placeholder="Sua chave pix (email, cpf, etc)">
-                            </div>
-                            <div class="form-group">
-                                <label for="pix-qrcode-upload">Imagem do QR Code Estático (Opcional)</label>
-                                <input type="file" id="pix-qrcode-upload" accept="image/png, image/jpeg">
-                            </div>
+                            <div class="form-group"><label for="pix-key">Chave Pix</label><input type="text" id="pix-key" placeholder="Sua chave pix (email, cpf, etc)"></div>
+                            <p class="card-description" style="font-size: 0.75rem;">O QR Code e o "Copia e Cola" serão gerados com base nos dados da empresa e na chave acima.</p>
                         </div>
                     </div>
                 </div>
@@ -341,29 +154,14 @@
     </div>
 
     <script>
-        // Inicializa o jsPDF
         const { jsPDF } = window.jspdf;
+        window.autoTable = window.jspdf.jsPDF.autoTable;
 
-        // Elementos do DOM
-        const addItemBtn = document.getElementById('add-item');
-        const itensContainer = document.getElementById('itens-container');
-        const descontoInput = document.getElementById('desconto');
-        const subtotalEl = document.getElementById('subtotal');
-        const totalEl = document.getElementById('total');
-        const gerarPdfBtn = document.getElementById('gerar-pdf');
-        const limparFormBtn = document.getElementById('limpar-form');
-        const incluirQrCodeSwitch = document.getElementById('incluir-qrcode');
-        const qrCodeFields = document.getElementById('qrcode-fields');
-        const logoUpload = document.getElementById('logo-upload');
-        const logoPreview = document.getElementById('logo-preview');
-
-        let logoBase64 = null;
-        let qrCodeBase64 = null;
-
-        // Funções de formatação
         const formatCurrency = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 
-        // Funções de manipulação de itens
+        let logoBase64 = null;
+        let pixData = { qrCode: null, brCode: null };
+
         const createItemRow = () => {
             const itemId = `item-${Date.now()}`;
             const row = document.createElement('div');
@@ -376,7 +174,7 @@
                 <input type="text" class="item-subtotal" readonly disabled value="${formatCurrency(0)}">
                 <button class="btn btn-danger" onclick="removeItem('${itemId}')">X</button>
             `;
-            itensContainer.appendChild(row);
+            document.getElementById('itens-container').appendChild(row);
             updateTotals();
         };
 
@@ -394,37 +192,11 @@
                 row.querySelector('.item-subtotal').value = formatCurrency(itemSubtotal);
                 subtotal += itemSubtotal;
             });
-
-            const desconto = parseFloat(descontoInput.value) || 0;
+            const desconto = parseFloat(document.getElementById('desconto').value) || 0;
             const total = subtotal - desconto;
-
-            subtotalEl.textContent = formatCurrency(subtotal);
-            totalEl.textContent = formatCurrency(total);
+            document.getElementById('subtotal').textContent = formatCurrency(subtotal);
+            document.getElementById('total').textContent = formatCurrency(total);
         };
-
-        // Event Listeners
-        addItemBtn.addEventListener('click', createItemRow);
-        itensContainer.addEventListener('input', updateTotals);
-        descontoInput.addEventListener('input', updateTotals);
-        limparFormBtn.addEventListener('click', () => {
-            if (confirm('Tem certeza que deseja limpar todos os campos?')) {
-                document.querySelectorAll('input, textarea').forEach(el => {
-                    if (el.type === 'checkbox' || el.type === 'radio') el.checked = false;
-                    else if (el.type !== 'file') el.value = '';
-                });
-                itensContainer.innerHTML = '';
-                logoBase64 = null;
-                qrCodeBase64 = null;
-                logoPreview.innerHTML = '<span>Clique para carregar</span>';
-                createItemRow();
-                updateTotals();
-                qrCodeFields.style.display = 'none';
-            }
-        });
-
-        incluirQrCodeSwitch.addEventListener('change', (e) => {
-            qrCodeFields.style.display = e.target.checked ? 'flex' : 'none';
-        });
 
         const handleFileUpload = (file, callback) => {
             if (file) {
@@ -434,117 +206,166 @@
             }
         };
 
-        logoUpload.addEventListener('change', (e) => {
+        const setButtonLoading = (btn, isLoading) => {
+            if (isLoading) {
+                btn.disabled = true;
+                btn.innerHTML = '<div class="loader"></div> Processando...';
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = 'Gerar PDF';
+            }
+        };
+
+        const gerarPix = async () => {
+            const nome = document.getElementById('empresa-nome').value;
+            const cidade = document.getElementById('empresa-cidade').value;
+            const estado = document.getElementById('empresa-estado').value;
+            const chave = document.getElementById('pix-key').value;
+
+            if (!nome || !cidade || !estado || !chave) {
+                alert("Para gerar o Pix, preencha o Nome da Empresa, Cidade, Estado e a Chave Pix.");
+                return null;
+            }
+
+            const nomeEncoded = encodeURIComponent(nome);
+            const cidadeEncoded = encodeURIComponent(`${cidade}/${estado}`);
+            const chaveEncoded = encodeURIComponent(chave);
+            const mcc = '7372';
+            const apiUrl = 'https://gerarqrcodepix.com.br/api/v1';
+
+            try {
+                const [qrResponse, brResponse] = await Promise.all([
+                    fetch(`${apiUrl}?nome=${nomeEncoded}&cidade=${cidadeEncoded}&chave=${chaveEncoded}&mcc=${mcc}&saida=qr`),
+                    fetch(`${apiUrl}?nome=${nomeEncoded}&cidade=${cidadeEncoded}&chave=${chaveEncoded}&saida=br`)
+                ]);
+
+                if (!qrResponse.ok || !brResponse.ok) throw new Error("Falha na API de Pix.");
+
+                const qrImageBuffer = await qrResponse.arrayBuffer();
+                const brJson = await brResponse.json();
+                
+                const reader = new FileReader();
+                reader.readAsDataURL(new Blob([qrImageBuffer]));
+                return new Promise(resolve => {
+                    reader.onloadend = () => {
+                        resolve({
+                            qrCode: reader.result,
+                            brCode: brJson.brcode
+                        });
+                    };
+                });
+
+            } catch (error) {
+                console.error("Erro ao gerar Pix:", error);
+                alert("Não foi possível gerar o QR Code Pix. Verifique os dados e a conexão.");
+                return null;
+            }
+        };
+
+        document.getElementById('add-item').addEventListener('click', createItemRow);
+        document.getElementById('itens-container').addEventListener('input', updateTotals);
+        document.getElementById('desconto').addEventListener('input', updateTotals);
+        
+        document.getElementById('limpar-form').addEventListener('click', () => {
+            if (confirm('Tem certeza que deseja limpar todos os campos?')) {
+                document.querySelectorAll('input, textarea').forEach(el => {
+                    if (el.type === 'checkbox' || el.type === 'radio') el.checked = false;
+                    else if (el.type !== 'file') el.value = '';
+                });
+                document.getElementById('itens-container').innerHTML = '';
+                logoBase64 = null;
+                pixData = { qrCode: null, brCode: null };
+                document.getElementById('logo-preview').innerHTML = '<span>Clique para carregar</span>';
+                createItemRow();
+                updateTotals();
+                document.getElementById('qrcode-fields').style.display = 'none';
+            }
+        });
+
+        document.getElementById('incluir-qrcode').addEventListener('change', (e) => {
+            document.getElementById('qrcode-fields').style.display = e.target.checked ? 'flex' : 'none';
+        });
+
+        document.getElementById('logo-upload').addEventListener('change', (e) => {
             handleFileUpload(e.target.files[0], (base64) => {
                 logoBase64 = base64;
-                logoPreview.innerHTML = `<img src="${logoBase64}" alt="Logo Preview">`;
+                document.getElementById('logo-preview').innerHTML = `<img src="${logoBase64}" alt="Logo Preview">`;
             });
         });
 
-        document.getElementById('pix-qrcode-upload').addEventListener('change', (e) => {
-            handleFileUpload(e.target.files[0], (base64) => {
-                qrCodeBase64 = base64;
-            });
-        });
+        document.getElementById('gerar-pdf').addEventListener('click', async (e) => {
+            const btn = e.currentTarget;
+            setButtonLoading(btn, true);
 
-        // Geração do PDF
-        gerarPdfBtn.addEventListener('click', async () => {
             const doc = new jsPDF();
             
-            // Coleta de dados
             const empresa = {
-                nome: document.getElementById('empresa-nome').value,
-                doc: document.getElementById('empresa-doc').value,
-                tel: document.getElementById('empresa-tel').value,
-                email: document.getElementById('empresa-email').value,
+                nome: document.getElementById('empresa-nome').value, doc: document.getElementById('empresa-doc').value,
+                tel: document.getElementById('empresa-tel').value, email: document.getElementById('empresa-email').value,
                 end: document.getElementById('empresa-end').value,
             };
             const cliente = {
-                nome: document.getElementById('cliente-nome').value,
-                email: document.getElementById('cliente-email').value,
-                tel: document.getElementById('cliente-tel').value,
-                end: document.getElementById('cliente-end').value,
+                nome: document.getElementById('cliente-nome').value, email: document.getElementById('cliente-email').value,
+                tel: document.getElementById('cliente-tel').value, end: document.getElementById('cliente-end').value,
             };
+            if (!empresa.nome || !cliente.nome) {
+                alert('Nome da empresa e do cliente são obrigatórios.');
+                setButtonLoading(btn, false);
+                return;
+            }
+
+            if (document.getElementById('incluir-qrcode').checked) {
+                pixData = await gerarPix();
+                if (!pixData) {
+                    setButtonLoading(btn, false);
+                    return;
+                }
+            }
+
             const itens = Array.from(document.querySelectorAll('.item-row')).map(row => ({
                 descricao: row.querySelector('.item-descricao').value,
                 qtd: parseFloat(row.querySelector('.item-qtd').value) || 0,
                 valor: parseFloat(row.querySelector('.item-valor').value) || 0,
             }));
             const observacoes = document.getElementById('observacoes').value;
-            const desconto = parseFloat(descontoInput.value) || 0;
+            const desconto = parseFloat(document.getElementById('desconto').value) || 0;
             const subtotal = itens.reduce((acc, item) => acc + (item.qtd * item.valor), 0);
             const total = subtotal - desconto;
 
-            // Validação
-            if (!empresa.nome || !cliente.nome) {
-                alert('Nome da empresa e do cliente são obrigatórios.');
-                return;
-            }
-
-            // Construção do PDF
             let y = 20;
             const pageHeight = doc.internal.pageSize.height;
             const pageWidth = doc.internal.pageSize.width;
 
-            // Cabeçalho da Empresa
-            if (logoBase64) {
-                doc.addImage(logoBase64, 'PNG', 15, 15, 30, 30);
-            }
-            doc.setFontSize(16);
-            doc.text(empresa.nome, 50, 22);
-            doc.setFontSize(10);
-            doc.text(empresa.end, 50, 28);
+            if (logoBase64) doc.addImage(logoBase64, 'PNG', 15, 15, 30, 30);
+            doc.setFontSize(16); doc.text(empresa.nome, 50, 22);
+            doc.setFontSize(10); doc.text(empresa.end, 50, 28);
             doc.text(`Doc: ${empresa.doc} | Tel: ${empresa.tel}`, 50, 34);
             doc.text(`Email: ${empresa.email}`, 50, 40);
             y = 55;
 
-            // Título do Orçamento
-            doc.setFontSize(18);
-            doc.text('Orçamento', 15, y);
-            doc.setFontSize(12);
-            doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 150, y);
+            doc.setFontSize(18); doc.text('Orçamento', 15, y);
+            doc.setFontSize(12); doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 150, y);
             y += 10;
 
-            // Dados do Cliente
-            doc.setFontSize(12);
-            doc.text('Dados do Cliente:', 15, y);
-            y += 6;
-            doc.setFontSize(10);
-            doc.text(`Nome: ${cliente.nome}`, 20, y);
-            doc.text(`Email: ${cliente.email}`, 100, y);
-            y += 6;
-            doc.text(`Telefone: ${cliente.tel}`, 20, y);
-            doc.text(`Endereço: ${cliente.end}`, 100, y);
-            y += 10;
+            doc.setFontSize(12); doc.text('Dados do Cliente:', 15, y); y += 6;
+            doc.setFontSize(10); doc.text(`Nome: ${cliente.nome}`, 20, y); doc.text(`Email: ${cliente.email}`, 100, y); y += 6;
+            doc.text(`Telefone: ${cliente.tel}`, 20, y); doc.text(`Endereço: ${cliente.end}`, 100, y); y += 10;
 
-            // Tabela de Itens
             doc.autoTable({
                 startY: y,
                 head: [['Descrição', 'Qtd.', 'V. Unitário', 'Subtotal']],
                 body: itens.map(item => [item.descricao, item.qtd, formatCurrency(item.valor), formatCurrency(item.qtd * item.valor)]),
                 theme: 'striped',
-                headStyles: { fillColor: [245, 158, 11] } // Laranja
+                headStyles: { fillColor: [245, 158, 11] }
             });
             y = doc.lastAutoTable.finalY + 15;
 
-            // Totais
-            const labelX = 140;
-            const valueX = pageWidth - 15;
-            doc.setFontSize(12);
-            doc.text('Subtotal:', labelX, y);
-            doc.text(formatCurrency(subtotal), valueX, y, { align: 'right' });
-            y += 7;
-            doc.text('Desconto:', labelX, y);
-            doc.text(formatCurrency(desconto), valueX, y, { align: 'right' });
-            y += 7;
-            doc.setFontSize(14);
-            doc.setFont(undefined, 'bold');
-            doc.text('Total:', labelX, y);
-            doc.text(formatCurrency(total), valueX, y, { align: 'right' });
-            y += 15;
+            const labelX = 140, valueX = pageWidth - 15;
+            doc.setFontSize(12); doc.text('Subtotal:', labelX, y); doc.text(formatCurrency(subtotal), valueX, y, { align: 'right' }); y += 7;
+            doc.text('Desconto:', labelX, y); doc.text(formatCurrency(desconto), valueX, y, { align: 'right' }); y += 7;
+            doc.setFontSize(14); doc.setFont(undefined, 'bold'); doc.text('Total:', labelX, y); doc.text(formatCurrency(total), valueX, y, { align: 'right' }); y += 15;
             doc.setFont(undefined, 'normal');
 
-            // Observações
             if (observacoes) {
                 doc.setFontSize(10);
                 doc.text('Observações:', 15, y);
@@ -553,31 +374,22 @@
                 y += splitObservacoes.length * 5 + 5;
             }
 
-            // QR Code Pix
-            if (incluirQrCodeSwitch.checked) {
-                const pixKey = document.getElementById('pix-key').value;
-                if (pixKey && qrCodeBase64) {
-                    const pixYStart = Math.max(y, pageHeight - 65);
-                    doc.setFontSize(12);
-                    doc.setFont(undefined, 'bold');
-                    doc.text('Pague com Pix', pageWidth - 60, pixYStart);
-                    doc.addImage(qrCodeBase64, 'PNG', pageWidth - 60, pixYStart + 2, 35, 35);
-                    doc.setFontSize(8);
-                    doc.setFont(undefined, 'normal');
-                    doc.text('Chave Pix:', 15, pixYStart + 5);
-                    doc.text(pixKey, 15, pixYStart + 9);
-                }
+            if (document.getElementById('incluir-qrcode').checked && pixData && pixData.qrCode) {
+                const pixYStart = Math.max(y, pageHeight - 70);
+                doc.setFontSize(12); doc.setFont(undefined, 'bold'); doc.text('Pague com Pix', 15, pixYStart);
+                doc.addImage(pixData.qrCode, 'PNG', 15, pixYStart + 2, 35, 35);
+                doc.setFontSize(8); doc.setFont(undefined, 'normal');
+                doc.text('Pix Copia e Cola:', 60, pixYStart + 5);
+                const splitBrCode = doc.splitTextToSize(pixData.brCode, pageWidth - 75);
+                doc.text(splitBrCode, 60, pixYStart + 9);
             }
 
-            // Rodapé
-            doc.setFontSize(8);
-            doc.text(`Orçamento válido por 30 dias.`, 15, pageHeight - 10);
-
-            // Salvar PDF
+            doc.setFontSize(8); doc.text(`Orçamento válido por 30 dias.`, 15, pageHeight - 10);
             doc.save(`Orcamento_${cliente.nome.replace(/\s/g, '_')}_${new Date().toISOString().slice(0,10)}.pdf`);
+            
+            setButtonLoading(btn, false);
         });
 
-        // Inicialização
         createItemRow();
         updateTotals();
     </script>
