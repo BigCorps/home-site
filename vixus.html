@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vixus - Gestão Financeira Descomplicada</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #32CD32 0%, #90EE90 100%);
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .slide {
+            min-height: 100vh;
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            page-break-after: always;
+            background: white;
+            margin-bottom: 2px;
+        }
+
+        .slide:nth-child(even) {
+            background: linear-gradient(135deg, #32CD32 0%, #90EE90 100%);
+            color: white;
+        }
+
+        .slide:nth-child(3n) {
+            background: linear-gradient(135deg, #228B22 0%, #32CD32 100%);
+            color: white;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            font-size: 2.8rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 40px;
+            color: #228B22;
+        }
+
+        .slide:nth-child(even) h2,
+        .slide:nth-child(3n) h2 {
+            color: white;
+        }
+
+        h3 {
+            font-size: 2rem;
+            font-weight: 500;
+            margin-bottom: 25px;
+            color: #228B22;
+        }
+
+        .slide:nth-child(even) h3,
+        .slide:nth-child(3n) h3 {
+            color: rgba(255,255,255,0.95);
+        }
+
+        p, li {
+            font-size: 1.3rem;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            max-width: 900px;
+            text-align: center;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .service-card {
+            background: rgba(255,255,255,0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: left;
+            transition: transform 0.3s ease;
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .service-card h4 {
+            font-size: 1.5rem;
+            color: #228B22;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .service-card p {
+            font-size: 1.1rem;
+            color: #555;
+            text-align: left;
+            margin-bottom: 10px;
+        }
+
+        .benefits-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .benefit-item {
+            background: rgba(255,255,255,0.1);
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid #fff;
+            text-align: left;
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+            margin-top: 40px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .cta-button {
+            background: linear-gradient(135deg, #32CD32 0%, #228B22 100%);
+            color: white;
+            padding: 20px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .logo {
+            font-size: 4rem;
+            font-weight: 900;
+            color: #32CD32;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .logo::before {
+            content: '';
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #32CD32 0%, #90EE90 100%);
+            border-radius: 50%;
+            top: -10px;
+            left: -20px;
+            z-index: -1;
+        }
+
+        .logo::after {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #90EE90 0%, #32CD32 100%);
+            border-radius: 50%;
+            top: 0px;
+            right: -15px;
+            z-index: -1;
+        }
+
+        .subtitle {
+            font-size: 1.8rem;
+            opacity: 0.8;
+            font-weight: 300;
+            margin-bottom: 40px;
+        }
+
+        .problem-list {
+            text-align: left;
+            margin: 30px 0;
+        }
+
+        .problem-list li {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .problem-list li:before {
+            content: "❌";
+            position: absolute;
+            left: 0;
+        }
+
+        .solution-list li:before {
+            content: "✅";
+            position: absolute;
+            left: 0;
+        }
+
+        .testimonial {
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 15px;
+            font-style: italic;
+            font-size: 1.2rem;
+            margin-top: 30px;
+            border-left: 4px solid rgba(255,255,255,0.5);
+        }
+
+        .contact-info {
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+
+        @media print {
+            .slide {
+                page-break-after: always;
+                min-height: 297mm;
+                padding: 40px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            h2 { font-size: 2rem; }
+            .services-grid { grid-template-columns: 1fr; }
+            .stats-container { flex-direction: column; gap: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Slide 1: Capa -->
+<div class="slide">
+    <div class="logo">VIXUS</div>
+    <h1>Gestão Financeira Descomplicada</h1>
+    <p class="subtitle">Transforme a gestão financeira do seu negócio com uma visão estratégica e descomplicada</p>
+    <div class="stats-container">
+        <div class="stat">
+            <span class="stat-number">10+</span>
+            <span class="stat-label">Anos de Experiência</span>
+        </div>
+        <div class="stat">
+            <span class="stat-number">100%</span>
+            <span class="stat-label">Foco em PMEs</span>
+        </div>
+        <div class="stat">
+            <span class="stat-number">360°</span>
+            <span class="stat-label">Visão Estratégica</span>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 2: Problema -->
+<div class="slide">
+    <h2>O Problema que Resolvemos</h2>
+    <p>Muitos empresários enfrentam desafios críticos na gestão financeira:</p>
+    <ul class="problem-list">
+        <li>Não têm certeza se a empresa dá lucro ou prejuízo</li>
+        <li>Tomam decisões sem olhar dados financeiros</li>
+        <li>Não sabem quanto precisam faturar mensalmente</li>
+        <li>Falta de planejamento financeiro com metas claras</li>
+        <li>Gestão financeira ineficiente e desorganizada</li>
+    </ul>
+    <p style="margin-top: 40px; font-weight: 600;">Se você se identificou com algum desses pontos, é hora de agir.</p>
+</div>
+
+<!-- Slide 3: Solução -->
+<div class="slide">
+    <h2>Nossa Solução</h2>
+    <p>A Vixus transforma dados em informações valiosas para decisões assertivas</p>
+    <ul class="problem-list solution-list">
+        <li>Clareza total sobre a rentabilidade do seu negócio</li>
+        <li>Decisões baseadas em dados confiáveis</li>
+        <li>Planejamento financeiro estratégico</li>
+        <li>Metas claras e alcançáveis</li>
+        <li>Crescimento sustentável e controlado</li>
+    </ul>
+    <button class="cta-button">Transforme Suas Finanças Hoje</button>
+</div>
+
+<!-- Slide 4: Serviços - Parte 1 -->
+<div class="slide">
+    <h2>Nossos Serviços</h2>
+    <div class="services-grid">
+        <div class="service-card">
+            <h4>📊 Mapeamento e Organização Financeira</h4>
+            <p>• Levantamento completo de dados financeiros</p>
+            <p>• Estruturação do Plano de Contas</p>
+            <p>• Organização clara e acessível das informações</p>
+        </div>
+        <div class="service-card">
+            <h4>📈 Relatórios Gerenciais</h4>
+            <p>• DRE (Demonstração do Resultado)</p>
+            <p>• Fluxo de Caixa detalhado</p>
+            <p>• Dashboard com indicadores-chave</p>
+        </div>
+        <div class="service-card">
+            <h4>🎯 Indicadores de Performance (KPIs)</h4>
+            <p>• Faturamento e devoluções</p>
+            <p>• Custos e margem de contribuição</p>
+            <p>• Ticket médio e novos clientes</p>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 5: Serviços - Parte 2 -->
+<div class="slide">
+    <h2>Serviços Avançados</h2>
+    <div class="services-grid">
+        <div class="service-card">
+            <h4>🔍 Estudos Personalizados</h4>
+            <p>• Análise de precificação</p>
+            <p>• Otimização de custos e despesas</p>
+            <p>• Análise de fornecedores e clientes</p>
+        </div>
+        <div class="service-card">
+            <h4>🚀 Planejamento Estratégico</h4>
+            <p>• Elaboração do planejamento anual</p>
+            <p>• Metas financeiras claras e realistas</p>
+            <p>• Projeções e cenários futuros</p>
+        </div>
+        <div class="service-card">
+            <h4>🤝 Assessoria Mensal</h4>
+            <p>• Fechamento mensal de resultados</p>
+            <p>• Visão holística do negócio</p>
+            <p>• Ajustes estratégicos contínuos</p>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 6: Diferenciais -->
+<div class="slide">
+    <h2>Por Que Escolher a Vixus?</h2>
+    <div class="benefits-list">
+        <div class="benefit-item">
+            <h3>🎯 Visão Estratégica</h3>
+            <p>Análise profunda com visão ampla sobre a estratégia do seu negócio</p>
+        </div>
+        <div class="benefit-item">
+            <h3>⚡ Soluções Personalizadas</h3>
+            <p>Entregas customizadas para cada negócio e suas particularidades</p>
+        </div>
+        <div class="benefit-item">
+            <h3>📚 Finanças Descomplicadas</h3>
+            <p>Abordagem didática e acessível para facilitar a compreensão</p>
+        </div>
+        <div class="benefit-item">
+            <h3>🤝 Parceria de Negócios</h3>
+            <p>Trabalhamos lado a lado para crescimento sustentável</p>
+        </div>
+        <div class="benefit-item">
+            <h3>🏢 Experiência Corporativa</h3>
+            <p>Mais de 10 anos em empresas nacionais de grande porte</p>
+        </div>
+        <div class="benefit-item">
+            <h3>🎓 Treinamento Especializado</h3>
+            <p>Capacitamos empresários para maior clareza gerencial</p>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 7: Metodologia -->
+<div class="slide">
+    <h2>Nossa Metodologia</h2>
+    <div class="services-grid">
+        <div class="service-card">
+            <h4>1️⃣ Diagnóstico</h4>
+            <p>Análise completa da situação financeira atual da empresa</p>
+        </div>
+        <div class="service-card">
+            <h4>2️⃣ Estruturação</h4>
+            <p>Organização e padronização dos processos financeiros</p>
+        </div>
+        <div class="service-card">
+            <h4>3️⃣ Implementação</h4>
+            <p>Execução das soluções personalizadas</p>
+        </div>
+        <div class="service-card">
+            <h4>4️⃣ Monitoramento</h4>
+            <p>Acompanhamento contínuo e ajustes estratégicos</p>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 8: Resultados -->
+<div class="slide">
+    <h2>Resultados Comprovados</h2>
+    <div class="stats-container">
+        <div class="stat">
+            <span class="stat-number">📈</span>
+            <span class="stat-label">Crescimento Sustentável</span>
+        </div>
+        <div class="stat">
+            <span class="stat-number">💡</span>
+            <span class="stat-label">Decisões Assertivas</span>
+        </div>
+        <div class="stat">
+            <span class="stat-number">🎯</span>
+            <span class="stat-label">Metas Alcançadas</span>
+        </div>
+    </div>
+    
+    <div class="testimonial">
+        <p>"A Vixus entrega muito além de uma assessoria financeira. Com uma abordagem humanizada e empática, eles assumiram nosso caso como se fosse deles, trazendo clareza e segurança. Transformaram o peso da gestão financeira em algo mais leve, sempre oferecendo suporte no caos do empreendedorismo."</p>
+        <p style="text-align: right; margin-top: 20px;">- Cliente Vixus</p>
+    </div>
+</div>
+
+<!-- Slide 9: Mercado -->
+<div class="slide">
+    <h2>Oportunidade de Mercado</h2>
+    <div class="stats-container">
+        <div class="stat">
+            <span class="stat-number">17M</span>
+            <span class="stat-label">PMEs no Brasil</span>
+        </div>
+        <div class="stat">
+            <span class="stat-number">70%</span>
+            <span class="stat-label">Sem Gestão Financeira</span>
+        </div>
+        <div class="stat">
+            <span class="stat-number">60%</span>
+            <span class="stat-label">Fecham em 5 anos</span>
+        </div>
+    </div>
+    <p style="margin-top: 40px;">O mercado de PMEs brasileiro apresenta uma oportunidade massiva para soluções de gestão financeira especializadas e acessíveis.</p>
+</div>
+
+<!-- Slide 10: Público-Alvo -->
+<div class="slide">
+    <h2>Nosso Público-Alvo</h2>
+    <div class="services-grid">
+        <div class="service-card">
+            <h4>🏪 Pequenas Empresas</h4>
+            <p>Negócios em crescimento que precisam de organização financeira</p>
+        </div>
+        <div class="service-card">
+            <h4>🏢 Médias Empresas</h4>
+            <p>Empresas estabelecidas buscando otimização e crescimento</p>
+        </div>
+        <div class="service-card">
+            <h4>👔 Empreendedores</h4>
+            <p>Líderes que querem tomar decisões baseadas em dados</p>
+        </div>
+        <div class="service-card">
+            <h4>🎯 Empresas em Expansão</h4>
+            <p>Negócios preparando-se para o próximo nível</p>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 11: Modelo de Negócio -->
+<div class="slide">
+    <h2>Modelo de Negócio</h2>
+    <div class="benefits-list">
+        <div class="benefit-item">
+            <h3>💼 Consultoria Personalizada</h3>
+            <p>Serviços sob medida para cada cliente</p>
+        </div>
+        <div class="benefit-item">
+            <h3>📅 Assessoria Mensal</h3>
+            <p>Acompanhamento contínuo e recorrente</p>
+        </div>
+        <div class="benefit-item">
+            <h3>📊 Relatórios Especializados</h3>
+            <p>Dashboards e análises detalhadas</p>
+        </div>
+        <div class="benefit-item">
+            <h3>🎓 Treinamentos</h3>
+            <p>Capacitação de equipes internas</p>
+        </div>
+    </div>
+</div>
+
+<!-- Slide 12: Próximos Passos -->
+<div class="slide">
+    <h2>Vamos Transformar Seu Negócio?</h2>
+    <p>Descubra como podemos transformar as finanças da sua empresa e impulsionar seu crescimento</p>
+    
+    <div class="contact-info">
+        <h3>Entre em Contato</h3>
+        <p>📧 contato@vixusbr.com.br</p>
+        <p>🌐 vixusbr.com.br</p>
+        <p>💬 Fale com nossa equipe especializada</p>
+    </div>
+    
+    <button class="cta-button">Agende Sua Consultoria Gratuita</button>
+    
+    <p style="margin-top: 30px; font-style: italic;">"Resultados mensuráveis, decisões assertivas. Juntos, transformamos dados em resultados que fazem a diferença."</p>
+</div>
+
+</body>
+</html>
