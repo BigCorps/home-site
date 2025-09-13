@@ -674,33 +674,55 @@
                   
                 // Header com logo na direita se existir  
                 if (logoBase64) {  
-                    // Criar uma imagem temporária para obter dimensões  
+                    // Criar uma imagem temporária para obter dimensões reais
                     const tempImg = new Image();  
-                    tempImg.onload = function() {  
-                        // Calcular dimensões proporcionais para o PDF  
-                        const maxLogoWidth = 30;  
-                        const maxLogoHeight = 30;  
-                        let logoWidth = this.width;  
-                        let logoHeight = this.height;  
-                          
-                        // Redimensionar mantendo proporção  
-                        const aspectRatio = logoWidth / logoHeight;  
-                        if (logoWidth > logoHeight) {  
+                    tempImg.src = logoBase64;
+                    
+                    // Aguardar o carregamento da imagem para obter dimensões corretas
+                    await new Promise((resolve) => {
+                        if (tempImg.complete) {
+                            resolve();
+                        } else {
+                            tempImg.onload = resolve;
+                        }
+                    });
+                    
+                    // Calcular dimensões proporcionais para o PDF  
+                    const maxLogoWidth = 35;  
+                    const maxLogoHeight = 35;  
+                    let logoWidth = tempImg.width || tempImg.naturalWidth;  
+                    let logoHeight = tempImg.height || tempImg.naturalHeight;  
+                      
+                    // Redimensionar mantendo proporção  
+                    const aspectRatio = logoWidth / logoHeight;  
+                    
+                    if (logoWidth > logoHeight) {  
+                        // Logo mais largo que alto
+                        if (logoWidth > maxLogoWidth) {
                             logoWidth = maxLogoWidth;  
                             logoHeight = logoWidth / aspectRatio;  
-                        } else {  
+                        }
+                    } else {  
+                        // Logo mais alto que largo
+                        if (logoHeight > maxLogoHeight) {
                             logoHeight = maxLogoHeight;  
                             logoWidth = logoHeight * aspectRatio;  
-                        }  
-                          
-                        // Posicionar logo no canto superior direito  
-                        const logoX = pageWidth - logoWidth - 15;  
-                        doc.addImage(logoBase64, 'JPEG', logoX, 15, logoWidth, logoHeight);  
-                    };  
-                    tempImg.src = logoBase64;  
+                        }
+                    }
+                    
+                    // Garantir que não ultrapasse os limites máximos
+                    if (logoWidth > maxLogoWidth) {
+                        logoWidth = maxLogoWidth;
+                        logoHeight = logoWidth / aspectRatio;
+                    }
+                    if (logoHeight > maxLogoHeight) {
+                        logoHeight = maxLogoHeight;
+                        logoWidth = logoHeight * aspectRatio;
+                    }
                       
-                    // Adicionar logo imediatamente com dimensões padrão  
-                    doc.addImage(logoBase64, 'JPEG', pageWidth - 45, 15, 30, 30);  
+                    // Posicionar logo no canto superior direito  
+                    const logoX = pageWidth - logoWidth - 15;  
+                    doc.addImage(logoBase64, 'JPEG', logoX, 15, logoWidth, logoHeight);  
                 }  
                   
                 // Dados da empresa - sempre começando na esquerda  
