@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerador de Orçamento Profissional</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -518,7 +518,7 @@
                                 <span id="totalValue">R$ 0,00</span>
                             </div>
                         </div>
-                        
+                          
                         <div class="pix-fields" id="pixFields">
                             <div class="form-group">
                                 <label for="pixChave">Chave PIX *</label>
@@ -641,90 +641,93 @@
             return emv;
         }
         
-        // Validar tipos de chave PIX
+        // Validar tipos de chave PIX (versão mais flexível)
         function validarChavePIX(chave) {
+            if (!chave) return { valida: false, tipo: null, chave: null };
+            
             chave = chave.trim();
             
-            // CPF (com ou sem formatação)
-            const cpfRegex = /^(\d{3}\.?\d{3}\.?\d{3}-?\d{2})$/;
-            if (cpfRegex.test(chave)) {
-                return { valida: true, tipo: 'CPF', chave: chave.replace(/\D/g, '') };
+            // CPF (com ou sem formatação, aceita espaços)
+            const cpfLimpo = chave.replace(/[\s\.\-]/g, '');
+            if (/^\d{11}$/.test(cpfLimpo)) {
+                return { valida: true, tipo: 'CPF', chave: cpfLimpo };
             }
             
-            // CNPJ (com ou sem formatação)
-            const cnpjRegex = /^(\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2})$/;
-            if (cnpjRegex.test(chave)) {
-                return { valida: true, tipo: 'CNPJ', chave: chave.replace(/\D/g, '') };
+            // CNPJ (com ou sem formatação, aceita espaços)
+            const cnpjLimpo = chave.replace(/[\s\.\-\/]/g, '');
+            if (/^\d{14}$/.test(cnpjLimpo)) {
+                return { valida: true, tipo: 'CNPJ', chave: cnpjLimpo };
             }
             
-            // Email
+            // Email (mais flexível)
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (emailRegex.test(chave)) {
                 return { valida: true, tipo: 'Email', chave: chave.toLowerCase() };
             }
             
-            // Telefone (11 dígitos)
-            const telefoneRegex = /^(\+?55)?[-.\s]?\(?(\d{2})\)?[-.\s]?9?\d{4}[-.\s]?\d{4}$/;
-            if (telefoneRegex.test(chave)) {
-                const numeroLimpo = chave.replace(/\D/g, '');
-                const numero = numeroLimpo.length === 13 ? numeroLimpo.substring(2) : numeroLimpo;
-                if (numero.length === 11) {
-                    return { valida: true, tipo: 'Telefone', chave: `+55${numero}` };
+            // Telefone (aceita vários formatos com espaços)
+            const telefoneLimpo = chave.replace(/[\s\(\)\-\+]/g, '');
+            if (/^(55)?[1-9]\d{10}$/.test(telefoneLimpo)) {
+                let numeroFinal = telefoneLimpo;
+                if (numeroFinal.startsWith('55')) {
+                    numeroFinal = numeroFinal.substring(2);
                 }
+                return { valida: true, tipo: 'Telefone', chave: `+55${numeroFinal}` };
             }
             
-            // Chave aleatória (32 caracteres, letras minúsculas e números)
-            const aleatoriaRegex = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
-            if (aleatoriaRegex.test(chave)) {
-                return { valida: true, tipo: 'Aleatória', chave: chave };
-            }
-            
-            // Se chegou até aqui, pode ser uma chave aleatória sem formatação
-            if (chave.length >= 32 && /^[a-zA-Z0-9]+$/.test(chave)) {
+            // Chave aleatória (aceita qualquer string de 32+ caracteres)
+            if (chave.length >= 8) {
                 return { valida: true, tipo: 'Aleatória', chave: chave };
             }
             
             return { valida: false, tipo: null, chave: null };
         }
         
-        // Gerar QR Code PIX com validação melhorada
+        // Gerar QR Code PIX com fallback
         async function generatePixQRCode(pixKey, merchantName, merchantCity, amount = null) {
             try {
-                // Verificar se QRCode está disponível
-                if (typeof QRCode === 'undefined') {
-                    throw new Error('Biblioteca QRCode não carregada. Recarregue a página e tente novamente.');
+                // Verificar se QRCode está disponível globalmente
+                const QRLib = window.QRCode || window.qrcode || QRCode;
+                
+                if (!QRLib) {
+                    throw new Error('Biblioteca QRCode não está disponível');
                 }
                 
                 // Validar chave PIX
                 const validacao = validarChavePIX(pixKey);
                 if (!validacao.valida) {
-                    throw new Error('Chave PIX inválida. Use CPF, CNPJ, email, telefone ou chave aleatória.');
+                    throw new Error('Chave PIX inválida');
                 }
-                
-                console.log('Chave PIX validada:', validacao);
                 
                 // Gerar string EMV PIX
                 const pixString = generatePixEMV(validacao.chave, merchantName, merchantCity, amount);
                 
-                // Verificar se a string EMV foi gerada corretamente
                 if (!pixString || pixString.length < 50) {
                     throw new Error('Erro ao gerar código PIX EMV');
                 }
                 
-                console.log('String EMV gerada:', pixString);
-                
-                // Gerar QR Code usando QRCode.js
+                // Tentar gerar QR Code
                 const canvas = document.createElement('canvas');
                 
-                await QRCode.toCanvas(canvas, pixString, {
-                    width: 256,
-                    margin: 2,
-                    color: {
-                        dark: '#000000',
-                        light: '#FFFFFF'
-                    },
-                    errorCorrectionLevel: 'M'
-                });
+                // Usar a função correta dependendo da biblioteca
+                if (QRLib.toCanvas) {
+                    await QRLib.toCanvas(canvas, pixString, {
+                        width: 256,
+                        margin: 2,
+                        color: { dark: '#000000', light: '#FFFFFF' },
+                        errorCorrectionLevel: 'M'
+                    });
+                } else if (QRLib.toString) {
+                    // Fallback para versão diferente
+                    const qrString = await QRLib.toString(pixString, {
+                        type: 'svg',
+                        width: 256,
+                        margin: 2
+                    });
+                    throw new Error('Versão SVG não suportada, use versão canvas');
+                } else {
+                    throw new Error('Método QRCode não encontrado');
+                }
                 
                 return {
                     qrCodeImage: canvas.toDataURL('image/png'),
@@ -734,7 +737,7 @@
                 };
                 
             } catch (error) {
-                console.error('Erro detalhado ao gerar QR Code PIX:', error);
+                console.error('Erro ao gerar QR Code PIX:', error);
                 return {
                     qrCodeImage: null,
                     pixString: null,
@@ -824,7 +827,13 @@
                 return;
             }
             
-        
+            const incluirPix = document.getElementById('incluirPix').checked;
+            const pixChave = document.getElementById('pixChave').value.trim();
+            
+            if (incluirPix && (!pixChave || !empresaCidade || !empresaEstado)) {
+                alert('Para incluir PIX, preencha: Chave PIX, Cidade e Estado da empresa!');
+                return;
+            }
             
             // Loading
             btn.disabled = true;
@@ -837,29 +846,71 @@
                 const pageHeight = doc.internal.pageSize.height;
                 let yPosition = 20;
                 
-                // Header com logo
+                // Header com logo (layout melhorado)
                 if (logoBase64) {
-                    doc.addImage(logoBase64, 'JPEG', 15, 15, 30, 30);
+                    // Criar imagem temporária para calcular proporções
+                    const tempImg = new Image();
+                    tempImg.src = logoBase64;
+                    
+                    // Calcular dimensões mantendo proporção
+                    const maxWidth = 35;
+                    const maxHeight = 25;
+                    const imgRatio = tempImg.width / tempImg.height;
+                    
+                    let logoWidth, logoHeight;
+                    if (imgRatio > maxWidth / maxHeight) {
+                        logoWidth = maxWidth;
+                        logoHeight = maxWidth / imgRatio;
+                    } else {
+                        logoHeight = maxHeight;
+                        logoWidth = maxHeight * imgRatio;
+                    }
+                    
+                    // Logo à direita, texto à esquerda
+                    doc.addImage(logoBase64, 'JPEG', pageWidth - logoWidth - 15, 15, logoWidth, logoHeight);
+                    
+                    // Dados da empresa à esquerda
+                    doc.setFontSize(16);
+                    doc.setFont(undefined, 'bold');
+                    doc.text(empresaNome, 15, 25);
+                    
+                    doc.setFontSize(10);
+                    doc.setFont(undefined, 'normal');
+                    
+                    let yEmpresa = 32;
+                    if (empresaEnd) {
+                        doc.text(empresaEnd, 15, yEmpresa);
+                        yEmpresa += 6;
+                    }
+                    if (empresaDoc) {
+                        doc.text(`Documento: ${empresaDoc}`, 15, yEmpresa);
+                        yEmpresa += 6;
+                    }
+                    if (empresaTel) {
+                        doc.text(`Telefone: ${empresaTel}`, 15, yEmpresa);
+                        yEmpresa += 6;
+                    }
+                    if (empresaEmail) {
+                        doc.text(`Email: ${empresaEmail}`, 15, yEmpresa);
+                    }
+                    
+                    yPosition = Math.max(50, yEmpresa + 10);
+                } else {
+                    // Sem logo - layout normal
+                    doc.setFontSize(16);
+                    doc.setFont(undefined, 'bold');
+                    doc.text(empresaNome, 15, 25);
+                    
+                    doc.setFontSize(10);
+                    doc.setFont(undefined, 'normal');
+                    
+                    if (empresaEnd) doc.text(empresaEnd, 15, 32);
+                    if (empresaDoc) doc.text(`Documento: ${empresaDoc}`, 15, 38);
+                    if (empresaTel) doc.text(`Telefone: ${empresaTel}`, 15, 44);
+                    if (empresaEmail) doc.text(`Email: ${empresaEmail}`, 15, 50);
+                    
+                    yPosition = 65;
                 }
-                
-                // Dados da empresa
-                doc.setFontSize(16);
-                doc.setFont(undefined, 'bold');
-                doc.text(empresaNome, logoBase64 ? 50 : 15, 25);
-                
-                doc.setFontSize(10);
-                doc.setFont(undefined, 'normal');
-                const empresaDoc = document.getElementById('empresaDoc').value;
-                const empresaTel = document.getElementById('empresaTel').value;
-                const empresaEmail = document.getElementById('empresaEmail').value;
-                const empresaEnd = document.getElementById('empresaEnd').value;
-                
-                if (empresaEnd) doc.text(empresaEnd, logoBase64 ? 50 : 15, 32);
-                if (empresaDoc) doc.text(`Documento: ${empresaDoc}`, logoBase64 ? 50 : 15, 38);
-                if (empresaTel) doc.text(`Telefone: ${empresaTel}`, logoBase64 ? 50 : 15, 44);
-                if (empresaEmail) doc.text(`Email: ${empresaEmail}`, logoBase64 ? 50 : 15, 50);
-                
-                yPosition = 65;
                 
                 // Título e data
                 doc.setFontSize(20);
