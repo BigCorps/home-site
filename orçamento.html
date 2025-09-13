@@ -518,38 +518,7 @@
                                 <span id="totalValue">R$ 0,00</span>
                             </div>
                         </div>
-                        
-                        <div class="switch-container">
-                            <label class="switch">
-                                <input type="checkbox" id="incluirPix">
-                                <span class="slider"></span>
-                            </label>
-                            <label for="incluirPix" style="font-weight: 600;">Incluir Pagamento PIX</label>
-                        </div>
-                        
-                        <div class="pix-fields" id="pixFields">
-                            <div class="form-group">
-                                <label for="pixChave">Chave PIX *</label>
-                                <input type="text" id="pixChave" placeholder="Ex: email@empresa.com, (11) 99999-9999, 123.456.789-10">
-                                <small style="color: #666; font-size: 0.85rem; margin-top: 5px;">
-                                    Formatos aceitos: Email, Telefone (11) 99999-9999, CPF 000.000.000-00, CNPJ 00.000.000/0001-00 ou chave aleatória
-                                </small>
-                            </div>
-                            <div class="alert alert-warning">
-                                <strong>Informação:</strong> O QR Code PIX é gerado seguindo o padrão EMV do Banco Central do Brasil. Certifique-se de usar uma chave PIX válida e ativa.
-                            </div>
-                            
-                            <!-- Botão de teste do PIX -->
-                            <button type="button" class="btn btn-outline" onclick="testarPIX()" style="width: 100%; margin-top: 10px;">
-                                🔍 Testar Geração do PIX
-                            </button>
-                            <div id="pixTestResult" style="display: none; margin-top: 10px; padding: 10px; border-radius: 5px;"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
+                             
         <div class="action-buttons">
             <button type="button" class="btn btn-outline" onclick="limparFormulario()">
                 Limpar Formulário
