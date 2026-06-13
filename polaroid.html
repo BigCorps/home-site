@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerador de Polaroids para A4</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --primary:#ff8c00;
+  --primary-hover:#e67c00;
+  --primary-light:#fff8f0;
+  --dark:#343a40;
+  --light-text:#6c757d;
+  --border:#dee2e6;
+  --light-bg:#f8f9fa;
+  --white:#fff;
+  --shadow:0 4px 15px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:var(--white);color:var(--dark);padding:20px;line-height:1.6;
+}
+.container{
+  max-width:1000px;margin:20px auto;background:var(--white);
+  border-radius:16px;padding:40px;box-shadow:var(--shadow);
+}
+h1{text-align:center;font-size:2.5rem;font-weight:700;margin-bottom:8px}
+h1 .accent{color:var(--primary)}
+.main-subtitle{text-align:center;color:var(--light-text);margin-bottom:36px;font-size:1.1rem}
+
+.btn{
+  padding:12px 25px;border-radius:8px;border:none;cursor:pointer;
+  font-size:1rem;font-weight:600;transition:all .25s ease;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover:not(:disabled){background:var(--primary-hover);transform:translateY(-2px)}
+.btn-secondary{background:#6c757d;color:#fff}
+.btn-secondary:hover{transform:translateY(-1px)}
+.btn-success{background:#28a745;color:#fff}
+.btn-success:hover:not(:disabled){background:#218838;transform:translateY(-2px)}
+.btn:disabled{background:#ccc;cursor:not-allowed;transform:none}
+
+.step{display:none}
+.step.active{display:block;animation:fade .4s}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+
+/* ---- Passo 1: escolha do tipo ---- */
+.type-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:10px}
+.type-card{
+  border:2px solid var(--border);border-radius:14px;padding:28px;
+  cursor:pointer;text-align:center;transition:all .25s ease;background:#fdfdfd;
+}
+.type-card:hover{border-color:var(--primary);background:var(--primary-light);transform:translateY(-3px)}
+.type-name{font-size:1.4rem;font-weight:700;margin-bottom:6px}
+.type-name .accent{color:var(--primary)}
+.type-dims{color:var(--light-text);font-size:.95rem;margin-bottom:18px}
+.polaroid-mock{
+  margin:0 auto 18px;background:#fff;border:1px solid var(--border);
+  box-shadow:0 3px 10px rgba(0,0,0,.1);display:flex;flex-direction:column;
+  align-items:center;justify-content:flex-start;padding:6%;
+}
+.polaroid-mock .ph{width:100%;background:linear-gradient(135deg,#ffd9a0,#ff8c00);}
+.type-meta{font-size:.85rem;color:var(--light-text)}
+.type-meta b{color:var(--dark)}
+
+/* ---- Passo 2: editor ---- */
+.editor-top{
+  display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);padding-bottom:18px;margin-bottom:24px;
+}
+.editor-top .info b{color:var(--primary)}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap}
+
+.slots-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:18px;
+  max-width:560px;margin:0 auto 10px;
+}
+.polaroid{
+  position:relative;width:100%;background:#fff;
+  border:1px solid #cfcfcf;border-radius:2px;
+  box-shadow:0 4px 14px rgba(0,0,0,.12);overflow:hidden;
+}
+.photo-window{
+  position:absolute;background:#f0f0f0 no-repeat center/cover;
+  cursor:grab;touch-action:none;overflow:hidden;
+  border:1px solid #e6e6e6;
+}
+.photo-window.dragging{cursor:grabbing}
+.photo-window.empty{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:6px;cursor:pointer;background:#fafafa;border:2px dashed var(--border);
+}
+.photo-window.empty .plus{font-size:2rem;color:var(--primary);line-height:1}
+.photo-window.empty .lbl{font-size:.8rem;color:var(--light-text);text-align:center;padding:0 8px}
+.slot-remove{
+  position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;
+  background:rgba(220,53,69,.92);color:#fff;border:none;cursor:pointer;
+  font-size:15px;line-height:26px;display:none;z-index:3;padding:0;
+}
+.polaroid.filled .slot-remove{display:block}
+.drag-hint{
+  position:absolute;left:0;right:0;bottom:6px;text-align:center;
+  font-size:.72rem;color:var(--light-text);pointer-events:none;
+}
+
+.options-row{
+  display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;
+  justify-content:center;margin:26px 0 6px;
+}
+.field label{display:block;font-weight:600;font-size:.9rem;margin-bottom:6px}
+.field select{
+  padding:10px 12px;border:1px solid var(--border);border-radius:8px;
+  font-size:1rem;background:#fff;min-width:150px;
+}
+.hint{
+  background:var(--primary-light);border-left:4px solid var(--primary);
+  border-radius:8px;padding:14px 16px;margin:22px auto 0;max-width:640px;
+  font-size:.9rem;color:#555;
+}
+.final-actions{display:flex;gap:14px;justify-content:center;margin-top:24px;flex-wrap:wrap}
+
+@media (max-width:768px){
+  .container{padding:22px}
+  h1{font-size:2rem}
+  .type-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Gerador de <span class="accent">Polaroids</span></h1>
+  <p class="main-subtitle">Monte suas polaroids em A4, ajuste cada foto arrastando e gere o PDF para impressão e corte.</p>
+
+  <!-- PASSO 1 -->
+  <div id="step1" class="step active">
+    <div class="type-grid">
+      <div class="type-card" onclick="selectType('padrao')">
+        <div class="type-name">Polaroid <span class="accent">Padrão</span></div>
+        <div class="type-dims">Moldura 9 × 12 cm &middot; foto 8 × 8 cm</div>
+        <div class="polaroid-mock" style="width:135px;height:180px">
+          <div class="ph" style="height:80%;margin-bottom:6%"></div>
+        </div>
+        <div class="type-meta"><b>4 fotos</b> por folha A4 (2 × 2)</div>
+      </div>
+      <div class="type-card" onclick="selectType('mini')">
+        <div class="type-name">Polaroid <span class="accent">Mini</span></div>
+        <div class="type-dims">Moldura 7,5 × 10 cm &middot; foto 6,5 × 6,5 cm</div>
+        <div class="polaroid-mock" style="width:113px;height:150px">
+          <div class="ph" style="height:78%;margin-bottom:6%"></div>
+        </div>
+        <div class="type-meta"><b>4 fotos</b> por folha A4 (2 × 2)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASSO 2 -->
+  <div id="step2" class="step">
+    <div class="editor-top">
+      <div class="info">Tipo: <b id="typeLabel"></b> — preencha os <b>4 quadros</b>. Arraste cada foto para enquadrar.</div>
+      <div class="toolbar">
+        <button class="btn btn-secondary" onclick="goToStep(1)">← Trocar tipo</button>
+        <button class="btn btn-primary" onclick="batchInput.click()">📤 Carregar fotos</button>
+      </div>
+    </div>
+
+    <div class="slots-grid" id="slotsGrid"></div>
+
+    <div class="options-row">
+      <div class="field">
+        <label for="borderColor">Borda de corte</label>
+        <select id="borderColor">
+          <option value="#9aa0a6">Cinza (recomendado)</option>
+          <option value="#000000">Preto</option>
+          <option value="none">Sem borda</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="hint">
+      <strong>Dica:</strong> a foto entra preenchendo todo o quadrado, sem distorcer. Se ela for retangular, sobra área para os lados ou em cima/embaixo — arraste para escolher o que aparece. A borda cinza marca onde cortar.
+    </div>
+
+    <div class="final-actions">
+      <button class="btn btn-success" id="generateBtn" disabled>📄 Gerar PDF</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="batchInput" accept="image/*" multiple style="display:none">
+<input type="file" id="singleInput" accept="image/*" style="display:none">
+
+<script>
+const TYPES = {
+  padrao:{ label:'Polaroid Padrão', frameW:90, frameH:120, photo:80, sideB:5, topB:5, cols:2, rows:2 },
+  mini:  { label:'Polaroid Mini',   frameW:75, frameH:100, photo:65, sideB:5, topB:5, cols:2, rows:2 }
+};
+
+let current = null;           // config do tipo escolhido
+let slots = [];               // { filled, src, img, pX, pY }
+let activeSingleIndex = null; // slot alvo do upload individual
+
+const batchInput  = document.getElementById('batchInput');
+const singleInput = document.getElementById('singleInput');
+const slotsGrid   = document.getElementById('slotsGrid');
+const generateBtn = document.getElementById('generateBtn');
+
+function goToStep(n){
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('step'+n).classList.add('active');
+}
+
+function selectType(key){
+  current = TYPES[key];
+  document.getElementById('typeLabel').textContent =
+    `${current.label} (foto ${current.photo/10} × ${current.photo/10} cm)`;
+  const count = current.cols * current.rows;
+  slots = Array.from({length:count}, ()=>({ filled:false, src:null, img:null, pX:.5, pY:.5 }));
+  buildGrid();
+  updateGenerate();
+  goToStep(2);
+}
+
+function buildGrid(){
+  slotsGrid.innerHTML = '';
+  slotsGrid.style.maxWidth = (current.frameW > 80 ? 560 : 480) + 'px';
+
+  const sidePct   = (current.sideB / current.frameW) * 100;
+  const topPct    = (current.topB  / current.frameH) * 100;
+  const wPct      = (current.photo / current.frameW) * 100;
+  const hPct      = (current.photo / current.frameH) * 100;
+  const aspect    = current.frameW / current.frameH;
+
+  slots.forEach((slot, i)=>{
+    const card = document.createElement('div');
+    card.className = 'polaroid';
+    card.style.aspectRatio = aspect;
+    card.dataset.index = i;
+
+    const win = document.createElement('div');
+    win.className = 'photo-window empty';
+    win.style.left   = sidePct + '%';
+    win.style.top    = topPct  + '%';
+    win.style.width  = wPct    + '%';
+    win.style.height = hPct    + '%';
+    win.dataset.index = i;
+    win.innerHTML = '<div class="plus">+</div><div class="lbl">Adicionar foto</div>';
+
+    const rm = document.createElement('button');
+    rm.className = 'slot-remove';
+    rm.innerHTML = '×';
+    rm.title = 'Remover';
+    rm.addEventListener('click', e=>{ e.stopPropagation(); clearSlot(i); });
+
+    const hint = document.createElement('div');
+    hint.className = 'drag-hint';
+    hint.textContent = '';
+
+    card.appendChild(win);
+    card.appendChild(rm);
+    card.appendChild(hint);
+    slotsGrid.appendChild(card);
+
+    attachWindowEvents(win, i);
+  });
+}
+
+function attachWindowEvents(win, i){
+  // clique em quadro vazio abre upload individual
+  win.addEventListener('click', ()=>{
+    if(!slots[i].filled){
+      activeSingleIndex = i;
+      singleInput.value = '';
+      singleInput.click();
+    }
+  });
+  // arrasto (mouse + toque) via pointer events
+  let dragging=false, startX=0, startY=0, startPX=0, startPY=0, ovX=0, ovY=0;
+
+  win.addEventListener('pointerdown', e=>{
+    const slot = slots[i];
+    if(!slot.filled) return;
+    dragging = true;
+    win.classList.add('dragging');
+    win.setPointerCapture(e.pointerId);
+    startX = e.clientX; startY = e.clientY;
+    startPX = slot.pX;  startPY = slot.pY;
+    const r = win.getBoundingClientRect();
+    const scale = Math.max(r.width/slot.img.naturalWidth, r.height/slot.img.naturalHeight);
+    ovX = slot.img.naturalWidth*scale - r.width;   // sobra horizontal (px)
+    ovY = slot.img.naturalHeight*scale - r.height;  // sobra vertical (px)
+  });
+  win.addEventListener('pointermove', e=>{
+    if(!dragging) return;
+    const slot = slots[i];
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    if(ovX > 0) slot.pX = clamp(startPX - dx/ovX, 0, 1);
+    if(ovY > 0) slot.pY = clamp(startPY - dy/ovY, 0, 1);
+    win.style.backgroundPosition = `${slot.pX*100}% ${slot.pY*100}%`;
+  });
+  const end = e=>{ dragging=false; win.classList.remove('dragging'); };
+  win.addEventListener('pointerup', end);
+  win.addEventListener('pointercancel', end);
+}
+
+function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+
+function fillSlot(i, src){
+  const img = new Image();
+  img.onload = ()=>{
+    slots[i] = { filled:true, src, img, pX:.5, pY:.5 };
+    const card = slotsGrid.querySelector(`.polaroid[data-index="${i}"]`);
+    const win  = card.querySelector('.photo-window');
+    card.classList.add('filled');
+    win.classList.remove('empty');
+    win.innerHTML = '';
+    win.style.backgroundImage = `url("${src}")`;
+    win.style.backgroundPosition = '50% 50%';
+    card.querySelector('.drag-hint').textContent = '↕ ↔ arraste para ajustar';
+    updateGenerate();
+  };
+  img.src = src;
+}
+
+function clearSlot(i){
+  slots[i] = { filled:false, src:null, img:null, pX:.5, pY:.5 };
+  const card = slotsGrid.querySelector(`.polaroid[data-index="${i}"]`);
+  const win  = card.querySelector('.photo-window');
+  card.classList.remove('filled');
+  win.classList.add('empty');
+  win.style.backgroundImage = '';
+  win.innerHTML = '<div class="plus">+</div><div class="lbl">Adicionar foto</div>';
+  card.querySelector('.drag-hint').textContent = '';
+  updateGenerate();
+}
+
+function readAsDataURL(file){
+  return new Promise((res,rej)=>{
+    const r = new FileReader();
+    r.onload = ()=>res(r.result);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+// upload em lote: preenche os quadros vazios em ordem
+batchInput.addEventListener('change', async e=>{
+  const files = [...e.target.files].filter(f=>f.type.startsWith('image/'));
+  for(const file of files){
+    const idx = slots.findIndex(s=>!s.filled);
+    if(idx === -1){ alert('Os 4 quadros já estão preenchidos.'); break; }
+    const src = await readAsDataURL(file);
+    fillSlot(idx, src);
+  }
+  batchInput.value = '';
+});
+
+// upload individual em um quadro específico
+singleInput.addEventListener('change', async e=>{
+  const file = e.target.files[0];
+  if(file && file.type.startsWith('image/') && activeSingleIndex !== null){
+    const src = await readAsDataURL(file);
+    fillSlot(activeSingleIndex, src);
+  }
+  activeSingleIndex = null;
+  singleInput.value = '';
+});
+
+function updateGenerate(){
+  generateBtn.disabled = !slots.some(s=>s.filled);
+}
+
+// gera o recorte quadrado de uma foto (cover + posição), em alta resolução
+function cropDataURL(slot, sizePx){
+  const c = document.createElement('canvas');
+  c.width = sizePx; c.height = sizePx;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0,0,sizePx,sizePx);
+  const iw = slot.img.naturalWidth, ih = slot.img.naturalHeight;
+  const scale = Math.max(sizePx/iw, sizePx/ih);   // cover
+  const rw = iw*scale, rh = ih*scale;
+  const ox = (sizePx - rw) * slot.pX;             // mesma lógica do background-position
+  const oy = (sizePx - rh) * slot.pY;
+  ctx.drawImage(slot.img, ox, oy, rw, rh);
+  return c.toDataURL('image/jpeg', 0.92);
+}
+
+function hexToRgb(hex){
+  const m = hex.replace('#','');
+  return { r:parseInt(m.slice(0,2),16), g:parseInt(m.slice(2,4),16), b:parseInt(m.slice(4,6),16) };
+}
+
+generateBtn.addEventListener('click', ()=>{
+  if(!slots.some(s=>s.filled)) return;
+  const original = generateBtn.textContent;
+  generateBtn.textContent = '⏳ Gerando...';
+  generateBtn.disabled = true;
+
+  setTimeout(()=>{
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('portrait','mm','a4'); // 210 x 297 mm
+    const { frameW, frameH, photo, sideB, topB, cols, rows } = current;
+    const gap = 5; // mm entre polaroids
+
+    const gridW = cols*frameW + (cols-1)*gap;
+    const gridH = rows*frameH + (rows-1)*gap;
+    const marginX = (210 - gridW) / 2;
+    const marginY = (297 - gridH) / 2;
+
+    const borderColor = document.getElementById('borderColor').value;
+    const showBorder = borderColor !== 'none';
+    let rgb = {r:154,g:160,b:166};
+    if(showBorder) rgb = hexToRgb(borderColor);
+
+    const photoPx = Math.round(photo/25.4*300); // 300 DPI
+
+    slots.forEach((slot, i)=>{
+      if(!slot.filled) return;
+      const c = i % cols, r = Math.floor(i / cols);
+      const fx = marginX + c*(frameW+gap);
+      const fy = marginY + r*(frameH+gap);
+
+      // moldura da polaroid (borda de corte)
+      if(showBorder){
+        doc.setDrawColor(rgb.r, rgb.g, rgb.b);
+        doc.setLineWidth(0.2);
+        doc.rect(fx, fy, frameW, frameH);
+      }
+      // foto
+      const px = fx + sideB, py = fy + topB;
+      doc.addImage(cropDataURL(slot, photoPx), 'JPEG', px, py, photo, photo);
+      // contorno fino da foto
+      if(showBorder){
+        doc.setLineWidth(0.15);
+        doc.rect(px, py, photo, photo);
+      }
+    });
+
+    doc.setFontSize(7);
+    doc.setTextColor(150);
+    const filled = slots.filter(s=>s.filled).length;
+    doc.text(
+      `${current.label} — ${filled} foto(s) — moldura ${frameW/10}x${frameH/10}cm, foto ${photo/10}x${photo/10}cm — ${new Date().toLocaleString('pt-BR')}`,
+      marginX, 293
+    );
+
+    doc.save(`polaroid_${current.label.toLowerCase().replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.pdf`);
+
+    generateBtn.textContent = original;
+    generateBtn.disabled = false;
+  }, 80);
+});
+</script>
+</body>
+</html>
