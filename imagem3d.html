@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Imagem para 3D (STL)</title>
+<script src="https://cdn.jsdelivr.net/npm/potrace-plus@latest/dist/potrace-plus.min.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<style>
+:root{
+  --primary:#ff8c00;--primary-hover:#e67c00;--primary-light:#fff8f0;
+  --dark:#343a40;--light-text:#6c757d;--border:#dee2e6;--light-bg:#f8f9fa;--white:#fff;
+  --shadow:0 4px 15px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--white);color:var(--dark);padding:20px;line-height:1.6}
+.container{max-width:1040px;margin:20px auto;background:var(--white);border-radius:16px;padding:40px;box-shadow:var(--shadow)}
+h1{text-align:center;font-size:2.4rem;font-weight:700;margin-bottom:8px}
+h1 .accent{color:var(--primary)}
+.main-subtitle{text-align:center;color:var(--light-text);margin-bottom:32px;font-size:1.05rem}
+
+.btn{padding:12px 24px;border-radius:8px;border:none;cursor:pointer;font-size:1rem;font-weight:600;transition:all .25s ease;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover:not(:disabled){background:var(--primary-hover);transform:translateY(-2px)}
+.btn-secondary{background:#6c757d;color:#fff}
+.btn:disabled{background:#ccc;cursor:not-allowed;transform:none}
+
+.upload-area{border:3px dashed var(--border);border-radius:14px;padding:56px 20px;text-align:center;background:#fdfdfd;cursor:pointer;transition:all .25s ease}
+.upload-area:hover{border-color:var(--primary);background:var(--primary-light)}
+.upload-area.dragover{border-color:var(--primary);background:#fff4e6}
+.upload-icon{font-size:3rem;color:var(--primary);margin-bottom:14px}
+.upload-text{font-size:1.15rem;font-weight:600;margin-bottom:6px}
+.upload-sub{color:var(--light-text);font-size:.9rem}
+#fileInput{display:none}
+
+.workspace{display:none}
+.topbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.detected{font-size:.85rem;color:var(--light-text)}
+.detected b{color:var(--primary)}
+.seg{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.seg button{padding:9px 16px;border:none;background:#fff;cursor:pointer;font-weight:600;font-size:.88rem;color:var(--light-text);font-family:inherit;transition:all .2s}
+.seg button.active{background:var(--primary);color:#fff}
+
+.viewer{position:relative;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#eef1f4;height:380px}
+.viewer canvas{display:block;width:100%;height:100%}
+.viewer .overlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(255,255,255,.6)}
+.viewer .overlay.show{display:flex}
+.spinner{width:36px;height:36px;border:4px solid #f0e0cc;border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.viewer .hint{position:absolute;bottom:8px;left:0;right:0;text-align:center;font-size:.75rem;color:#888;pointer-events:none}
+
+.controls{border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:16px;background:#fff}
+.controls-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px}
+.field label{display:block;font-weight:600;font-size:.86rem;margin-bottom:6px}
+.field .val{color:var(--primary);font-weight:700}
+.field input[type="range"]{width:100%;accent-color:var(--primary)}
+.field input[type="number"]{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;font-size:.95rem}
+.check{display:flex;align-items:center;gap:8px;margin-top:6px}
+.check input{width:18px;height:18px;accent-color:var(--primary)}
+.mode-only{display:none}
+
+.result-bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-top:16px;padding:14px 16px;background:var(--primary-light);border-radius:10px}
+.result-meta{font-size:.88rem;color:#8a6a30}
+.err{display:none;background:#fdecea;border-left:4px solid #e74c3c;border-radius:8px;padding:12px 14px;margin-top:14px;font-size:.88rem;color:#a33}
+
+@media (max-width:768px){.container{padding:22px}h1{font-size:1.9rem}.viewer{height:320px}}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Imagem para <span class="accent">3D</span></h1>
+  <p class="main-subtitle">PNG vira arquivo .STL para impressão 3D. Logo recortado → sólido extrudado · foto → relevo (lithophane).</p>
+
+  <div class="upload-area" id="uploadArea">
+    <div class="upload-icon">📤</div>
+    <div class="upload-text">Clique aqui ou arraste sua imagem</div>
+    <div class="upload-sub">PNG transparente vira extrusão · imagem opaca vira relevo · máx. 10MB</div>
+    <input type="file" id="fileInput" accept="image/*">
+  </div>
+
+  <div class="workspace" id="workspace">
+    <div class="topbar">
+      <div class="detected">Detectado: <b id="detectedMode">—</b></div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <div class="seg" id="modeSeg">
+          <button data-mode="extrusao" class="active">Extrusão</button>
+          <button data-mode="relevo">Relevo</button>
+        </div>
+        <button class="btn btn-secondary" id="resetBtn">🔄 Nova</button>
+      </div>
+    </div>
+
+    <div class="viewer" id="viewer">
+      <div class="overlay" id="overlay"><div class="spinner"></div></div>
+      <div class="hint">Arraste para girar · scroll para zoom</div>
+    </div>
+
+    <div class="controls">
+      <div class="controls-grid">
+        <div class="field">
+          <label>Largura alvo: <span class="val" id="sizeMMVal">60</span> mm</label>
+          <input type="range" id="sizeMM" min="20" max="200" step="5" value="60">
+        </div>
+
+        <!-- Extrusão -->
+        <div class="field mode-only ext">
+          <label>Espessura: <span class="val" id="thicknessVal">3</span> mm</label>
+          <input type="range" id="thickness" min="1" max="20" step="0.5" value="3">
+        </div>
+        <div class="field mode-only ext">
+          <label>Limiar (alpha): <span class="val" id="thresholdVal">128</span></label>
+          <input type="range" id="threshold" min="1" max="254" value="128">
+        </div>
+        <div class="field mode-only ext">
+          <label>Suavização: <span class="val" id="smoothVal">1.0</span></label>
+          <input type="range" id="smooth" min="0" max="1.5" step="0.1" value="1">
+        </div>
+        <div class="field mode-only ext">
+          <label>Remover ruído: <span class="val" id="noiseVal">2</span></label>
+          <input type="range" id="noise" min="0" max="20" step="1" value="2">
+        </div>
+        <div class="field mode-only ext">
+          <label>Placa de base</label>
+          <div class="check"><input type="checkbox" id="baseOn"><span>Adicionar base (mm)</span></div>
+          <input type="number" id="baseThickness" min="0.2" max="5" step="0.2" value="0.8" style="margin-top:8px">
+        </div>
+
+        <!-- Relevo -->
+        <div class="field mode-only rel">
+          <label>Profundidade do relevo: <span class="val" id="depthVal">3</span> mm</label>
+          <input type="range" id="depth" min="0.5" max="10" step="0.5" value="3">
+        </div>
+        <div class="field mode-only rel">
+          <label>Espessura da base: <span class="val" id="reliefBaseVal">0.8</span> mm</label>
+          <input type="range" id="reliefBase" min="0.4" max="3" step="0.1" value="0.8">
+        </div>
+        <div class="field mode-only rel">
+          <label>Resolução: <span class="val" id="resVal">180</span></label>
+          <input type="range" id="res" min="80" max="300" step="10" value="180">
+        </div>
+        <div class="field mode-only rel">
+          <label>Inverter relevo</label>
+          <div class="check"><input type="checkbox" id="invert"><span>Claro = alto (lithophane: deixe desmarcado)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="err" id="errBox"></div>
+
+    <div class="result-bar">
+      <div class="result-meta" id="resultMeta">—</div>
+      <button class="btn btn-primary" id="downloadBtn" disabled>💾 Baixar .STL</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
+import { STLExporter } from 'three/addons/exporters/STLExporter.js';
+
+const $ = id => document.getElementById(id);
+const num = id => parseFloat($(id).value);
+const intv = id => parseInt($(id).value, 10);
+
+let sourceImg = null;
+let mode = 'extrusao';
+let currentGroup = null;
+let debounce = null;
+
+/* ---------- THREE setup ---------- */
+const viewer = $('viewer');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xeef1f4);
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 5000);
+const renderer = new THREE.WebGLRenderer({ antialias:true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+viewer.insertBefore(renderer.domElement, viewer.firstChild);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 1.0));
+const dir = new THREE.DirectionalLight(0xffffff, 1.4);
+dir.position.set(1, 1.2, 2);
+scene.add(dir);
+const dir2 = new THREE.DirectionalLight(0xffffff, 0.5);
+dir2.position.set(-1, -0.5, -1);
+scene.add(dir2);
+
+const material = new THREE.MeshStandardMaterial({ color:0xff8c00, roughness:0.65, metalness:0.05, side:THREE.DoubleSide });
+
+function resize(){
+  const w = viewer.clientWidth, h = viewer.clientHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(viewer);
+
+(function loop(){
+  requestAnimationFrame(loop);
+  controls.update();
+  renderer.render(scene, camera);
+})();
+
+function frameObject(group){
+  const box = new THREE.Box3().setFromObject(group);
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  const radius = Math.max(size.x, size.y, size.z) * 0.75 + 1;
+  const dist = radius / Math.sin((camera.fov/2) * Math.PI/180);
+  camera.position.set(center.x + dist*0.4, center.y - dist*0.5, center.z + dist*0.9);
+  camera.near = dist/100; camera.far = dist*10;
+  camera.updateProjectionMatrix();
+  controls.target.copy(center);
+  controls.update();
+}
+
+/* ---------- upload ---------- */
+const uploadArea = $('uploadArea'), fileInput = $('fileInput');
+uploadArea.addEventListener('click', ()=>fileInput.click());
+['dragover','dragleave','drop'].forEach(ev=>uploadArea.addEventListener(ev, e=>{
+  e.preventDefault();
+  uploadArea.classList.toggle('dragover', ev==='dragover');
+  if(ev==='drop' && e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+}));
+fileInput.addEventListener('change', e=>{ if(e.target.files[0]) loadFile(e.target.files[0]); });
+
+function loadFile(file){
+  if(!file.type.startsWith('image/')){ alert('Selecione uma imagem.'); return; }
+  if(file.size > 10*1024*1024){ alert('Máx. 10MB.'); return; }
+  const reader = new FileReader();
+  reader.onload = e=>{
+    const img = new Image();
+    img.onload = ()=>{
+      sourceImg = img;
+      uploadArea.style.display = 'none';
+      $('workspace').style.display = 'block';
+      resize();
+      const detected = detectMode(img);
+      setMode(detected, true);
+      $('detectedMode').textContent = detected==='extrusao'
+        ? 'logo/recorte (extrusão)' : 'imagem (relevo)';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function detectMode(img){
+  const m = Math.max(img.naturalWidth, img.naturalHeight);
+  const s = Math.min(220, m);
+  const w = Math.max(1, Math.round(img.naturalWidth * s / m));
+  const h = Math.max(1, Math.round(img.naturalHeight * s / m));
+  const c = document.createElement('canvas'); c.width=w; c.height=h;
+  const ctx = c.getContext('2d'); ctx.drawImage(img,0,0,w,h);
+  const d = ctx.getImageData(0,0,w,h).data;
+  let transp = 0;
+  for(let i=0;i<d.length;i+=4) if(d[i+3] < 200) transp++;
+  return (transp/(w*h) > 0.05) ? 'extrusao' : 'relevo';
+}
+
+/* ---------- modo ---------- */
+function setMode(m, fromDetect){
+  mode = m;
+  $('modeSeg').querySelectorAll('button').forEach(b=>b.classList.toggle('active', b.dataset.mode===m));
+  document.querySelectorAll('.mode-only.ext').forEach(el=>el.style.display = m==='extrusao' ? 'block':'none');
+  document.querySelectorAll('.mode-only.rel').forEach(el=>el.style.display = m==='relevo' ? 'block':'none');
+  rebuild(true);
+}
+$('modeSeg').addEventListener('click', e=>{ const b=e.target.closest('button'); if(b) setMode(b.dataset.mode); });
+
+/* ---------- bitmap alpha p/ extrusão ---------- */
+function buildAlphaBitmap(){
+  const maxDim = 1200;
+  let w = sourceImg.naturalWidth, h = sourceImg.naturalHeight;
+  const s = Math.min(1, maxDim/Math.max(w,h));
+  w = Math.max(1, Math.round(w*s)); h = Math.max(1, Math.round(h*s));
+  const c = document.createElement('canvas'); c.width=w; c.height=h;
+  const ctx = c.getContext('2d'); ctx.clearRect(0,0,w,h); ctx.drawImage(sourceImg,0,0,w,h);
+  const id = ctx.getImageData(0,0,w,h), d = id.data, t = intv('threshold');
+  for(let i=0;i<d.length;i+=4){
+    if(d[i+3] >= t){ d[i]=d[i+1]=d[i+2]=0; d[i+3]=255; }
+    else { d[i]=d[i+1]=d[i+2]=255; d[i+3]=255; }
+  }
+  ctx.putImageData(id,0,0);
+  return c;
+}
+
+/* ---------- EXTRUSÃO ---------- */
+async function buildExtrusion(){
+  if(typeof PotracePlus === 'undefined') throw new Error('Potrace não carregou');
+  const bmp = buildAlphaBitmap();
+  const traced = await PotracePlus(bmp, { turdsize:intv('noise'), opttolerance:num('smooth'), optcurve:true, alphamax:1, crop:true, optimize:true, addDimensions:false });
+  const d = traced.getD ? traced.getD() : traced.d;
+  const tw = traced.width, th = traced.height;
+  if(!d) throw new Error('contorno vazio');
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${tw} ${th}"><path d="${d}" fill="black"/></svg>`;
+  const data = new SVGLoader().parse(svg);
+  const shapes = [];
+  data.paths.forEach(p => SVGLoader.createShapes(p).forEach(s => shapes.push(s)));
+  if(!shapes.length) throw new Error('nenhuma forma detectada');
+
+  const widthMM = num('sizeMM');
+  const scale = widthMM / tw;
+  const thickMM = num('thickness');
+  const depthPx = thickMM / scale;
+
+  const geo = new THREE.ExtrudeGeometry(shapes, { depth:depthPx, bevelEnabled:false, curveSegments:24 });
+  geo.rotateX(Math.PI);          // corrige Y (SVG é y-down) sem inverter winding
+  geo.scale(scale, scale, scale);
+  geo.computeBoundingBox();
+  const bb = geo.boundingBox;
+  geo.translate(-(bb.min.x+bb.max.x)/2, -(bb.min.y+bb.max.y)/2, -bb.min.z);
+  geo.computeVertexNormals();
+
+  const group = new THREE.Group();
+  group.add(new THREE.Mesh(geo, material));
+
+  if($('baseOn').checked){
+    geo.computeBoundingBox();
+    const b = geo.boundingBox;
+    const margin = widthMM * 0.05;
+    const bw = (b.max.x-b.min.x) + margin, bh = (b.max.y-b.min.y) + margin;
+    const baseMM = num('baseThickness');
+    const baseGeo = new THREE.BoxGeometry(bw, bh, baseMM);
+    baseGeo.translate(0, 0, -baseMM/2);
+    group.add(new THREE.Mesh(baseGeo, material));
+  }
+
+  const b2 = new THREE.Box3().setFromObject(group).getSize(new THREE.Vector3());
+  $('resultMeta').textContent = `Extrusão · ${b2.x.toFixed(1)} × ${b2.y.toFixed(1)} × ${b2.z.toFixed(1)} mm`;
+  return group;
+}
+
+/* ---------- RELEVO / LITHOPHANE ---------- */
+function sampleLuminance(nx, ny){
+  const c = document.createElement('canvas'); c.width=nx; c.height=ny;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#fff'; ctx.fillRect(0,0,nx,ny);   // achata transparência em branco
+  ctx.drawImage(sourceImg, 0, 0, nx, ny);
+  const d = ctx.getImageData(0,0,nx,ny).data;
+  const g = new Float32Array(nx*ny);
+  for(let k=0;k<nx*ny;k++) g[k] = (0.299*d[k*4] + 0.587*d[k*4+1] + 0.114*d[k*4+2]) / 255;
+  return g;
+}
+
+function buildRelief(){
+  const widthMM = num('sizeMM');
+  const depthMM = num('depth');
+  const baseMM = num('reliefBase');
+  const invert = $('invert').checked;
+  const resMax = intv('res');
+
+  const ar = sourceImg.naturalHeight / sourceImg.naturalWidth;
+  let nx, ny;
+  if(ar <= 1){ nx = resMax; ny = Math.max(2, Math.round(resMax*ar)); }
+  else { ny = resMax; nx = Math.max(2, Math.round(resMax/ar)); }
+
+  const lum = sampleLuminance(nx, ny);
+  const heightMM = widthMM * (ny-1)/(nx-1);
+  const dx = widthMM/(nx-1), dy = heightMM/(ny-1);
+
+  const pos = [];
+  const idx = [];
+  const V = nx*ny;
+  const top = (i,j)=> j*nx + i;
+  const bot = (i,j)=> V + j*nx + i;
+
+  for(let j=0;j<ny;j++) for(let i=0;i<nx;i++){
+    const L = lum[j*nx+i];
+    const t = baseMM + (invert ? L : (1-L))*depthMM;
+    pos.push(-widthMM/2 + i*dx, heightMM/2 - j*dy, t);
+  }
+  for(let j=0;j<ny;j++) for(let i=0;i<nx;i++){
+    pos.push(-widthMM/2 + i*dx, heightMM/2 - j*dy, 0);
+  }
+  for(let j=0;j<ny-1;j++) for(let i=0;i<nx-1;i++){
+    const a=top(i,j), b=top(i+1,j), c=top(i+1,j+1), d2=top(i,j+1);
+    idx.push(a,d2,c, a,c,b);                 // topo +Z
+    const A=bot(i,j), B=bot(i+1,j), C=bot(i+1,j+1), D=bot(i,j+1);
+    idx.push(A,C,D, A,B,C);                  // base -Z
+  }
+  const wall=(t0,t1,b0,b1)=>{ idx.push(t0,t1,b1, t0,b1,b0); };
+  for(let i=0;i<nx-1;i++) wall(top(i,0), top(i+1,0), bot(i,0), bot(i+1,0));
+  for(let i=0;i<nx-1;i++) wall(top(i+1,ny-1), top(i,ny-1), bot(i+1,ny-1), bot(i,ny-1));
+  for(let j=0;j<ny-1;j++) wall(top(0,j+1), top(0,j), bot(0,j+1), bot(0,j));
+  for(let j=0;j<ny-1;j++) wall(top(nx-1,j), top(nx-1,j+1), bot(nx-1,j), bot(nx-1,j+1));
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setIndex(idx);
+  geo.computeVertexNormals();
+
+  const group = new THREE.Group();
+  group.add(new THREE.Mesh(geo, material));
+  $('resultMeta').textContent = `Relevo · ${widthMM.toFixed(1)} × ${heightMM.toFixed(1)} × ${(baseMM+depthMM).toFixed(1)} mm · ${nx}×${ny}`;
+  return group;
+}
+
+/* ---------- rebuild ---------- */
+async function rebuild(refit){
+  if(!sourceImg) return;
+  hideErr();
+  $('overlay').classList.add('show');
+  $('downloadBtn').disabled = true;
+  await new Promise(r=>setTimeout(r, 20)); // deixa o spinner pintar
+  try{
+    const group = mode==='extrusao' ? await buildExtrusion() : buildRelief();
+    if(currentGroup){ scene.remove(currentGroup); disposeGroup(currentGroup); }
+    currentGroup = group;
+    scene.add(group);
+    if(refit) frameObject(group);
+    $('downloadBtn').disabled = false;
+  }catch(err){
+    console.error(err);
+    showErr('Não foi possível gerar o 3D para esta imagem. Tente ajustar o limiar/resolução ou trocar o modo manualmente.');
+  }finally{
+    $('overlay').classList.remove('show');
+  }
+}
+function disposeGroup(g){ g.traverse(o=>{ if(o.geometry) o.geometry.dispose(); }); }
+
+function schedule(){ clearTimeout(debounce); debounce = setTimeout(()=>rebuild(false), 300); }
+
+/* ---------- listeners de controle ---------- */
+[['sizeMM','sizeMMVal',v=>v],['thickness','thicknessVal',v=>v],['threshold','thresholdVal',v=>v],
+ ['smooth','smoothVal',v=>parseFloat(v).toFixed(1)],['noise','noiseVal',v=>v],
+ ['depth','depthVal',v=>v],['reliefBase','reliefBaseVal',v=>parseFloat(v).toFixed(1)],['res','resVal',v=>v]
+].forEach(([id,lbl,fmt])=>{
+  $(id).addEventListener('input', e=>{ $(lbl).textContent = fmt(e.target.value); schedule(); });
+});
+$('baseThickness').addEventListener('input', schedule);
+$('baseOn').addEventListener('change', schedule);
+$('invert').addEventListener('change', schedule);
+
+/* ---------- export STL ---------- */
+$('downloadBtn').addEventListener('click', ()=>{
+  if(!currentGroup) return;
+  const exporter = new STLExporter();
+  const result = exporter.parse(currentGroup, { binary:true });
+  const blob = new Blob([result], { type:'application/octet-stream' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `modelo_${mode}_${Date.now()}.stl`; a.click();
+  URL.revokeObjectURL(url);
+});
+
+$('resetBtn').addEventListener('click', ()=>{
+  if(currentGroup){ scene.remove(currentGroup); disposeGroup(currentGroup); currentGroup=null; }
+  sourceImg=null; fileInput.value='';
+  $('workspace').style.display='none';
+  uploadArea.style.display='block';
+});
+
+function showErr(m){ const e=$('errBox'); e.textContent=m; e.style.display='block'; }
+function hideErr(){ $('errBox').style.display='none'; }
+</script>
+</body>
+</html>
