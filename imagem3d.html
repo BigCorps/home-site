@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Imagem para 3D (STL)</title>
 <script src="https://cdn.jsdelivr.net/npm/potrace-plus@latest/dist/potrace-plus.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script type="importmap">
 {
   "imports": {
@@ -156,7 +157,10 @@ h1 .accent{color:var(--primary)}
 
     <div class="result-bar">
       <div class="result-meta" id="resultMeta">—</div>
-      <button class="btn btn-primary" id="downloadBtn" disabled>💾 Baixar .STL</button>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-secondary" id="download3mfBtn" disabled>💾 Baixar .3MF</button>
+        <button class="btn btn-primary" id="downloadBtn" disabled>💾 Baixar .STL</button>
+      </div>
     </div>
   </div>
 </div>
@@ -413,6 +417,7 @@ async function rebuild(refit){
   hideErr();
   $('overlay').classList.add('show');
   $('downloadBtn').disabled = true;
+  $('download3mfBtn').disabled = true;
   await new Promise(r=>setTimeout(r, 20)); // deixa o spinner pintar
   try{
     const group = mode==='extrusao' ? await buildExtrusion() : buildRelief();
@@ -421,6 +426,7 @@ async function rebuild(refit){
     scene.add(group);
     if(refit) frameObject(group);
     $('downloadBtn').disabled = false;
+    $('download3mfBtn').disabled = false;
   }catch(err){
     console.error(err);
     showErr('Não foi possível gerar o 3D para esta imagem. Tente ajustar o limiar/resolução ou trocar o modo manualmente.');
@@ -444,15 +450,82 @@ $('baseOn').addEventListener('change', schedule);
 $('invert').addEventListener('change', schedule);
 
 /* ---------- export STL ---------- */
-$('downloadBtn').addEventListener('click', ()=>{
-  if(!currentGroup) return;
-  const exporter = new STLExporter();
-  const result = exporter.parse(currentGroup, { binary:true });
-  const blob = new Blob([result], { type:'application/octet-stream' });
+function download(blob, name){
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = `modelo_${mode}_${Date.now()}.stl`; a.click();
+  a.href = url; a.download = name; a.click();
   URL.revokeObjectURL(url);
+}
+
+$('downloadBtn').addEventListener('click', ()=>{
+  if(!currentGroup) return;
+  const result = new STLExporter().parse(currentGroup, { binary:true });
+  download(new Blob([result], { type:'application/octet-stream' }), `modelo_${mode}_${Date.now()}.stl`);
+});
+
+/* ---------- export 3MF (próprio, via JSZip) ---------- */
+const CONTENT_TYPES = '<?xml version="1.0" encoding="UTF-8"?>\n'
+  + '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+  + '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+  + '<Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/></Types>';
+const RELS = '<?xml version="1.0" encoding="UTF-8"?>\n'
+  + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+  + '<Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>';
+
+function groupToMeshData(group){
+  group.updateMatrixWorld(true);
+  const verts = [], tris = [];
+  let offset = 0;
+  const v = new THREE.Vector3();
+  group.traverse(o=>{
+    if(!o.isMesh) return;
+    const g = o.geometry, pos = g.attributes.position, m = o.matrixWorld, base = offset;
+    for(let i=0;i<pos.count;i++){
+      v.fromBufferAttribute(pos, i).applyMatrix4(m);
+      verts.push(v.x, v.y, v.z);
+    }
+    if(g.index){
+      const ix = g.index.array;
+      for(let i=0;i<ix.length;i+=3) tris.push(base+ix[i], base+ix[i+1], base+ix[i+2]);
+    } else {
+      for(let i=0;i<pos.count;i+=3) tris.push(base+i, base+i+1, base+i+2);
+    }
+    offset += pos.count;
+  });
+  return { verts, tris };
+}
+
+function buildModelXML(verts, tris){
+  const r = n => Math.round(n*1000)/1000;
+  const p = [];
+  p.push('<?xml version="1.0" encoding="UTF-8"?>\n');
+  p.push('<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">');
+  p.push('<resources><object id="1" type="model"><mesh><vertices>');
+  for(let i=0;i<verts.length;i+=3) p.push(`<vertex x="${r(verts[i])}" y="${r(verts[i+1])}" z="${r(verts[i+2])}"/>`);
+  p.push('</vertices><triangles>');
+  for(let i=0;i<tris.length;i+=3) p.push(`<triangle v1="${tris[i]}" v2="${tris[i+1]}" v3="${tris[i+2]}"/>`);
+  p.push('</triangles></mesh></object></resources><build><item objectid="1"/></build></model>');
+  return p.join('');
+}
+
+$('download3mfBtn').addEventListener('click', async ()=>{
+  if(!currentGroup) return;
+  if(typeof JSZip === 'undefined'){ showErr('Biblioteca de compactação (JSZip) não carregou. Verifique a conexão.'); return; }
+  const btn = $('download3mfBtn');
+  btn.disabled = true; const txt = btn.textContent; btn.textContent = '⏳ Gerando...';
+  try{
+    const { verts, tris } = groupToMeshData(currentGroup);
+    const zip = new JSZip();
+    zip.file('[Content_Types].xml', CONTENT_TYPES);
+    zip.folder('_rels').file('.rels', RELS);
+    zip.folder('3D').file('3dmodel.model', buildModelXML(verts, tris));
+    const blob = await zip.generateAsync({ type:'blob', mimeType:'model/3mf', compression:'DEFLATE' });
+    download(blob, `modelo_${mode}_${Date.now()}.3mf`);
+  }catch(err){
+    console.error(err); showErr('Falha ao gerar o 3MF.');
+  }finally{
+    btn.textContent = txt; btn.disabled = false;
+  }
 });
 
 $('resetBtn').addEventListener('click', ()=>{
