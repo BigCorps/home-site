@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Imagem para SVG (Vetorizar)</title>
+<script src="https://cdn.jsdelivr.net/npm/potrace-plus@latest/dist/potrace-plus.min.js"></script>
+<style>
+:root{
+  --primary:#ff8c00;
+  --primary-hover:#e67c00;
+  --primary-light:#fff8f0;
+  --dark:#343a40;
+  --light-text:#6c757d;
+  --border:#dee2e6;
+  --light-bg:#f8f9fa;
+  --white:#fff;
+  --shadow:0 4px 15px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:var(--white);color:var(--dark);padding:20px;line-height:1.6;
+}
+.container{
+  max-width:1040px;margin:20px auto;background:var(--white);
+  border-radius:16px;padding:40px;box-shadow:var(--shadow);
+}
+h1{text-align:center;font-size:2.4rem;font-weight:700;margin-bottom:8px}
+h1 .accent{color:var(--primary)}
+.main-subtitle{text-align:center;color:var(--light-text);margin-bottom:32px;font-size:1.05rem}
+
+.btn{
+  padding:12px 24px;border-radius:8px;border:none;cursor:pointer;
+  font-size:1rem;font-weight:600;transition:all .25s ease;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover:not(:disabled){background:var(--primary-hover);transform:translateY(-2px)}
+.btn-secondary{background:#6c757d;color:#fff}
+.btn-secondary:hover:not(:disabled){transform:translateY(-1px)}
+.btn:disabled{background:#ccc;cursor:not-allowed;transform:none}
+
+.upload-area{
+  border:3px dashed var(--border);border-radius:14px;padding:56px 20px;
+  text-align:center;background:#fdfdfd;cursor:pointer;transition:all .25s ease;
+}
+.upload-area:hover{border-color:var(--primary);background:var(--primary-light)}
+.upload-area.dragover{border-color:var(--primary);background:#fff4e6}
+.upload-icon{font-size:3rem;color:var(--primary);margin-bottom:14px}
+.upload-text{font-size:1.15rem;font-weight:600;margin-bottom:6px}
+.upload-sub{color:var(--light-text);font-size:.9rem}
+#fileInput{display:none}
+
+.workspace{display:none}
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:8px}
+.panel{
+  border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--light-bg);
+  display:flex;flex-direction:column;
+}
+.panel-head{
+  padding:8px 14px;font-size:.82rem;font-weight:600;color:var(--light-text);
+  background:#fff;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;
+}
+.panel-body{
+  flex:1;min-height:280px;display:flex;align-items:center;justify-content:center;padding:14px;
+  background-image:
+    linear-gradient(45deg,#eaeaea 25%,transparent 25%),
+    linear-gradient(-45deg,#eaeaea 25%,transparent 25%),
+    linear-gradient(45deg,transparent 75%,#eaeaea 75%),
+    linear-gradient(-45deg,transparent 75%,#eaeaea 75%);
+  background-size:18px 18px;
+  background-position:0 0,0 9px,9px -9px,-9px 0;
+}
+.panel-body img,.panel-body svg{max-width:100%;max-height:340px;display:block}
+.panel-body .placeholder{color:var(--light-text);font-size:.9rem;text-align:center}
+.spinner{
+  width:34px;height:34px;border:4px solid #f0e0cc;border-top-color:var(--primary);
+  border-radius:50%;animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.controls{
+  border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:18px;background:#fff;
+}
+.controls-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
+.field label{display:block;font-weight:600;font-size:.88rem;margin-bottom:6px}
+.field .val{color:var(--primary);font-weight:700}
+.field select,.field input[type="number"]{
+  width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;font-size:.95rem;background:#fff;
+}
+.field input[type="range"]{width:100%;accent-color:var(--primary)}
+.field input[type="color"]{width:100%;height:40px;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;padding:3px}
+.seg{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.seg button{
+  flex:1;padding:9px;border:none;background:#fff;cursor:pointer;font-weight:600;font-size:.9rem;
+  color:var(--light-text);transition:all .2s;font-family:inherit;
+}
+.seg button.active{background:var(--primary);color:#fff}
+
+.result-bar{
+  display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;
+  margin-top:18px;padding:14px 16px;background:var(--primary-light);border-radius:10px;
+}
+.result-meta{font-size:.88rem;color:#7a5a २00;color:#8a6a30}
+.result-actions{display:flex;gap:10px;flex-wrap:wrap}
+
+.code-wrap{margin-top:16px;display:none}
+.code-wrap textarea{
+  width:100%;height:120px;border:1px solid var(--border);border-radius:10px;padding:12px;
+  font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.78rem;color:#333;resize:vertical;background:#fbfbfb;
+}
+.code-toggle{margin-top:10px;background:none;border:none;color:var(--primary);font-weight:600;cursor:pointer;font-size:.9rem;padding:0}
+
+.toolbar-top{display:flex;justify-content:flex-end;margin-bottom:10px}
+.note{
+  background:var(--primary-light);border-left:4px solid var(--primary);border-radius:8px;
+  padding:12px 14px;margin-top:16px;font-size:.86rem;color:#555;
+}
+.err{display:none;background:#fdecea;border-left:4px solid #e74c3c;border-radius:8px;padding:12px 14px;margin-top:16px;font-size:.88rem;color:#a33}
+
+@media (max-width:768px){
+  .container{padding:22px}
+  h1{font-size:1.9rem}
+  .panels{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Imagem para <span class="accent">SVG</span></h1>
+  <p class="main-subtitle">Transforme um PNG com fundo transparente em vetor (.svg) — silhueta preenchida ou só o contorno.</p>
+
+  <div class="upload-area" id="uploadArea">
+    <div class="upload-icon">📤</div>
+    <div class="upload-text">Clique aqui ou arraste seu PNG</div>
+    <div class="upload-sub">Ideal: PNG com fundo transparente (recortado) · máx. 10MB</div>
+    <input type="file" id="fileInput" accept="image/png,image/webp,image/*">
+  </div>
+
+  <div class="workspace" id="workspace">
+    <div class="toolbar-top">
+      <button class="btn btn-secondary" id="resetBtn">🔄 Nova imagem</button>
+    </div>
+
+    <div class="panels">
+      <div class="panel">
+        <div class="panel-head"><span>Original</span><span id="origDim"></span></div>
+        <div class="panel-body"><img id="origImg" alt="Original"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><span>Resultado SVG</span><span id="svgDim"></span></div>
+        <div class="panel-body" id="svgPreview"><div class="placeholder">Ajuste as opções para gerar</div></div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="controls-grid">
+        <div class="field">
+          <label>Origem do traço</label>
+          <select id="source">
+            <option value="transparencia">Transparência (PNG recortado)</option>
+            <option value="luminancia">Luminância (partes escuras)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Limiar: <span class="val" id="thresholdVal">128</span></label>
+          <input type="range" id="threshold" min="1" max="254" value="128">
+        </div>
+        <div class="field">
+          <label>Suavização: <span class="val" id="smoothVal">1.0</span></label>
+          <input type="range" id="smooth" min="0" max="1.5" step="0.1" value="1">
+        </div>
+        <div class="field">
+          <label>Remover ruído: <span class="val" id="noiseVal">2</span></label>
+          <input type="range" id="noise" min="0" max="20" step="1" value="2">
+        </div>
+        <div class="field">
+          <label>Modo</label>
+          <div class="seg" id="modeSeg">
+            <button data-mode="fill" class="active">Preenchido</button>
+            <button data-mode="stroke">Contorno</button>
+          </div>
+        </div>
+        <div class="field" id="strokeField" style="display:none">
+          <label>Espessura do traço: <span class="val" id="strokeVal">2</span></label>
+          <input type="range" id="stroke" min="0.5" max="8" step="0.5" value="2">
+        </div>
+        <div class="field">
+          <label>Cor</label>
+          <input type="color" id="color" value="#000000">
+        </div>
+      </div>
+    </div>
+
+    <div class="err" id="errBox"></div>
+
+    <div class="result-bar">
+      <div class="result-meta" id="resultMeta">—</div>
+      <div class="result-actions">
+        <button class="btn btn-secondary" id="copyBtn" disabled>📋 Copiar código</button>
+        <button class="btn btn-primary" id="downloadBtn" disabled>💾 Baixar .SVG</button>
+      </div>
+    </div>
+
+    <div class="code-wrap" id="codeWrap">
+      <textarea id="codeArea" readonly spellcheck="false"></textarea>
+    </div>
+    <button class="code-toggle" id="codeToggle">▾ Ver código SVG</button>
+
+    <div class="note">
+      <strong>Dica:</strong> funciona melhor com PNG já recortado (fundo transparente). Ele gera a silhueta e mantém furos internos (ex.: o miolo do "O"). Não reproduz linhas internas de desenho — para isso seria necessário detecção de bordas, que exige retoque manual.
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const uploadArea = $('uploadArea');
+const fileInput  = $('fileInput');
+const origImg    = $('origImg');
+
+let sourceImg = null;     // Image carregada
+let mode = 'fill';
+let lastSVG = '';
+let debounceTimer = null;
+
+/* ---------- upload ---------- */
+uploadArea.addEventListener('click', ()=>fileInput.click());
+['dragover','dragleave','drop'].forEach(ev=>{
+  uploadArea.addEventListener(ev, e=>{
+    e.preventDefault();
+    if(ev==='dragover') uploadArea.classList.add('dragover');
+    else uploadArea.classList.remove('dragover');
+    if(ev==='drop' && e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+  });
+});
+fileInput.addEventListener('change', e=>{ if(e.target.files[0]) loadFile(e.target.files[0]); });
+
+function loadFile(file){
+  if(!file.type.startsWith('image/')){ alert('Selecione um arquivo de imagem.'); return; }
+  if(file.size > 10*1024*1024){ alert('Arquivo muito grande (máx. 10MB).'); return; }
+  const reader = new FileReader();
+  reader.onload = e=>{
+    const img = new Image();
+    img.onload = ()=>{
+      sourceImg = img;
+      origImg.src = e.target.result;
+      $('origDim').textContent = `${img.naturalWidth}×${img.naturalHeight}px`;
+      uploadArea.style.display = 'none';
+      $('workspace').style.display = 'block';
+      trace();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ---------- pré-processamento: vira preto/branco 1-bit ---------- */
+function buildBitmapCanvas(){
+  const maxDim = 1200;
+  let w = sourceImg.naturalWidth, h = sourceImg.naturalHeight;
+  const scale = Math.min(1, maxDim/Math.max(w,h));
+  w = Math.max(1, Math.round(w*scale));
+  h = Math.max(1, Math.round(h*scale));
+
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0,0,w,h);
+  ctx.drawImage(sourceImg, 0, 0, w, h);
+
+  const id = ctx.getImageData(0,0,w,h);
+  const d = id.data;
+  const t = parseInt($('threshold').value, 10);
+  const src = $('source').value;
+
+  for(let i=0;i<d.length;i+=4){
+    let on;
+    const a = d[i+3];
+    if(src === 'transparencia'){
+      on = a >= t;                      // opaco o suficiente = traço
+    } else {
+      if(a < 10){ on = false; }         // transparente = fundo
+      else {
+        const lum = 0.299*d[i] + 0.587*d[i+1] + 0.114*d[i+2];
+        on = lum <= t;                  // escuro = traço
+      }
+    }
+    if(on){ d[i]=d[i+1]=d[i+2]=0; d[i+3]=255; }
+    else  { d[i]=d[i+1]=d[i+2]=255; d[i+3]=255; }
+  }
+  ctx.putImageData(id,0,0);
+  return c;
+}
+
+/* ---------- traçar ---------- */
+async function trace(){
+  if(!sourceImg) return;
+  if(typeof PotracePlus === 'undefined'){
+    showError('A biblioteca de vetorização não carregou (CDN bloqueado?). Verifique a conexão e recarregue a página.');
+    return;
+  }
+  hideError();
+  const preview = $('svgPreview');
+  preview.innerHTML = '<div class="spinner"></div>';
+  $('downloadBtn').disabled = true;
+  $('copyBtn').disabled = true;
+
+  try{
+    const canvas = buildBitmapCanvas();
+    const traced = await PotracePlus(canvas, {
+      turdsize:   parseInt($('noise').value, 10),
+      opttolerance: parseFloat($('smooth').value),
+      optcurve:   true,
+      alphamax:   1,
+      crop:       true,
+      optimize:   true,
+      addDimensions: false
+    });
+
+    const d  = traced.getD ? traced.getD() : traced.d;
+    const tw = traced.width, th = traced.height;
+    const color = $('color').value;
+
+    let inner;
+    if(mode === 'fill'){
+      inner = `<path d="${d}" fill="${color}"/>`;
+    } else {
+      const sw = parseFloat($('stroke').value);
+      inner = `<path d="${d}" fill="none" stroke="${color}" stroke-width="${sw}" stroke-linejoin="round" stroke-linecap="round"/>`;
+    }
+
+    lastSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${tw} ${th}" width="${tw}" height="${th}">${inner}</svg>`;
+
+    preview.innerHTML = lastSVG;
+    $('svgDim').textContent = `${tw}×${th}`;
+    const kb = (new Blob([lastSVG]).size/1024).toFixed(1);
+    $('resultMeta').textContent = `SVG gerado · ${kb} KB · ${(d.match(/[a-z]/gi)||[]).length} comandos`;
+    $('codeArea').value = lastSVG;
+    $('downloadBtn').disabled = false;
+    $('copyBtn').disabled = false;
+  }catch(err){
+    showError('Não foi possível vetorizar esta imagem. Tente ajustar o limiar ou usar um PNG com fundo transparente.');
+    preview.innerHTML = '<div class="placeholder">Falha ao gerar</div>';
+    console.error(err);
+  }
+}
+
+function scheduleTrace(){
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(trace, 280);
+}
+
+/* ---------- controles ---------- */
+$('threshold').addEventListener('input', e=>{ $('thresholdVal').textContent = e.target.value; scheduleTrace(); });
+$('smooth').addEventListener('input', e=>{ $('smoothVal').textContent = parseFloat(e.target.value).toFixed(1); scheduleTrace(); });
+$('noise').addEventListener('input', e=>{ $('noiseVal').textContent = e.target.value; scheduleTrace(); });
+$('stroke').addEventListener('input', e=>{ $('strokeVal').textContent = e.target.value; scheduleTrace(); });
+$('color').addEventListener('input', scheduleTrace);
+$('source').addEventListener('change', scheduleTrace);
+
+$('modeSeg').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  mode = b.dataset.mode;
+  $('modeSeg').querySelectorAll('button').forEach(x=>x.classList.toggle('active', x===b));
+  $('strokeField').style.display = mode==='stroke' ? 'block' : 'none';
+  scheduleTrace();
+});
+
+/* ---------- ações ---------- */
+$('downloadBtn').addEventListener('click', ()=>{
+  if(!lastSVG) return;
+  const blob = new Blob([lastSVG], {type:'image/svg+xml'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `vetor_${Date.now()}.svg`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+$('copyBtn').addEventListener('click', async ()=>{
+  try{ await navigator.clipboard.writeText(lastSVG); $('copyBtn').textContent='✓ Copiado'; setTimeout(()=>$('copyBtn').textContent='📋 Copiar código',1500); }
+  catch{ $('codeWrap').style.display='block'; $('codeArea').select(); }
+});
+
+$('codeToggle').addEventListener('click', ()=>{
+  const w = $('codeWrap');
+  const open = w.style.display==='block';
+  w.style.display = open ? 'none' : 'block';
+  $('codeToggle').textContent = open ? '▾ Ver código SVG' : '▴ Ocultar código SVG';
+});
+
+$('resetBtn').addEventListener('click', ()=>{
+  sourceImg=null; lastSVG=''; fileInput.value='';
+  $('workspace').style.display='none';
+  uploadArea.style.display='block';
+  $('svgPreview').innerHTML='<div class="placeholder">Ajuste as opções para gerar</div>';
+});
+
+function showError(msg){ const e=$('errBox'); e.textContent=msg; e.style.display='block'; }
+function hideError(){ $('errBox').style.display='none'; }
+</script>
+</body>
+</html>
