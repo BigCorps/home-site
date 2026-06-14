@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Imagem para SVG (Vetorizar)</title>
 <script src="https://cdn.jsdelivr.net/npm/potrace-plus@latest/dist/potrace-plus.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/svg2pdf.js@2.5.0/dist/svg2pdf.umd.min.js"></script>
 <style>
 :root{
   --primary:#ff8c00;
@@ -192,6 +194,7 @@ h1 .accent{color:var(--primary)}
       <div class="result-meta" id="resultMeta">—</div>
       <div class="result-actions">
         <button class="btn btn-secondary" id="copyBtn" disabled>📋 Copiar código</button>
+        <button class="btn btn-secondary" id="pdfBtn" disabled>📄 Baixar PDF</button>
         <button class="btn btn-primary" id="downloadBtn" disabled>💾 Baixar .SVG</button>
       </div>
     </div>
@@ -212,6 +215,7 @@ const origImg    = $('origImg');
 let sourceImg = null;     // Image carregada
 let mode = 'fill';
 let lastSVG = '';
+let lastW = 0, lastH = 0;
 let debounceTimer = null;
 
 /* ---------- upload ---------- */
@@ -284,6 +288,7 @@ async function trace(){
   preview.innerHTML = '<div class="spinner"></div>';
   $('downloadBtn').disabled = true;
   $('copyBtn').disabled = true;
+  $('pdfBtn').disabled = true;
 
   try{
     const canvas = buildBitmapCanvas();
@@ -310,6 +315,7 @@ async function trace(){
     }
 
     lastSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${tw} ${th}" width="${tw}" height="${th}">${inner}</svg>`;
+    lastW = tw; lastH = th;
 
     preview.innerHTML = lastSVG;
     $('svgDim').textContent = `${tw}×${th}`;
@@ -318,6 +324,7 @@ async function trace(){
     $('codeArea').value = lastSVG;
     $('downloadBtn').disabled = false;
     $('copyBtn').disabled = false;
+    $('pdfBtn').disabled = false;
   }catch(err){
     showError('Não foi possível vetorizar esta imagem. Tente ajustar o limiar ou usar um PNG com fundo transparente.');
     preview.innerHTML = '<div class="placeholder">Falha ao gerar</div>';
@@ -355,6 +362,31 @@ $('downloadBtn').addEventListener('click', ()=>{
   a.download = `vetor_${Date.now()}.svg`;
   a.click();
   URL.revokeObjectURL(url);
+});
+
+$('pdfBtn').addEventListener('click', async ()=>{
+  if(!lastSVG) return;
+  if(!window.jspdf || !window.jspdf.jsPDF){ showError('jsPDF não carregou (CDN bloqueado?).'); return; }
+  const btn = $('pdfBtn'); const txt = btn.textContent;
+  btn.disabled = true; btn.textContent = '⏳ Gerando...';
+  // svg2pdf precisa de um elemento SVG real no DOM
+  const holder = document.createElement('div');
+  holder.style.cssText = 'position:fixed;left:-99999px;top:0';
+  holder.innerHTML = lastSVG;
+  document.body.appendChild(holder);
+  const svgEl = holder.querySelector('svg');
+  try{
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF(lastW > lastH ? 'l' : 'p', 'pt', [lastW, lastH]);
+    await doc.svg(svgEl, { x:0, y:0, width:lastW, height:lastH });
+    doc.save(`vetor_${Date.now()}.pdf`);
+  }catch(err){
+    console.error(err);
+    showError('Não foi possível gerar o PDF vetorial.');
+  }finally{
+    holder.remove();
+    btn.textContent = txt; btn.disabled = false;
+  }
 });
 
 $('copyBtn').addEventListener('click', async ()=>{
